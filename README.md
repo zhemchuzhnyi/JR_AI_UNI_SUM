@@ -24,6 +24,7 @@
 
 ```toml
 [build]
+  command = "true"
   publish = "src/main"
 ```
 
