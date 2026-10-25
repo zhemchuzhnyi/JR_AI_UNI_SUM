@@ -14,7 +14,6 @@ All paths below are relative to the workspace root.
 ```text
 src/main/
   index.html          # landing page for the public site
-  _headers            # Netlify: serve .md as plain text
   webinar1/
     README.md
     CONTROL_QUESTIONS.md
@@ -112,8 +111,7 @@ Practice requirements:
 
 The public site is the static content under `src/main`, with the landing page at `src/main/index.html`.
 
-- **GitHub Pages (primary):** `.github/workflows/pages.yml` deploys `src/main` on pushes to `main` once Pages is enabled with **Source: GitHub Actions**. Expected URL: `https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`.
-- **Netlify (alternative):** `netlify.toml` publishes `src/main`; connect the repo in Netlify or upload a zip of `src/main` contents via Netlify Drop.
+- **GitHub Pages:** `.github/workflows/pages.yml` deploys `src/main` on pushes to `main` with **Source: GitHub Actions**. Public URL: `https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`.
 
 Keep the landing page links in sync when lectures or practices move. Do not put private repository links on the public landing page unless the repo is public; prefer relative paths to public HTML pages.
 

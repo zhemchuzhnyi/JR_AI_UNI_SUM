@@ -39,10 +39,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### Deployment artifacts ###
-.netlify/
-*.zip
-
 ### Secrets and local configuration ###
 .env
 .env.*
