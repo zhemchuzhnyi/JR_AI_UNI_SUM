@@ -71,7 +71,7 @@ PAYMENT_WEBHOOK_SECRET=whsec_заполните_локально
 
 ```
 До очистки:
-Authorization: Bearer sk_live_xxxxx
+Authorization: Bearer TEST_TOKEN_NOT_REAL
 DB host: pg-prod.internal.company
 Customer email: olga@company.com
 
