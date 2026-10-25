@@ -16,9 +16,11 @@
 - [Структура и правила ведения конспектов](src/main/README.md)
 - [Skill для работы с лекциями](.opencode/skills/claude-code-lectures/SKILL.md)
 
-## Публикация (пока репозиторий приватный)
+## Публикация
 
-Временное решение — **Netlify**. Оно умеет собирать публичный сайт из приватного GitHub-репозитория.
+Основной вариант — **GitHub Pages**. Репозиторий уже публичный, workflow готов; осталось один раз включить Pages в настройках.
+
+Дополнительно остаётся **Netlify** — как альтернатива, если понадобится другой хостинг.
 
 В репозитории уже есть `netlify.toml`:
 
@@ -41,11 +43,11 @@
 
 ## GitHub Pages
 
-Когда репозиторий можно будет открыть или план позволит Pages, сайт можно будет публиковать через [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
+Сайт публикуется через [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
 
 https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/
 
-Для этого нужно один раз выбрать **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Нужно один раз выбрать **Settings → Pages → Build and deployment → Source: GitHub Actions**, после чего запустить workflow **Deploy lecture notes to GitHub Pages** в разделе Actions.
 
 ## Структура
 

@@ -112,8 +112,8 @@ Practice requirements:
 
 The public site is the static content under `src/main`, with the landing page at `src/main/index.html`.
 
-- **Temporary hosting:** Netlify uses `netlify.toml` and publishes `src/main`. This works while the GitHub repository is private. Connect the repo in Netlify or upload a zip of `src/main` contents via Netlify Drop.
-- **GitHub Pages (for later):** `.github/workflows/pages.yml` deploys `src/main` on pushes to `main` once Pages is enabled with **Source: GitHub Actions**. Expected URL: `https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`.
+- **GitHub Pages (primary):** `.github/workflows/pages.yml` deploys `src/main` on pushes to `main` once Pages is enabled with **Source: GitHub Actions**. Expected URL: `https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`.
+- **Netlify (alternative):** `netlify.toml` publishes `src/main`; connect the repo in Netlify or upload a zip of `src/main` contents via Netlify Drop.
 
 Keep the landing page links in sync when lectures or practices move. Do not put private repository links on the public landing page unless the repo is public; prefer relative paths to public HTML pages.
 
