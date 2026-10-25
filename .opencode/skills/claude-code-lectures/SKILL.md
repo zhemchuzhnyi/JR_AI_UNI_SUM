@@ -13,6 +13,7 @@ All paths below are relative to the workspace root.
 
 ```text
 src/main/
+  index.html          # landing page for GitHub Pages
   webinar1/
     README.md
     CONTROL_QUESTIONS.md
@@ -105,6 +106,14 @@ Practice requirements:
 - A self-check with observable outcomes.
 - A safe fallback if the required tool or environment is unavailable.
 - Only fake data for destructive or sensitive topics.
+
+## GitHub Pages
+
+The public site is built from `src/main` by `.github/workflows/pages.yml` and should be available at:
+
+`https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`
+
+The workflow deploys on every push to `main`. GitHub Pages must be set to **Source: GitHub Actions** in repository settings. The site landing page is `src/main/index.html`; keep its links in sync when lectures or practices move.
 
 ## Existing webinar practices
 

@@ -16,6 +16,14 @@
 - [Структура и правила ведения конспектов](src/main/README.md)
 - [Skill для работы с лекциями](.opencode/skills/claude-code-lectures/SKILL.md)
 
+## GitHub Pages
+
+После включения Pages сайт будет доступен по адресу:
+
+https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/
+
+Публикация настроена через [`.github/workflows/pages.yml`](.github/workflows/pages.yml). В настройках репозитория нужно один раз выбрать **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
 ## Структура
 
 ```text

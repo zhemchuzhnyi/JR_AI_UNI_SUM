@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Конспекты курса Claude Code от JavaRush: вебинары, уровни, лекции, практики и контрольные вопросы.">
+  <title>Claude Code — конспекты курса</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1040px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.5rem, 8vw, 5.2rem); line-height: 1.02; letter-spacing: -.06em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead { margin-top: 28px; padding: 25px 28px; border: 1px solid #70503c; border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); font-size: 1.12rem; }
+    section { margin-top: 28px; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 1.55rem; letter-spacing: -.03em; }
+    .tag { color: var(--accent); font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+    }
+    .card h3 { margin: 0 0 8px; font-size: 1.15rem; }
+    .card p { margin: 0 0 14px; color: var(--muted); }
+    ul { margin: 0; padding-left: 1.2rem; }
+    li { margin: 8px 0; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: #ffd0aa; }
+    .links { display: grid; gap: 8px; margin-top: 10px; }
+    .links a { display: block; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: #13161c; text-decoration: none; }
+    .links a:hover { border-color: var(--accent); }
+    .split { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .practice { border-color: #70503c; }
+    .practice h3 { color: var(--accent); }
+    .callout { margin-top: 28px; padding: 20px 24px; border-left: 4px solid var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--panel) 92%, transparent); font-weight: 650; }
+    footer { margin-top: 36px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 720px) {
+      main { padding-top: 36px; }
+      .grid, .split { grid-template-columns: 1fr; }
+      .lead { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">JavaRush · Claude Code</div>
+      <h1>Конспекты курса</h1>
+      <div class="subtitle">Вебинары → уровни → лекции → практика</div>
+    </header>
+
+    <div class="lead">
+      Конспекты лекций, короткие практики после каждой лекции и отдельные практики вебинаров. Выберите вебинар и уровень — дальше откроется нужная лекция.
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>Вебинар 1</h2>
+        <div class="tag">Уровни 1–2</div>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h3>Уровень 1 — старт с Claude Code</h3>
+          <div class="links">
+            <a href="webinar1/level1/lecture1/index.html">Лекция 1 — Claude Code: agentic coding environment</a>
+            <a href="webinar1/level1/lecture2/index.html">Лекция 2 — карта поверхностей и workflow</a>
+            <a href="webinar1/level1/lecture3/index.html">Лекция 3 — установка и диагностика</a>
+            <a href="webinar1/level1/lecture4/index.html">Лекция 4 — команды запуска и сессии</a>
+            <a href="webinar1/level1/lecture5/index.html">Лекция 5 — IDE: grounding и review</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Уровень 2 — безопасный старт</h3>
+          <div class="links">
+            <a href="webinar1/level2/lecture1/index.html">Лекция 1 — Git baseline</a>
+            <a href="webinar1/level2/lecture2/index.html">Лекция 2 — settings hierarchy и .claude/</a>
+            <a href="webinar1/level2/lecture3/index.html">Лекция 3 — permission modes</a>
+            <a href="webinar1/level2/lecture4/index.html">Лекция 4 — CLAUDE.md, rules и auto memory</a>
+            <a href="webinar1/level2/lecture5/index.html">Лекция 5 — usage и hygiene</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 16px;">
+        <div class="card practice">
+          <h3>Практика вебинара 1</h3>
+          <p>CLAWD Wisdom, CLAWD YOLO, CLAWD Runner и деплой.</p>
+          <a href="webinar1/practice/index.html">Открыть практику →</a>
+        </div>
+        <div class="card">
+          <h3>Контрольные вопросы</h3>
+          <p>30 вопросов по лекциям уровней 1–2.</p>
+          <a href="https://github.com/zhemchuzhnyi/JR_AI_UNI_SUM/blob/main/src/main/webinar1/CONTROL_QUESTIONS.md">Открыть на GitHub →</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Вебинар 2</h2>
+        <div class="tag">Уровни 3–4</div>
+      </div>
+      <div class="split">
+        <div class="card">
+          <h3>Уровень 3 — инженерная постановка задачи</h3>
+          <div class="links">
+            <a href="webinar2/level3/lecture1/index.html">Лекция 1 — от prompting к task spec</a>
+            <a href="webinar2/level3/lecture2/index.html">Лекция 2 — Goal</a>
+            <a href="webinar2/level3/lecture3/index.html">Лекция 3 — Current / Desired behavior</a>
+            <a href="webinar2/level3/lecture4/index.html">Лекция 4 — Scope, non-goals, affected area</a>
+            <a href="webinar2/level3/lecture5/index.html">Лекция 5 — Constraints</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Уровень 4 — доказательства и проверка</h3>
+          <div class="links">
+            <a href="webinar2/level4/lecture1/index.html">Лекция 1 — источники контекста и пакет доказательств</a>
+          </div>
+          <p class="muted" style="margin-top: 14px;">Остальные лекции уровня 4 пока не добавлены.</p>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 16px;">
+        <div class="card practice">
+          <h3>Практика вебинара 2</h3>
+          <p>Калькулятор «делим счёт» и две 8-битные симуляции.</p>
+          <a href="webinar2/practice/index.html">Открыть практики →</a>
+        </div>
+        <div class="card">
+          <h3>Контрольные вопросы</h3>
+          <p>15 вопросов по уровню 3.</p>
+          <a href="https://github.com/zhemchuzhnyi/JR_AI_UNI_SUM/blob/main/src/main/webinar2/level3/CONTROL_QUESTIONS.md">Открыть на GitHub →</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="callout">
+      В каждой лекции есть текстовый конспект и практика в конце. Сайт обновляется автоматически после push в <code>main</code>.
+    </div>
+
+    <footer>
+      <a href="https://github.com/zhemchuzhnyi/JR_AI_UNI_SUM">Репозиторий на GitHub</a> · конспекты курса Claude Code
+    </footer>
+  </main>
+</body>
+</html>
