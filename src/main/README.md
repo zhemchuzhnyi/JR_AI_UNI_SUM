@@ -17,6 +17,7 @@ src/main/
   webinar1/
     README.md
     CONTROL_QUESTIONS.md
+    CONTROL_QUESTIONS.html
     level1/
       lecture1/
         summary.txt
@@ -32,6 +33,7 @@ src/main/
     README.md
     level3/
       CONTROL_QUESTIONS.md
+      CONTROL_QUESTIONS.html
       lecture1/
       ...
     level4/

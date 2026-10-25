@@ -129,7 +129,9 @@ These are separate from per-lecture practice and must remain in place:
 ## Control questions
 
 - `src/main/webinar1/CONTROL_QUESTIONS.md` — 30 questions across levels 1–2.
+- `src/main/webinar1/CONTROL_QUESTIONS.html` — public HTML rendering for the site.
 - `src/main/webinar2/level3/CONTROL_QUESTIONS.md` — 15 questions for level 3.
+- `src/main/webinar2/level3/CONTROL_QUESTIONS.html` — public HTML rendering for the site.
 
 When adding a new lecture, consider whether the control-question block needs a new question. Keep answers consistent with the lecture summaries and HTML.
 

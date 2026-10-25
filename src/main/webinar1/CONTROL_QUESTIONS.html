@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Вебинар 1 — контрольные вопросы">
+  <title>Вебинар 1 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    pre {
+      overflow-x: auto; margin: 14px 0; padding: 16px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: #101218; color: #d8e0ec;
+      font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../index.html">← Все конспекты</a>
+    <h1>Вебинар 1 — контрольные вопросы</h1>
+<p>Контрольный блок по 10 лекциям вебинара 1: 30 вопросов с короткими ответами и ссылками на конспекты.</p>
+<h2>Уровень 1</h2>
+<h3>Лекция 1 — Claude Code: agentic coding environment</h3>
+<ol start="1">
+<li><strong>Чем Claude Code отличается от обычного чата?</strong><br>
+ Обычный чат работает с текстом и фрагментами кода, а Claude Code — внутри проекта: читает файлы, ищет связанную логику, меняет код и запускает команды. Цена ошибки выше, потому что изменения происходят в реальном проекте.
+ → <a href="level1/lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Что такое agentic loop и какую роль в нём играет человек?</strong><br>
+ Это цикл: prompt → сбор контекста → действие → проверка результата → решение человека. Человек может добавить контекст, прервать агента или направить его; если результата недостаточно, цикл повторяется, если достаточно — работа останавливается.
+ → <a href="level1/lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Почему diff важнее текстового ответа Claude?</strong><br>
+ Ответ может звучать убедительно, но diff показывает, что реально изменилось: какие строки добавлены, удалены или изменены. Именно по diff и проверкам человек решает, принимать ли результат, и несёт за него ответственность.
+ → <a href="level1/lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h3>Лекция 2 — карта поверхностей и workflow курса</h3>
+<ol start="4">
+<li><strong>Какие поверхности есть у Claude Code и какие роли у CLI и IDE?</strong><br>
+ CLI — основная поверхность: запускает работу в папке проекта, видит файлы и команды. IDE — поверхность проверки: показывает код, diff и контекст. Остальные поверхности — desktop, web/cloud, remote/mobile, Slack, GitHub, CI — нужны для отдельных сценариев.
+ → <a href="level1/lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что означает terminal-first и почему важно запускать Claude из корня проекта?</strong><br>
+ Работа начинается и управляется из терминала, а IDE помогает проверить результат. Запуск из корня проекта задаёт правильный контекст, границы и доступ к реальным файлам, а не к пересказу проекта из чата. Terminal-first не означает terminal-only.
+ → <a href="level1/lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что такое PR-ready artifact и какие звенья workflow нельзя пропускать?</strong><br>
+ Это понятные изменения, diff, результаты проверок и краткое описание, которые можно отдать на ревью; открывать PR при этом не обязательно. Нельзя пропускать чтение diff и проверки: без них цепочка «проект → diff → проверки → решение» разваливается.
+ → <a href="level1/lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h3>Лекция 3 — установка, авторизация, обновления и диагностика</h3>
+<ol start="7">
+<li><strong>Что значит «среда готова» и почему установка CLI — это ещё не всё?</strong><br>
+ Готовность — это когда система находит команду <code>claude</code>, сессия запускается из нужного проекта и shell, диагностика не показывает критических проблем, а авторизация выполнена нужным аккаунтом. Установленный CLI без правильной среды и доступа ещё не рабочая среда.
+ → <a href="level1/lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что проверить, если команда <code>claude</code> не найдена?</strong><br>
+ Проверить PATH, перезапустить терминал, убедиться, что CLI установлен в той же среде, где запускается, и что npm prefix не требует <code>sudo</code>. Официальный установщик кладёт бинарь в домашний каталог, npm — туда, куда настроен prefix.
+ → <a href="level1/lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Как на курсе настроен доступ через Gateway и где хранить ключ?</strong><br>
+ Доступ идёт через JavaRush Gateway: адрес и индивидуальный токен задаются в <code>~/.claude/settings.json</code> в блоке <code>env</code>. Ключ — секрет: его нельзя публиковать или коммитить; локальные оверрайды можно держать в <code>.claude/settings.local.json</code>. Проверка доступа — через <code>/status</code>.
+ → <a href="level1/lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h3>Лекция 4 — команды запуска и команды в сессии</h3>
+<ol start="10">
+<li><strong>Чем команды запуска отличаются от slash-команд?</strong><br>
+ Команды запуска вводятся во внешнем shell и определяют, как открыть CLI: <code>claude</code>, <code>claude -p</code>, <code>claude -c</code>, флаги режима. Slash-команды вводятся в уже открытой сессии и управляют разговором: <code>/help</code>, <code>/status</code>, <code>/clear</code>, <code>/compact</code> и другие.
+ → <a href="level1/lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Что делает Esc и что делает двойной Esc?</strong><br>
+ Esc прерывает текущее действие агента: Claude останавливается и ждёт уточнения. Двойной Esc — перемотка истории разговора (rewind); случайно открывшееся меню закрывается тем же Esc.
+ → <a href="level1/lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Чем <code>/clear</code> отличается от <code>/compact</code> и когда что использовать?</strong><br>
+ <code>/clear</code> очищает диалог и начинает разговор заново, <code>/compact</code> сжимает историю, сохраняя суть. Если нужно сменить способ работы, например открыть отдельный worktree, нужен новый запуск с параметрами, а не <code>/clear</code>.
+ → <a href="level1/lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h3>Лекция 5 — интеграция с IDE: grounding и review</h3>
+<ol start="13">
+<li><strong>Что такое IDE grounding и почему открытый файл не значит, что Claude его видит?</strong><br>
+ Grounding — привязка запроса к конкретному коду: выделению, файлу, диапазону строк или соседнему примеру. Открытая вкладка сама по себе не гарантирует, что контекст передан; его нужно явно указать.
+ → <a href="level1/lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Как установить плагин и что делать, если он не видит CLI?</strong><br>
+ Сначала установить и авторизовать CLI, затем поставить официальный плагин в нужную IDE. Плагин использует ту же авторизацию; если он просит войти отдельно или не видит CLI, проверьте, что CLI, IDE и проект работают в одной среде, особенно на Windows/WSL.
+ → <a href="level1/lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Почему нужно проверять diff, а не описание изменений?</strong><br>
+ В diff видно, изменились ли только нужные файлы и строки, не затронуты ли сигнатуры и соседи, нет ли лишних импортов или массового форматирования. Описание может быть красивым, но решение принимается по фактическим изменениям.
+ → <a href="level1/lecture5/index.html">Лекция 5</a>
+</li>
+</ol>
+<h2>Уровень 2</h2>
+<h3>Лекция 1 — стартовый ритуал и Git baseline</h3>
+<ol start="16">
+<li><strong>Что такое Git baseline и почему рабочая директория не обязана быть идеально чистой?</strong><br>
+ Git baseline — понятное и безопасное состояние проекта перед сессией: вы знаете, где находитесь, какие есть изменения, работаете в отдельной ветке и защитили секреты. Идеально чистый tree — ориентир, но важнее понимать, кому принадлежат локальные изменения и не смешивать их с новой работой.
+ → <a href="level2/lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Какой стартовый ритуал стоит выполнить перед сессией?</strong><br>
+ Проверить <code>pwd</code>, состояние <code>git status</code>, создать отдельную ветку, проверить <code>.gitignore</code> и секреты, осознанно подтвердить project trust, коротко обозначить scope и только потом запускать Claude.
+ → <a href="level2/lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Что делать с неожиданными изменениями и как откатить правку?</strong><br>
+ Сначала разобраться, что это за файлы и относятся ли они к задаче; не просить Claude «починить всё» поверх непонятного состояния. Для отмены локальных изменений в файле использовать <code>git restore</code>, предварительно изучив diff. Git возвращает файл байт в байт; агент «по памяти» может восстановить неточно.
+ → <a href="level2/lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h3>Лекция 2 — settings hierarchy и <code>.claude/</code></h3>
+<ol start="19">
+<li><strong>Какие уровни настроек существуют и как они перекрываются?</strong><br>
+ User — <code>~/.claude/settings.json</code>, Project — <code>.claude/settings.json</code>, Local — <code>.claude/settings.local.json</code>, Managed — организационный уровень. Настройки мержатся, и по конкретному ключу побеждает более приоритетный scope; загруженные источники видны в <code>/status</code> в строке <code>Setting sources</code>.
+ → <a href="level2/lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что хранится в <code>.claude/</code> и что там главное?</strong><br>
+ <code>.claude/</code> — AI-слой проекта, а не бизнес-логика. Главный файл — <code>CLAUDE.md</code>; <code>rules/</code>, <code>skills/</code>, <code>agents/</code> — карта будущих расширений. Hooks настраиваются в <code>settings.json</code>, их скрипты обычно лежат в <code>.claude/hooks/</code>; MCP подключается через <code>.mcp.json</code> в корне.
+ → <a href="level2/lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Как найти источник странного поведения Claude?</strong><br>
+ Проверить нужный ли открыт репозиторий и рабочая копия, состояние Git, <code>.claude/</code> и <code>CLAUDE.md</code>, затем определить владельца правила: пользователь, команда, локальная среда или организация. Менять нужно источник, а не ближайший файл.
+ → <a href="level2/lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h3>Лекция 3 — permission modes и approval model</h3>
+<ol start="22">
+<li><strong>Чем отличаются Git baseline, permission mode и prompt?</strong><br>
+ Git baseline отвечает за откат и понятное состояние, permission mode — за то, что Claude может делать в сессии, prompt — за то, что вообще нужно сделать. Один слой не заменяет другой.
+ → <a href="level2/lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Какие permission modes существуют и как выбрать подходящий?</strong><br>
+ Plan — исследует и планирует без правок; Manual (<code>default</code>) — спрашивает перед изменениями; Auto-Accept (<code>acceptEdits</code>) — сам применяет правки файлов; Auto Mode — классификатор проверяет действия; YOLO (<code>bypassPermissions</code>) — только для изолированной среды. Чем непонятнее задача и дороже ошибка, тем строже режим.
+ → <a href="level2/lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Почему нельзя менять режим «потому что устал от подтверждений» и как работать с рискованной задачей?</strong><br>
+ Смена режима должна иметь инженерную причину: разобрался в проблеме, перехожу к узкому фиксу. Рискованную задачу лучше разделить: сначала read-only исследование и план, затем отдельная сессия с обычным режимом и явными approvals, проверка diff и тестов.
+ → <a href="level2/lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h3>Лекция 4 — <code>CLAUDE.md</code>, rules и auto memory</h3>
+<ol start="25">
+<li><strong>Зачем нужен <code>CLAUDE.md</code> и чем он отличается от README?</strong><br>
+ <code>CLAUDE.md</code> — короткая рабочая памятка для Claude: как запускать проект, какие есть договорённости и ограничения. README объясняет проект человеку; <code>CLAUDE.md</code> сообщает агенту, как с проектом работать.
+ → <a href="level2/lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Что включать в <code>CLAUDE.md</code>, а что нет?</strong><br>
+ Включать точные команды запуска и проверок, неочевидные договорённости, чувствительные зоны и формат отчёта. Не включать инструкции под одну задачу, очевидные из кода факты, общие лозунги и устаревшие сведения. Файл должен быть коротким и точным.
+ → <a href="level2/lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Как разделять <code>CLAUDE.md</code>, <code>CLAUDE.local.md</code>, rules и auto memory?</strong><br>
+ Общее и стабильное — в <code>CLAUDE.md</code>; личное для этой копии — в <code>CLAUDE.local.md</code> (он не коммитится только при добавлении в <code>.gitignore</code> и не является секретным хранилищем); правила для отдельной области — в rules; автоматические наблюдения — в auto memory, которую нужно проверять и чистить через <code>/memory</code>.
+ → <a href="level2/lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h3>Лекция 5 — usage, hygiene и safe mental model</h3>
+<ol start="28">
+<li><strong>Какие цифровые следы остаются после сессии Claude Code?</strong><br>
+ История диалога и transcripts, история запросов, вывод инструментов и команд, снимки файлов и контрольные точки, auto memory. Секреты и внутренние данные могут остаться в логах, скриншотах и переданных материалах.
+ → <a href="level2/lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Как обращаться с секретами и <code>.env</code>?</strong><br>
+ Не тащить реальные секреты в сессию: Claude должен видеть структуру конфигурации, а не значения. Держать <code>.env</code> и <code>.env.example</code> раздельно, не коммитить секреты, очищать логи и transcripts перед публикацией. <code>.gitignore</code> защищает от коммита, но не мешает Claude прочитать файл.
+ → <a href="level2/lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Почему длинная сессия дороже и глупее и какие пять опор безопасной работы?</strong><br>
+ Длинный грязный контекст увеличивает расход, ухудшает внимание и качество: агент повторяет старые гипотезы, забывает границы, просит перечитать. Пять опор: Git baseline, permissions, project instructions, local data hygiene и обязательный человеческий review.
+ → <a href="level2/lecture5/index.html">Лекция 5</a>
+</li>
+</ol>
+<h2>Статус</h2>
+<ul>
+<li>30 вопросов покрывают все 10 лекций вебинара 1.
+</li>
+<li>Ответы уже есть в конспектах; контрольный блок их только собирает и связывает.
+</li>
+<li>При изменении формулировок в лекциях этот файл нужно обновлять вместе с ними.
+</li>
+</ul>
+    <footer>Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>

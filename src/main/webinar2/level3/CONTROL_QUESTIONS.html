@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 3 — контрольные вопросы">
+  <title>Уровень 3 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    pre {
+      overflow-x: auto; margin: 14px 0; padding: 16px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: #101218; color: #d8e0ec;
+      font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 3 — контрольные вопросы</h1>
+<p>Проверка по конспектам лекций 1–5: все 15 вопросов отражены в <code>summary.txt</code> и <code>index.html</code>. Ниже — короткие ответы и ссылки на соответствующие лекции.</p>
+<h2>Лекция 1 — task spec</h2>
+<ol start="1">
+<li><strong>Что такое helpful overreach?</strong><br>
+ Это «полезная самодеятельность» Claude за границами задачи: агент делает больше, чем просили, потому что ему кажется, что так лучше. В результате diff расползается, а изменение приходится откатывать.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>За что отвечает <code>CLAUDE.md</code> в отличие от <code>TASK_SPEC.md</code>?</strong><br>
+ <code>CLAUDE.md</code> — общие стабильные правила проекта: стек, команды, повторяющиеся ограничения. <code>TASK_SPEC.md</code> — границы одной конкретной задачи: что делаем сейчас и чего сейчас не делаем.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Какой из восьми вопросов task spec защищает от helpful overreach и фраз «раз уж я здесь, ещё это поправлю»?</strong><br>
+ Вопрос <strong>«Что не входит?»</strong> — то есть раздел <strong>non-goals</strong>.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Когда уместно использовать tiny spec вместо full spec?</strong><br>
+ Tiny spec — для маленькой, понятной задачи с низким риском: обычно один файл, максимум два, почти нет неясности и чувствительных зон. Full spec нужен, когда затронуто несколько файлов или слоёв, есть неоднозначность, миграции, API, зависимости или чувствительные бизнес-правила.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h2>Лекция 2 — Goal</h2>
+<ol start="5">
+<li><strong>Из каких четырёх элементов собирается хороший Goal?</strong><br>
+ Кто получает изменение + какое поведение меняется + где это проявляется + что не должно случайно измениться.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Какая формулировка Goal для рефакторинга считается хорошей?</strong><br>
+ «Упростить логику валидации возврата без изменения публичного поведения». Главное — улучшение структуры при сохранении внешнего поведения.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h2>Лекция 3 — Current / Desired behavior</h2>
+<ol start="7">
+<li><strong>На какой вопрос отвечает блок Current behavior?</strong><br>
+ На вопрос <strong>«Что происходит сейчас, до изменения?»</strong> Это факты: сценарий, условия, фактический результат, окружение.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Почему evidence и hypothesis нельзя записывать одинаково?</strong><br>
+ Evidence — наблюдаемый факт, hypothesis — предполагаемая причина. Если записать гипотезу как факт, Claude примет её за данные и начнёт чинить неподтверждённую область — получится random patching.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Какая рабочая форма записи гипотезы рекомендуется?</strong><br>
+<pre><code>   Гипотеза: проблема может быть в backend-валидации.
+   Сначала проверь, прежде чем редактировать.</code></pre>
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h2>Лекция 4 — Scope, non-goals, affected area</h2>
+<ol start="10">
+<li><strong>На какой вопрос отвечает блок Scope?</strong><br>
+ На вопрос <strong>«Что входит в задачу и где разрешено менять?»</strong> — какие файлы, модули, сценарии и изменения разрешено затрагивать.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Какое утверждение про non-goals верно?</strong><br>
+ Non-goals — это <strong>не список забытого</strong>, а список того, что <strong>осознанно не делаем</strong> в этой задаче. Они не отменяют обязательные части цели и работают только на соседних, необязательных изменениях.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Что лучше сделать с Affected area, если структура проекта известна не идеально?</strong><br>
+ Заполнить его предварительно на уровне экранов, сервисов, событий, таблиц и тестов; если и это неясно — попросить Claude сначала вернуть список кандидатов без правок.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h2>Лекция 5 — Constraints</h2>
+<ol start="13">
+<li><strong>В чём ключевая разница между Non-goals и Constraints?</strong><br>
+ Non-goals — про область: <strong>что не делаем</strong>. Constraints — про правило изменения: <strong>как не выходить за границы, пока делаем</strong>.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Какое ограничение относится к поведенческим constraints, а не к запретам?</strong><br>
+ Ограничения про ритм работы: «сначала изучи текущую схему и затронутые файлы, потом редактируй», «сначала предложи короткий план», «если неоднозначно — задавай вопросы», «в конце перечисли изменённые файлы, проверки и риски».
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Где должна жить инструкция «не добавлять зависимости без обсуждения», если она повторяется во всех задачах проекта?</strong><br>
+ В <strong><code>CLAUDE.md</code></strong> — это стабильное правило всего проекта, а не ограничение одной задачи.
+ → <a href="lecture1/index.html">Лекция 1</a> и <a href="lecture5/index.html">лекция 5</a>
+</li>
+</ol>
+<h2>Статус</h2>
+<ul>
+<li>Все 15 вопросов покрыты конспектами уровня 3.
+</li>
+<li>Ответы не добавлены в лекции повторно: контрольный блок ссылается на уже существующие разделы.
+</li>
+<li>Если формулировка в лекции меняется, этот файл нужно обновлять вместе с ней.
+</li>
+</ul>
+    <footer>Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
