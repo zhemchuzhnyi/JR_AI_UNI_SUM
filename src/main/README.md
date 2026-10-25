@@ -13,6 +13,7 @@
 ```text
 src/main/
   index.html          # главная страница сайта
+  _headers            # Netlify: отдавать .md как текст
   webinar1/
     README.md
     CONTROL_QUESTIONS.md
@@ -100,7 +101,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов.
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — лекция 1, практики `1-calculator` и `2-simulations`, контрольные вопросы уровня 3.
 - **Уровень 4:** остальные лекции пока не добавлены.
-- **GitHub Pages:** главная страница сайта — `src/main/index.html`; деплой — `.github/workflows/pages.yml`.
+- **Публикация:** главная страница сайта — `src/main/index.html`. Временно публикуем через Netlify (`netlify.toml`, publish `src/main`). GitHub Pages workflow `.github/workflows/pages.yml` остаётся на будущее.
 
 ## Добавление новой лекции
 

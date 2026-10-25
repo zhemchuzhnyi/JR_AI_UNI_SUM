@@ -16,13 +16,35 @@
 - [Структура и правила ведения конспектов](src/main/README.md)
 - [Skill для работы с лекциями](.opencode/skills/claude-code-lectures/SKILL.md)
 
+## Публикация (пока репозиторий приватный)
+
+Временное решение — **Netlify**. Оно умеет собирать публичный сайт из приватного GitHub-репозитория.
+
+В репозитории уже есть `netlify.toml`:
+
+```toml
+[build]
+  publish = "src/main"
+```
+
+Подключение:
+
+1. Открыть [app.netlify.com](https://app.netlify.com/) → **Add new site** → **Import an existing project**.
+2. Выбрать GitHub и разрешить Netlify доступ к репозиторию `JR_AI_UNI_SUM`.
+3. Оставить build command пустым, publish directory — `src/main` (подхватится из `netlify.toml`).
+4. Нажать **Deploy**.
+
+После деплоя Netlify выдаст публичный URL вида `https://<name>.netlify.app/`. Репозиторий при этом может оставаться приватным.
+
+Если не хочется подключать GitHub: можно перетащить на [Netlify Drop](https://app.netlify.com/drop) zip-архив с содержимым `src/main` — тогда сайт тоже будет публичным, но обновлять его придётся вручную.
+
 ## GitHub Pages
 
-После включения Pages сайт будет доступен по адресу:
+Когда репозиторий можно будет открыть или план позволит Pages, сайт можно будет публиковать через [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
 
 https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/
 
-Публикация настроена через [`.github/workflows/pages.yml`](.github/workflows/pages.yml). В настройках репозитория нужно один раз выбрать **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Для этого нужно один раз выбрать **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
 ## Структура
 

@@ -13,7 +13,8 @@ All paths below are relative to the workspace root.
 
 ```text
 src/main/
-  index.html          # landing page for GitHub Pages
+  index.html          # landing page for the public site
+  _headers            # Netlify: serve .md as plain text
   webinar1/
     README.md
     CONTROL_QUESTIONS.md
@@ -107,13 +108,14 @@ Practice requirements:
 - A safe fallback if the required tool or environment is unavailable.
 - Only fake data for destructive or sensitive topics.
 
-## GitHub Pages
+## Deployment
 
-The public site is built from `src/main` by `.github/workflows/pages.yml` and should be available at:
+The public site is the static content under `src/main`, with the landing page at `src/main/index.html`.
 
-`https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`
+- **Temporary hosting:** Netlify uses `netlify.toml` and publishes `src/main`. This works while the GitHub repository is private. Connect the repo in Netlify or upload a zip of `src/main` contents via Netlify Drop.
+- **GitHub Pages (for later):** `.github/workflows/pages.yml` deploys `src/main` on pushes to `main` once Pages is enabled with **Source: GitHub Actions**. Expected URL: `https://zhemchuzhnyi.github.io/JR_AI_UNI_SUM/`.
 
-The workflow deploys on every push to `main`. GitHub Pages must be set to **Source: GitHub Actions** in repository settings. The site landing page is `src/main/index.html`; keep its links in sync when lectures or practices move.
+Keep the landing page links in sync when lectures or practices move. Do not put private repository links on the public landing page unless the repo is public; prefer relative paths to public HTML pages.
 
 ## Existing webinar practices
 
