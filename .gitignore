@@ -38,3 +38,25 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Secrets and local configuration ###
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/.claude/settings.local.json
+**/.claude/CLAUDE.local.md
+**/.npmrc
+**/.pypirc
+**/.netrc
+**/.aws/credentials
+**/id_rsa
+**/id_ed25519
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.secret
+**/secrets.*
