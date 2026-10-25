@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о переходе от расплывчатого prompting к инженерной постановке задачи — task spec для Claude Code.">
+  <title>Claude Code — 3 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">От prompting к task spec</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">3 уровень · 1 лекция</div>
+    </header>
+
+    <div class="lead">
+      В чате можно говорить «поправь тут» или «сделай поаккуратнее». Claude Code работает с файлами, командами и Git, поэтому расплывчатость здесь стоит дорого: агент добирает недостающие решения сам, и изменение расползается за границы задачи. Task spec превращает просьбу в инженерную постановку.
+    </div>
+
+    <section>
+      <h2>«Сделай нормально» — это не задача</h2>
+      <p>Фраза «Добавь заметки к возврату» понятна человеку с бизнес-контекстом, но Claude за ней видит пачку недосказанных решений: поле только на форме или ещё в базе? Показывать в карточке? Передавать в событии <code>refund.created</code>? Можно ли «заодно» подправить соседний код?</p>
+      <p>Это «заодно» — <strong>helpful overreach</strong>: самодеятельность за границами задачи, которую потом хочется откатить.</p>
+      <pre><code>Плохо:
+Добавь notes к возврату.
+
+Лучше:
+Добавь необязательное поле notes в сценарий создания refund-request
+в админке. Поле должно сохраняться вместе с возвратом и отображаться
+в карточке возврата. Не меняй пороги auto/manual approval.
+Покажи изменённые файлы и итоговый diff.</code></pre>
+      <p>Пример из вебинара для нового проекта: плохо — «сделай калькулятор, кто сколько должен в ресторане»; лучше — «собери страницу „делим счёт“: компания вводит итог чека и число людей, каждый видит свою сумму. Аккаунты, историю чеков и деление по позициям не делай».</p>
+      <div class="callout">Расплывчатый prompt → Claude додумывает → изменение расползается → вы разбираете diff, желая одно поле, а получая мини-реформу модуля возвратов.</div>
+    </section>
+
+    <section>
+      <h2>Что такое task spec</h2>
+      <p><strong>Task spec</strong> (engineering task specification) — короткая спецификация задачи для coding agent. Это не трактат на сорок страниц, а рабочий договор между вами и Claude: что именно меняем, зачем, где проходят границы и какой результат считается правильным.</p>
+      <p><code>TASK_SPEC.md</code> — это просто рабочий markdown-файл рядом с задачей, а не отдельная команда или фича Claude Code. Его можно вести в репозитории, в тикете или прямо в сообщении.</p>
+      <p>Аналогия из лекции: «сделайте мне кухню поуютнее» — пожелание; «заменить столешницу, не трогать проводку, сохранить старую мойку, закончить к пятнице» — инженерная постановка.</p>
+      <div class="grid">
+        <article>
+          <h3><code>CLAUDE.md</code></h3>
+          <p class="muted">Общие правила проекта: команды запуска, стиль, повторяющиеся ограничения, принятые подходы.</p>
+        </article>
+        <article>
+          <h3><code>TASK_SPEC.md</code></h3>
+          <p class="muted">Правила и границы одной конкретной задачи: что делаем сейчас и чего сейчас не делаем.</p>
+        </article>
+      </div>
+      <p>Правило «в этом проекте не добавляем зависимости без обсуждения» — в <code>CLAUDE.md</code>. Правило «в этой задаче не трогаем пороги approval» — в task spec. Хороший issue в трекере и хороший task spec похожи: оба отвечают на базовые вопросы, разница только в адресате — issue помогает команде, task spec помогает Claude выполнить задачу без лишних фантазий.</p>
+    </section>
+
+    <section>
+      <h2>Восемь вопросов, которые держат задачу в рамках</h2>
+      <ol>
+        <li><strong>Что меняем?</strong> — не даёт задаче остаться формулировкой «сделай лучше».</li>
+        <li><strong>Зачем меняем?</strong> — не даёт оптимизировать не то поведение и не для того пользователя.</li>
+        <li><strong>Где меняем?</strong> — сужает поисковую область и не даёт бесконечно бродить по репозиторию.</li>
+        <li><strong>Что входит в scope?</strong> — ограничивает файлы, модули, сценарии и изменения.</li>
+        <li><strong>Что не входит?</strong> — защищает от helpful overreach и «раз уж я здесь, ещё вот это поправлю».</li>
+        <li><strong>Какие ограничения действуют?</strong> — защищает API, зависимости, чувствительные зоны и размер diff.</li>
+        <li><strong>Как проверим результат?</strong> — не даёт закончить на фразе «вроде готово».</li>
+        <li><strong>Какой артефакт нужен на выходе?</strong> — уточняет, что нужно: анализ, план, код, тесты, документация или готовый diff.</li>
+      </ol>
+      <p class="muted">Последний вопрос новички часто забывают. Если артефакт не назван, Claude снова начинает додумывать. Из восьми вопросов собирают компактный каркас: Goal → Current behavior → Desired behavior → Scope → Non-goals → Affected area → Constraints.</p>
+    </section>
+
+    <section>
+      <h2>Tiny spec и full spec: размер по риску</h2>
+      <div class="grid">
+        <article>
+          <h3>Tiny spec</h3>
+          <p class="muted">Один-два файла, низкий риск, почти нет неясности, обычно без чувствительных зон. Нужно точечное изменение.</p>
+        </article>
+        <article>
+          <h3>Full spec</h3>
+          <p class="muted">Несколько файлов или слоёв, средний или высокий риск, скрытые решения, возможны API, БД, события и бизнес-правила.</p>
+        </article>
+      </div>
+      <p>Tiny spec — не халтура, а компактная постановка для действительно маленькой задачи:</p>
+      <pre><code>Исправить подпись `Refund requset` на `Refund request`
+в заголовке формы возврата в админке.
+Ничего кроме текста заголовка не менять.
+На выходе нужен небольшой diff в одном файле.</code></pre>
+      <p>Full spec нужен, когда задача затрагивает несколько мест и легко может зацепить соседнюю логику:</p>
+      <pre><code>Добавить необязательное поле `notes` в сценарий создания refund-request.
+Поле должно быть доступно оператору в админке, сохраняться вместе с возвратом
+и отображаться в карточке возврата. Не менять текущие пороги auto/manual approval.
+Нужен reviewable diff с изменениями в форме, сохранении данных и связанных тестах.</code></pre>
+      <p class="warning">Tiny spec подходит, когда вы почти не рискуете. Full spec нужен, когда Claude может сделать что-то разумное, но не то: такие ошибки обходятся дороже всего — они выглядят полезными, пока вы не дойдёте до diff.</p>
+    </section>
+
+    <section>
+      <h2>От raw issue к task spec</h2>
+      <p>Пример из Commerce OS — задача F-03: Add notes field to refund-request:</p>
+      <pre><code>F-03: Добавить поле notes в refund-request
+
+Операторам нужна свободная заметка при создании refund-request из админки.
+Заметка должна быть видна финансовым ревьюерам позже.
+Включить заметку в payload события `refund.created`.
+Существующие пороги approval должны остаться без изменений.</code></pre>
+      <p>Для команды issue уже неплохое: понятна бизнес-цель, ожидаемый эффект и одно ограничение. Но coding agent работает буквально — если не назвать зону изменений, границы, формат результата и способ проверки, он снова начнёт додумывать.</p>
+      <div class="grid">
+        <article>
+          <h3>В issue уже есть</h3>
+          <ul class="muted">
+            <li>бизнес-смысл задачи;</li>
+            <li>нужное поведение;</li>
+            <li>одно важное ограничение;</li>
+            <li>контекст для команды.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>В task spec нужно добавить</h3>
+          <ul class="muted">
+            <li>где именно предполагаются изменения;</li>
+            <li>что входит в scope, а что нет;</li>
+            <li>технические границы и запреты;</li>
+            <li>формат ожидаемого результата для Claude.</li>
+          </ul>
+        </article>
+      </div>
+      <p>Issue отвечает на вопрос «зачем задача нужна бизнесу и команде», task spec — «как Claude должен работать с ней в репозитории». Вы не переписываете issue ради красивого Markdown, а переводите человеческое описание в инженерную форму, пригодную для coding agent.</p>
+    </section>
+
+    <section>
+      <h2>Первый TASK_SPEC.md draft для Commerce OS</h2>
+      <pre><code># TASK_SPEC.md
+
+## Что меняем
+Добавляем необязательное поле `notes` в сценарий создания `refund-request`
+в административной части Commerce OS.
+
+## Зачем
+Оператору нужен способ передать контекст по возврату, чтобы финансовый
+ревьюер позже видел причину и детали решения прямо в карточке возврата.
+
+## Где меняем
+Предположительно затронуты: форма создания возврата в админке, backend-flow
+создания возврата, хранение данных возврата, карточка возврата и событие
+`refund.created`.
+
+## Что входит в scope
+Поле в форме, сохранение значения, отображение в detail view,
+передача поля в `refund.created`, обновление связанных тестов.
+
+## Что не входит
+Не меняем thresholds для auto/manual approval, не трогаем payment processing,
+не делаем refactor соседнего кода «заодно», не меняем unrelated formatting.
+
+## Какие ограничения действуют
+Не добавлять новые зависимости без явной необходимости.
+Diff должен оставаться небольшим и reviewable.
+Если по схеме хранения есть неясность, сначала вернуть краткий план, а не править вслепую.
+
+## Как проверяем
+Показать список изменённых файлов.
+Подтвердить, что `notes` сохраняется, отображается и попадает в событие.
+Запустить связанные тесты и сообщить об оставшихся рисках.
+
+## Какой артефакт ожидаем
+Небольшой reviewable diff + обновлённые тесты по затронутому сценарию.</code></pre>
+      <p class="muted">Последние два раздела — скорее пометки, чем полноценные блоки: проверка напоминает, что задача не кончается словом «готово», но слой критериев приёмки здесь ещё не разворачивается; артефакт уточняет формат ответа — план, анализ или reviewable diff.</p>
+      <p>Тон меняется: нет «сделай хорошо» — есть зона работы, бизнес-смысл, запреты, ожидания и формат результата. Задача не стала простой, но стала управляемой.</p>
+    </section>
+
+    <div class="callout">Здесь prompt перестаёт быть просто prompt — он становится task spec.</div>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Превратить расплывчатый запрос в tiny spec и full spec.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите фразу «улучши экран возвратов» и письменно ответьте на восемь вопросов task spec.</li>
+        <li>Составьте tiny spec для замены <code>Refund requset</code> на <code>Refund request</code>: один файл, без изменения теста, с командой проверки.</li>
+        <li>Составьте full spec для добавления поля <code>notes</code>: goal, scope, non-goals, constraints, affected area и проверка.</li>
+        <li>Отметьте, какие строки защищают от helpful overreach и «раз уж я здесь».</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Tiny spec действительно помещается в один файл и содержит проверку.</li>
+        <li>Full spec явно называет non-goals и constraints.</li>
+        <li>Вы можете объяснить, какой из восьми вопросов защищает от расползания.</li>
+      </ul>
+    </section>
+
+    <footer>Размер спецификации выбирайте по риску задачи: tiny spec для маленькой правки, full spec — когда легко зацепить соседнюю логику. Issue отвечает «зачем бизнесу», task spec — «как Claude должен работать в репозитории».</footer>
+  </main>
+</body>
+</html>

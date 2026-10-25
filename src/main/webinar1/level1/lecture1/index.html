@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Краткое саммари вводной лекции о Claude Code и AI-native разработке.">
+  <title>Claude Code — 1 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --red: #ff9a9a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(900px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .muted { color: var(--muted); }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.14rem; font-weight: 700; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .compare article { padding: 17px; border-radius: 12px; background: #13161c; }
+    .compare h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .bad { color: var(--red); }
+    .good { color: var(--green); }
+    .os { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    .os article { padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+    .os h3 { margin: 0; font-size: 1rem; }
+    .os pre { font-size: .82rem; }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .compare, .os { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Claude Code: agentic coding environment</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">1 уровень · 1 лекция</div>
+    </header>
+
+    <div class="lead">
+      Claude Code — инструмент для AI-native разработки: он работает внутри проекта, помогает разобраться в коде, предложить план, внести изменения и запустить проверки. Разработчик задаёт цель и границы, оценивает результат и отвечает за него.
+    </div>
+
+    <section>
+      <h2>Не чат в терминале, а помощник в проекте</h2>
+      <div class="compare">
+        <article>
+          <h3>Обычный AI-чат</h3>
+          <p class="muted">Получает переданный текст или фрагмент кода и возвращает совет либо пример. Решение, что переносить в проект, остаётся за человеком.</p>
+        </article>
+        <article>
+          <h3>Claude Code</h3>
+          <p class="muted">Может изучать файлы и структуру проекта, искать связанную логику, предлагать план, редактировать файлы и выполнять команды. Ошибка может стать реальным изменением.</p>
+        </article>
+      </div>
+      <p><strong>Agentic</strong> означает, что инструмент не только рассуждает, но и действует: выполняет ограниченные действия внутри рабочей среды — читает файлы, ищет по кодовой базе, правит код и запускает команды.</p>
+      <p>Claude Code — <strong>агент-оболочка</strong>, а не сама модель: оболочка даёт терминал, доступ к файлам, цикл работы и правила безопасности, а «думает» подключённая LLM; её можно менять, в том числе через <code>settings.json</code>.</p>
+      <p>Сквозной пример лекции — <strong>Commerce OS</strong>, воображаемый интернет-магазин. Его не нужно скачивать или настраивать: проект нужен только для разбора примеров. В частности, на нём рассматривается очередь возвратов, где срочные заявки могут сортироваться неверно.</p>
+      <pre><code>Вы: «В очереди возвратов срочные заявки иногда оказываются ниже обычных.
+Найди связанную логику, но сначала покажи план без изменений.»
+
+Claude: «Нашёл сервис сортировки, связанный контроллер и тест.
+Предлагаю сначала проверить правило сортировки, потом показать diff.»</code></pre>
+      <p class="muted">Инструмент ведёт себя как участник рабочего процесса: сначала разбирается в проекте и предлагает конкретный следующий шаг, а не выдаёт абстрактный список возможных причин.</p>
+    </section>
+
+    <div class="callout">Claude ускоряет инженерную работу, но за результат всё равно отвечаете вы.</div>
+
+    <section>
+      <h2>Почему важны границы задачи и diff</h2>
+      <p>Даже маленькая правка способна поменять бизнес-правило. Например, исходное условие поднимает наверх только срочные возвраты:</p>
+      <pre><code>if (refundRequest.isUrgent()) {
+    moveToTop(refundRequest);
+}</code></pre>
+      <p>Добавление проверки суммы изменит поведение — наверх попадут и несрочные дорогие возвраты. Возможно, это нужно, но такой результат нельзя считать автоматически разрешённым.</p>
+      <pre><code>if (refundRequest.isUrgent() || refundRequest.amount() &gt; 100) {
+    moveToTop(refundRequest);
+}</code></pre>
+      <p><strong>Diff</strong> — список изменений: какие строки добавлены, какие удалены, что поменялось между старой и новой версией файла. Он показывает фактические изменения, поэтому его нужно читать, а не полагаться только на объяснение инструмента.</p>
+      <p class="muted">Именно поэтому расплывчатое поручение вроде «сделай красиво» опасно: инструмент может заодно подчистить структуру, переименовать поля, изменить порядок сортировки или поправить соседние методы «ради консистентности» — и всё это будет выглядеть аккуратно и логично.</p>
+    </section>
+
+    <section>
+      <h2>Рабочий цикл</h2>
+      <ol>
+        <li><strong>Задача и границы:</strong> сформулировать, что исправить и что не менять.</li>
+        <li><strong>Контекст:</strong> Claude изучает относящиеся к задаче файлы и тесты.</li>
+        <li><strong>План или небольшая правка:</strong> сначала можно попросить показать план без изменений.</li>
+        <li><strong>Проверка diff:</strong> убедиться, что изменено только ожидаемое.</li>
+        <li><strong>Проверки:</strong> запустить тесты, сборку (build), анализ стиля (lint) и/или ключевой сценарий.</li>
+        <li><strong>Решение человека:</strong> принять изменение, отклонить его или попросить доработать.</li>
+      </ol>
+      <p class="muted">Тесты проверяют поведение автоматически; сборка — что проект собирается; lint ищет технические и стилистические проблемы.</p>
+      <p class="muted">В вебинаре этот цикл называют <strong>agentic loop</strong>: prompt → сбор контекста → действие → проверка → решение человека (принято или доработка). В цикле вы не пассивный наблюдатель: можно добавить контекст, прервать действие (Esc) или направить Claude, если он уходит не туда. Если результата недостаточно, цикл возвращается к сбору контекста; если достаточно — Claude останавливается и ждёт следующий prompt.</p>
+      <pre><code>Вы: «Исправь порядок отображения возвратов. Сначала покажи план.»
+
+Claude: «Нашёл 3 связанных файла. Предлагаю изменить правило сортировки
+и проверить существующий тест на очередь возвратов.»
+
+Вы: «Хорошо. Покажи diff после изменения и что именно проверить.»</code></pre>
+    </section>
+
+    <section>
+      <h2>Действовать — не значит отвечать за последствия</h2>
+      <p>Claude может искать код, готовить план и черновое изменение, запускать команды и подводить итоги. Человек решает, что менять, ограничивает объём задачи, оценивает diff, интерпретирует проверки и определяет, можно ли принять результат. Помощник способен незаметно расширить задачу «ради улучшения», поэтому изменения должны быть понятными и ограниченными.</p>
+      <div class="compare">
+        <article>
+          <h3>Claude ускоряет</h3>
+          <ul class="muted">
+            <li>поиск по проекту;</li>
+            <li>черновой план и черновой код;</li>
+            <li>запуск типовых команд;</li>
+            <li>подготовку сводки по изменениям.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>За вами остаётся</h3>
+          <ul class="muted">
+            <li>решение, что вообще менять, и границы задачи;</li>
+            <li>чтение и оценка diff;</li>
+            <li>интерпретация результатов проверок;</li>
+            <li>решение принять, отклонить или доработать правку.</li>
+          </ul>
+        </article>
+      </div>
+      <p>Опаснее всего не полностью ошибочный ответ, а аккуратное изменение «почти по делу», которое слегка выходит за рамки задачи. Сказать «стоп, это вне задачи» или «покажи только план» — по-прежнему работа человека.</p>
+      <p>Надёжная основа — не заучивание команд, которые могут измениться, а устойчивый принцип: <strong>задача → контекст → план → изменение → diff → проверки → решение человека.</strong> Если название команды или поверхность изменились, просто сверьтесь с актуальной документацией — сам подход не рассыпается.</p>
+    </section>
+
+    <section>
+      <h2>Подготовка среды: Git и Node.js</h2>
+      <p><strong>Git</strong> помогает видеть изменения, проверять diff и возвращаться к предыдущему состоянию. <strong>Node.js</strong> нужен для одного из способов установить Claude Code через npm/npx и пригодится в дальнейшей фронтенд-разработке. Устанавливайте актуальную LTS-версию Node.js; команды могут меняться — сверяйтесь с официальной документацией.</p>
+      <div class="os">
+        <article>
+          <h3>macOS</h3>
+          <pre><code>brew install git
+brew install node</code></pre>
+          <p class="muted">Если Homebrew нет, Git можно установить через Command Line Tools: <code>xcode-select --install</code>.</p>
+        </article>
+        <article>
+          <h3>Linux</h3>
+          <pre><code>sudo apt install git       # Debian / Ubuntu
+sudo dnf install git       # Fedora / RHEL
+nvm install --lts          # Node.js через nvm</code></pre>
+        </article>
+        <article>
+          <h3>Windows</h3>
+          <pre><code>winget install --id Git.Git
+winget install --id OpenJS.NodeJS.LTS</code></pre>
+        </article>
+        <article>
+          <h3>Проверка установки</h3>
+          <pre><code>git --version
+node --version
+npm --version</code></pre>
+          <p class="muted">Откройте новое окно терминала после установки, чтобы обновился PATH. Если команда не найдена, сначала перезапустите терминал.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Почувствовать agentic loop и научиться принимать результат по diff, а не по описанию.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Создайте учебную папку <code>claude-practice/agent-loop</code>, выполните <code>git init</code>, создайте <code>header.txt</code> с двумя строками: <code>Refund requset</code> и <code>Do not touch this line</code>, затем сделайте первый коммит.</li>
+        <li>Запустите Claude из папки и попросите: «Исправь только <code>Refund requset</code> на <code>Refund request</code>. Ничего больше не меняй. Сначала покажи план, потом diff».</li>
+        <li>Проверьте план, разрешите правку и посмотрите <code>git diff</code>. Убедитесь, что изменилась только одна строка.</li>
+        <li>В копии папки попросите «сделай файл аккуратнее» и сравните diff. Не принимайте изменения: отметьте, что было бы helpful overreach.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В первом diff изменилась только строка с опечаткой.</li>
+        <li>Вы можете объяснить, где в цикле был сбор контекста, действие, проверка и решение человека.</li>
+        <li>Вы назвали хотя бы один пример «заодно», который не входил в задачу.</li>
+      </ul>
+    </section>
+
+    <footer>Главный вывод: используйте Claude Code как действующего технического помощника — чётко ставьте задачу, контролируйте изменения и проверяйте результат.</footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о поверхностях Claude Code и рабочем процессе курса.">
+  <title>Claude Code — 1 уровень, лекция 2</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(900px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Карта поверхностей и workflow курса</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">1 уровень · 2 лекция</div>
+    </header>
+
+    <div class="lead">
+      У Claude Code несколько поверхностей — точек входа в работу. В начале курса достаточно устойчивой связки: запускать Claude Code из терминала в папке проекта, а файлы и изменения проверять в IDE.
+    </div>
+
+    <section>
+      <h2>Роли поверхностей</h2>
+      <div class="grid">
+        <article>
+          <h3>Терминал (CLI) — запускает работу</h3>
+          <p class="muted">Claude стартует из конкретной директории, получает контекст живого проекта и работает с его реальными файлами. CLI — самая полнофункциональная поверхность: новые функции появляются сначала в нём. Поэтому курс начинает с подхода <em>terminal-first</em>: работа начинается и управляется из терминала, а IDE помогает проверить результат.</p>
+        </article>
+        <article>
+          <h3>IDE — помогает проверять</h3>
+          <p class="muted">VS Code или JetBrains показывают файлы, соседний код и diff. Терминал запускает процесс, IDE помогает увидеть, что изменилось и не затронуто ли лишнее.</p>
+        </article>
+        <article>
+          <h3>Остальные поверхности</h3>
+          <p class="muted">Desktop, web/cloud и remote/mobile дают другие способы доступа; Slack, GitHub и CI нужны для командных и автоматизированных процессов; browser/computer-use — для специальных сценариев.</p>
+        </article>
+        <article>
+          <h3>Минимум на старте</h3>
+          <p class="muted">Знать, что остальные варианты существуют, но пока не включать их в базовый процесс. Terminal-first не означает terminal-only.</p>
+        </article>
+      </div>
+      <p>Заучивать названия поверхностей не нужно — важна их <strong>роль</strong>: одна помогает работать внутри проекта, другая — проверять, третья — встраивать Claude в команду. Названия и кнопки со временем меняются, а эта идея держится. Claude Code ценен не числом кнопок, а ясностью пути от задачи до проверяемого результата. Остальные поверхности не второсортные — CI и командные сценарии реально ускоряют команду, но включать их стоит, когда цепочка «проект → diff → проверки → решение» уже устоялась.</p>
+      <p>В учебном репозитории <strong>Commerce OS</strong> начните в корне проекта:</p>
+      <pre><code>cd commerce-os
+claude</code></pre>
+      <p class="muted">Запуск из проекта задаёт рабочий контекст и границы. Терминал держит рядом проект, Claude и проверки — так снимается вопрос «а этот ответ вообще про мой проект?». Веб-чат потребовал бы пересказывать структуру и искать файлы по описанию.</p>
+    </section>
+
+    <div class="callout">Claude даёт материал для инженерного решения, а не принимает решение за разработчика.</div>
+
+    <section>
+      <h2>Базовый workflow курса</h2>
+      <ol>
+        <li><strong>Терминал:</strong> запустить Claude Code из папки проекта.</li>
+        <li><strong>Git:</strong> иметь понятное исходное состояние и историю изменений.</li>
+        <li><strong>IDE:</strong> прочитать реальные файлы и визуально просмотреть diff.</li>
+        <li><strong>Проверки:</strong> изучить diff, запустить тесты, сборку, lint или ключевой сценарий.</li>
+        <li><strong>Решение человека:</strong> принять или доработать результат.</li>
+        <li><strong>Проверяемый артефакт:</strong> подготовить изменения, которые можно объяснить и показать на ревью.</li>
+      </ol>
+      <p><strong>PR-ready artifact</strong> — это результат, готовый к чужим глазам: понятные изменения, diff, результаты проверок и краткое описание. Создавать pull request прямо сейчас не требуется. Цель — не «Claude сказал готово», а результат, который можно проверить и показать коллеге. Уберите из цепочки любое звено — процесс становится шатким; особенно опасно пропускать чтение diff.</p>
+    </section>
+
+    <section>
+      <h2>Пример: сортировка заказов в Commerce OS</h2>
+      <p>Структура учебного проекта:</p>
+      <pre><code>commerce-os/
+  orders/
+  payments/
+  support/
+  dashboard/</code></pre>
+      <p>Запустив Claude Code в корне проекта, попросите найти логику сортировки в модуле <code>orders</code>. Claude изучает реальную папку и находит связанные файлы. Затем откройте их в IDE, посмотрите соседний код и diff, проверьте поведение.</p>
+      <p>Краткий след результата может выглядеть так:</p>
+      <pre><code>Изменено:
+- orders/OrderService.java
+
+Проверено:
+- список заказов открывается
+- новые заказы отображаются сверху</code></pre>
+      <p>Только терминал усложняет визуальную проверку глазами; только IDE без запуска Claude теряет связку с контекстом проекта; только веб заставляет пересказывать кодовую базу; только Slack даёт активность без инженерной опоры. Поверхности работают лучше в своих ролях.</p>
+    </section>
+
+    <section>
+      <h2>Java, Gradle и Python: когда устанавливать</h2>
+      <p>В прошлой лекции Git и Node.js готовили заранее: они нужны до CLI. JDK и Gradle нужны для Java-экспериментов, Python — позже, в блоке про MVP-архетипы. Рекомендуемый вариант — после установки Claude Code поручить ему проверить, установить недостающее и показать версии: это станет первой практикой постановки задачи и проверки результата.</p>
+      <p>Можно установить инструменты и вручную заранее — примеры команд по ОС (сверяйтесь с актуальной официальной документацией, версии подбирайте под актуальную LTS):</p>
+      <pre><code># macOS — Homebrew
+brew install openjdk
+brew install gradle
+brew install python</code></pre>
+      <pre><code># Linux — Debian / Ubuntu
+sudo apt install default-jdk gradle python3
+# Linux — Fedora / RHEL
+sudo dnf install java-latest-openjdk gradle python3</code></pre>
+      <pre><code># Windows — winget
+winget install --id EclipseAdoptium.Temurin.25.JDK
+winget install --id Gradle.Gradle
+winget install --id Python.Python.3.13</code></pre>
+      <p>Проверка после установки (в новом окне терминала):</p>
+      <pre><code>java -version
+gradle -version
+python3 --version</code></pre>
+      <p><strong>Вариант Б:</strong> попросить Claude Code. Пример формулировки задачи обычными словами:</p>
+      <pre><code>Проверь, установлены ли на моей машине JDK, Gradle и Python 3.
+Чего не хватает — поставь через мой пакетный менеджер (Homebrew),
+после установки покажи версии: java -version, gradle -version, python3 --version.</code></pre>
+      <p class="muted">Это не «волшебная команда», а нормальная инженерная постановка: что проверить, что сделать, чем подтвердить результат. Установка стека — безопасный полигон, чтобы почувствовать базовую схему курса: задача → действие агента → проверка результата.</p>
+    </section>
+
+    <section>
+      <h2>Gradle Wrapper — версия сборки в проекте</h2>
+      <p>В готовом Java-репозитории используйте <code>./gradlew</code> (на Windows — <code>gradlew.bat</code>): Wrapper скачивает и запускает версию Gradle, заданную проектом. Так команда собирает проект одинаково, даже если глобально у участников стоят разные версии.</p>
+      <p>Глобальный <code>gradle</code> нужен главным образом, чтобы создать Wrapper в новом проекте командой <code>gradle wrapper</code>. После этого в повседневной работе используйте Wrapper, а не глобальную версию.</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Пройти путь «терминал → diff → проверка → PR-ready artifact» и развести роли CLI и IDE.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Создайте маленький учебный проект: папку, <code>README.md</code> и один текстовый файл. Откройте её в IDE.</li>
+        <li>В терминале из корня проекта выполните <code>pwd</code>, <code>claude --version</code>, затем запустите <code>claude</code>.</li>
+        <li>Попросите Claude изменить одну строку в текстовом файле. Посмотрите diff в IDE и проверьте, что лишние файлы не затронуты.</li>
+        <li>Выполните простую проверку (например, <code>cat</code> или <code>grep</code> по файлу) и соберите короткий PR-ready artifact: что изменено, diff, проверки, оставшиеся риски.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Вы можете назвать роль CLI и роль IDE в этой практике.</li>
+        <li>В artifact есть четыре части: изменение, diff, проверки, риски.</li>
+        <li>Правка не затронула файлы вне задачи.</li>
+      </ul>
+    </section>
+
+    <footer>Итоговая схема: терминал даёт контекст проекта, Git — состояние и историю, IDE — видимость изменений, проверки — доказательства, человек — финальное решение.</footer>
+  </main>
+</body>
+</html>

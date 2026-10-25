@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о permission modes и контроле действий Claude Code.">
+  <title>Claude Code — 2 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Permission modes и approval model</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">2 уровень · 3 лекция</div>
+    </header>
+
+    <div class="lead">
+      Permission mode задаёт, какие действия Claude Code может выполнять и когда нужно подтверждение. Prompt описывает задачу, режим разрешений — границы действий.
+    </div>
+
+    <section>
+      <h2>Три разных слоя</h2>
+      <div class="grid">
+        <article>
+          <h3>Git baseline</h3>
+          <p class="muted">«Как откатываться, если стало плохо?» Понятное исходное состояние и возможность восстановиться: отдельная ветка, Git status и diff.</p>
+        </article>
+        <article>
+          <h3>Permission mode</h3>
+          <p class="muted">«Что Claude может делать в этой сессии?» Какие действия разрешены и для чего потребуется approval.</p>
+        </article>
+        <article>
+          <h3>Prompt / task</h3>
+          <p class="muted">«Что вообще нужно сделать?» Цель работы и ожидаемый результат.</p>
+        </article>
+        <article>
+          <h3>Вместе — безопаснее</h3>
+          <p class="muted">Ветка и аккуратный prompt не заменяют подходящий режим разрешений.</p>
+        </article>
+      </div>
+      <p><strong>Формула безопасной работы:</strong> Git baseline + безопасные разрешения + полезные проектные инструкции + гигиена памяти + diff, тесты и человеческое ревью. Порядок: сначала репозиторий и scope, затем режим доступа, только потом — задача.</p>
+    </section>
+
+    <div class="callout">Чем менее понятна задача, чувствительнее область и выше цена ошибки, тем строже выбирайте режим.</div>
+
+    <section>
+      <h2>Что можно, а что спрашивается</h2>
+      <div class="grid">
+        <article>
+          <h3>Обычно свободно</h3>
+          <p class="muted">Чтение файлов, поиск по коду, просмотр логов.</p>
+        </article>
+        <article>
+          <h3>Через явное подтверждение</h3>
+          <p class="muted">Запись в файлы, команды с побочными эффектами, массовые правки.</p>
+        </article>
+      </div>
+      <p>Разрушительные команды, чувствительные пути и обход ограничений не должны становиться рутиной. Approval — сигнал, что цена ошибки выросла, и он работает в связке со scope: ограничили задачу одним модулем — изменения за его пределами сразу подозрительны.</p>
+      <p class="warning">«Не задавай лишних вопросов» — самообман: при широкой формулировке даже небольшая правка может задеть README, тесты и конфиг. Вместо этого задайте рамку: сначала план, затем изменения только в допустимых пределах.</p>
+    </section>
+
+    <section>
+      <h2>Режимы по степени свободы</h2>
+      <ol>
+        <li><strong>Исследование / только чтение:</strong> понять код, собрать факты и подготовить план без изменений.</li>
+        <li><strong>Обычная работа с подтверждениями:</strong> может готовить правки, но на чувствительных шагах ждёт человека; базовый выбор для разработки.</li>
+        <li><strong>Ускоренная локальная работа:</strong> оправдана только при трёх условиях сразу — низкий риск зоны, узкий scope, дешёвый и очевидный откат.</li>
+        <li><strong>Максимально свободный режим:</strong> только для узкого эксперимента в одноразовой песочнице.</li>
+      </ol>
+      <p class="muted">Названия режимов (default, plan, acceptEdits и другие) могут меняться между версиями; ориентируйтесь на их поведение и сверяйтесь со справкой.</p>
+      <p class="muted">Актуальные названия из вебинара: <strong>Plan</strong>, <strong>Manual</strong> (<code>default</code>), <strong>Auto-Accept</strong> (<code>acceptEdits</code>), <strong>Auto Mode</strong>, <strong>YOLO</strong> (<code>bypassPermissions</code> / <code>--dangerously-skip-permissions</code>). Переключение — <code>Shift+Tab</code> в CLI/JetBrains или селектор в VS Code/Desktop; текущий режим виден в статус-баре. <code>defaultMode</code> в <code>~/.claude/settings.json</code> задаёт стартовый режим; на Pro/Max/Team новые сессии могут стартовать в auto.</p>
+      <p class="muted">Режим <code>bypassPermissions</code> включается отдельно — его не получишь случайным нажатием. В статус-баре auto выглядит как <code>⏵⏵ auto mode on</code>, Manual — как <code>⏸ manual mode on</code>.</p>
+    </section>
+
+    <section>
+      <h2>Сценарий: сначала расследование</h2>
+      <ol>
+        <li>Проверьте репозиторий и определите scope.</li>
+        <li>Начните с чтения и анализа без правок.</li>
+        <li>Попросите перечислить факты, затронутые файлы, гипотезу и план проверки.</li>
+        <li>После подтверждения причины выделите узкую правку в отдельную сессию с подходящим режимом.</li>
+        <li>Посмотрите diff и результаты тестов; сами решите, принимать ли изменения.</li>
+      </ol>
+      <p>Пример из лекции — исследование в отдельной ветке:</p>
+      <pre><code>git switch -c investigate/refund-order
+claude --permission-mode plan</code></pre>
+      <p>После подтверждения причины — отдельная ветка и сессия для узкой правки:</p>
+      <pre><code>git switch -c fix/refund-label
+claude --permission-mode default</code></pre>
+      <p class="muted">Одна задача — две сессии с разными режимами: не паранойя, а экономия внимания. Менять режим посреди сессии нормально, если причина инженерная; «просто устал от подтверждений» — предвестник странного diff.</p>
+      <p class="warning">Перед запуском проверьте актуальные режимы через <code>claude --help</code> или <code>/help</code>. Если не знаете, какой режим активен, выясните это, а не делайте вывод по поведению Claude.</p>
+    </section>
+
+    <section>
+      <h2>Формулировки, которые поддерживают режим</h2>
+      <p>Prompt задаёт рамку, а approval следит, чтобы за неё не вышли незаметно.</p>
+      <p>Запрос на расследование:</p>
+      <pre><code>Исследуй, почему в inbox refund-запросы идут в неверном порядке.
+Файлы пока не меняй.
+Верни: затронутые файлы, гипотезу причины, план проверки.</code></pre>
+      <p>Запрос на правку с явным scope:</p>
+      <pre><code>Исправь только сортировку refund-запросов в модуле inbox.
+Публичный API не меняй.
+Если потребуется выйти за src/orders/refund/**, сначала остановись и объясни зачем.
+После правки покажи diff и какие проверки нужно запустить.</code></pre>
+      <p class="warning">Плохо: «Исправь всё быстро и не задавай вопросов». Лучше: «Сначала предложи план. Меняй только <code>src/orders/refund/**</code>. Публичный API не трогай. Если нужен другой файл — сначала объясни почему. После правки покажи diff».</p>
+    </section>
+
+    <section>
+      <h2>Где нужен особый контроль</h2>
+      <p>Осторожнее работайте с платежами, авторизацией, миграциями, конфигурацией и финансовыми расчётами. Запись файлов, команды с побочными эффектами и массовые изменения требуют повышенного внимания.</p>
+      <p>В чувствительной зоне ветка удешевляет откат, но не делает дешёвой смысловую ошибку: если Claude изменит контракт, расчёт комиссии или сценарий авторизации, вред определяется тем, насколько легко вы это заметите. Поэтому сначала — исследование и план, затем очень аккуратные правки под явным контролем.</p>
+      <ul>
+        <li>Заранее укажите допустимые файлы и запретите изменения за пределами scope.</li>
+        <li>Не ослабляйте режим только ради сокращения количества подтверждений.</li>
+        <li>Не пытайтесь обходить ограничения организации через локальные настройки.</li>
+      </ul>
+    </section>
+
+    <div class="callout">Сомневаетесь в режиме, scope или откате — начинайте со строгого режима и только чтения.</div>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Сравнить Plan и Manual на одной и той же небольшой задаче.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В учебном репозитории с <code>notes.txt</code> запустите <code>claude --permission-mode plan</code> и попросите исследовать файл и предложить правку. Убедитесь, что код не меняется.</li>
+        <li>Выйдите из сессии и запустите <code>claude --permission-mode default</code> с той же узкой задачей.</li>
+        <li>Пройдите approval на изменение, посмотрите diff и убедитесь, что правка только одна.</li>
+        <li>Переключите режим через <code>Shift+Tab</code>, найдите текущий режим в статус-баре и запишите, почему для этой задачи выбран именно он.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В Plan не было изменений файлов.</li>
+        <li>В Manual было явное подтверждение перед правкой.</li>
+        <li>Вы можете объяснить выбор режима через риск, scope и цену отката.</li>
+      </ul>
+      <p class="muted">Не используйте YOLO на реальном проекте; для практики достаточно Plan и Manual.</p>
+    </section>
+
+    <footer>Approval — часть инженерного контроля: решение о принятии правки остаётся за человеком.</footer>
+  </main>
+</body>
+</html>

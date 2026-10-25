@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции об установке, авторизации, обновлениях и диагностике Claude Code.">
+  <title>Claude Code — 1 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Установка, авторизация, обновления и диагностика</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">1 уровень · 3 лекция</div>
+    </header>
+
+    <div class="lead">
+      Установить CLI недостаточно: готовая среда — это когда система находит <code>claude</code>, сессия запускается в нужном проекте и shell, диагностика спокойная, а авторизация выполнена нужным аккаунтом.
+    </div>
+
+    <section>
+      <h2>Установка: выберите подходящий способ</h2>
+      <p>Используйте пакетный менеджер, который уже есть на машине, npm при наличии Node.js 22 или новее либо официальный установщик. Официальный скрипт установки — рекомендуемый способ: он ставит готовый бинарь и не требует заранее установленного Node.js. Не устанавливайте новый пакетный менеджер только ради Claude Code. Точные команды меняются — проверяйте актуальную официальную документацию. После установки откройте новое окно терминала.</p>
+      <div class="grid">
+        <article>
+          <h3>macOS</h3>
+          <pre><code>brew install --cask claude-code
+# или при наличии Node.js:
+npm install -g @anthropic-ai/claude-code
+# официальный установщик:
+curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+        </article>
+        <article>
+          <h3>Linux / WSL</h3>
+          <pre><code>npm install -g @anthropic-ai/claude-code
+# или:
+curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+          <p class="muted">Не устанавливайте глобальные npm-пакеты от root, если npm настроен на системный каталог. Предпочтительнее настроить npm prefix в домашний каталог.</p>
+        </article>
+        <article>
+          <h3>Windows PowerShell</h3>
+          <pre><code>winget install Anthropic.ClaudeCode
+# или:
+irm https://claude.ai/install.ps1 | iex
+# или через CMD:
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+# или при наличии Node.js:
+npm install -g @anthropic-ai/claude-code</code></pre>
+          <p class="muted">Нативная установка также работает в Git Bash. На нативном Windows полезен Git for Windows: с ним Claude Code выполняет команды через Bash, а без него — через PowerShell; внутри WSL он не нужен.</p>
+        </article>
+        <article>
+          <h3>Проверка команды</h3>
+          <pre><code>claude --version</code></pre>
+          <p class="muted">Команда не найдена — проверьте PATH, перезапустите терминал и убедитесь, что запускаете CLI в той же среде, где ставили его. В Windows то же самое выглядит как «'claude' не является внутренней или внешней командой».</p>
+        </article>
+      </div>
+      <p>На Apple Silicon используйте нативные версии Homebrew и Node.js (arm64), чтобы не смешивать архитектуры Rosetta и ARM. В Docker, dev container и CI устанавливайте CLI внутри среды, где находятся файлы проекта и выполняются команды.</p>
+    </section>
+
+    <div class="callout">Запускайте Claude Code там, где находятся проект, Git и инструменты сборки.</div>
+
+    <section>
+      <h2>Среда запуска важнее, чем кажется</h2>
+      <p>На Windows PowerShell, WSL и Git Bash могут быть разными средами с разными PATH и файловыми системами. Установка в одной и запуск из другой может сделать CLI или проект невидимыми друг для друга. Для проекта в WSL запускайте Claude из WSL; для Windows-native проекта — из PowerShell или настроенного Git Bash.</p>
+      <p>Пример: проект лежит в WSL, а Claude Code запущен из обычного PowerShell. PowerShell не видит linux-путь проекта напрямую, а его PATH, Git и инструменты — другие; в лучшем случае проект будет виден через монтирование WSL, но команды выполнятся уже в Windows-среде. Для проекта в WSL открывайте терминал WSL (или IDE, подключённую к WSL) и запускайте CLI там.</p>
+      <p>То же правило относится к SSH и контейнерам: локальная установка на ноутбуке не делает CLI доступным на удалённой машине. Установите и запускайте его там, где лежат файлы и выполняются команды проекта. Перед запуском перейдите в корень проекта — например, туда, где находятся README, <code>build.gradle</code> или <code>package.json</code>.</p>
+    </section>
+
+    <section>
+      <h2>Первый запуск и диагностика</h2>
+      <pre><code>cd ~/projects/commerce-os
+claude --version
+claude
+
+# уже внутри интерактивной сессии:
+/doctor
+/status</code></pre>
+      <p>Цепочка такая: терминал в нужной среде → <code>cd</code> в каталог проекта → <code>claude --version</code> → <code>claude</code> → <code>/doctor</code> → <code>/status</code>. Если всё спокойно — сохраните лог первого запуска; если нет — исправьте shell, PATH, авторизацию или каталог и повторите.</p>
+      <ul>
+        <li><strong><code>claude --version</code></strong> проверяет, видит ли shell команду и какая версия запускается.</li>
+        <li><strong><code>claude</code></strong> открывает сессию из текущей папки проекта.</li>
+        <li><strong><code>/doctor</code></strong> проверяет установку, shell, авторизацию и окружение; предупреждение — повод проверить контекст, а не сразу переустанавливать всё.</li>
+        <li><strong><code>/status</code></strong> показывает, активна ли сессия, виден ли проект и в порядке ли авторизация: спокойный <code>/status</code> вместе с работающими <code>--version</code> и <code>/doctor</code> означает хороший старт.</li>
+      </ul>
+      <p class="muted">Команды вида <code>/...</code> вводятся внутри сессии, не в обычном shell. Отдельно есть <code>claude doctor</code> — отчёт диагностики из обычного терминала, вне сессии; <code>/doctor</code> — та же проверка внутри сессии. Если названия или формат вывода отличаются, ориентируйтесь на встроенную <code>/help</code>, текущую версию и актуальную справку.</p>
+    </section>
+
+    <section>
+      <h2>Авторизация и обновления</h2>
+      <p>Способ входа зависит от подписки, рабочего или командного аккаунта и корпоративных настроек. Важно не то, как выглядит окно входа, а то, что CLI авторизован нужной учётной записью. Проверяйте результат через <code>/status</code>; при неверном аккаунте завершите текущий сеанс и выполните вход заново по актуальным инструкциям.</p>
+      <p>Обновляйте CLI тем же способом, которым устанавливали: Homebrew через Homebrew, npm через npm, установщик — через соответствующий канал. Смешивание способов может оставить несколько версий, и shell может запускать не ту. После обновления проверьте <code>claude --version</code>, откройте сессию и запустите <code>/doctor</code>. Повторная авторизация после обновления возможна. И не гонитесь за номером версии из чужого видео: чуть новее или старее — не проблема, цель — рабочая и предсказуемая среда.</p>
+    </section>
+
+    <section>
+      <h2>Быстрый разбор неполадок</h2>
+      <div class="grid">
+        <article>
+          <h3>«command not found»</h3>
+          <p class="muted">Shell не находит команду: проверьте PATH, способ установки, перезапустите терминал и сверьте текущую среду.</p>
+        </article>
+        <article>
+          <h3>Работает только в одном терминале</h3>
+          <p class="muted">Сравните shell и профиль среды в обычном терминале и IDE: они могут использовать разные PATH.</p>
+        </article>
+        <article>
+          <h3>Claude не видит проект</h3>
+          <p class="muted">Проверьте текущий каталог и откуда запущена сессия. CLI мог стартовать не из корня проекта или из другой файловой среды.</p>
+        </article>
+        <article>
+          <h3>Не та авторизация</h3>
+          <p class="muted">Проверьте аккаунт через <code>/status</code>, выйдите из неверного сеанса и пройдите вход заново.</p>
+        </article>
+        <article>
+          <h3><code>/doctor</code> показывает неожиданный shell</h3>
+          <p class="muted">Терминал, из которого выполнен вход, не совпадает с той средой, где лежит проект. Сопоставьте реальную рабочую среду и текущее окно терминала.</p>
+        </article>
+        <article>
+          <h3>Локально работает, а по SSH или в контейнере — нет</h3>
+          <p class="muted">CLI установлен на одной машине, а проект живёт и запускается на другой. Проверьте, где именно должны исполняться команды проекта.</p>
+        </article>
+      </div>
+      <p><strong>PATH</strong> — список каталогов, в которых shell ищет команды. Если файл CLI установлен, но его каталог не входит в PATH текущей сессии, команда не будет найдена. Свой пользовательский PATH меняется без прав администратора; консоль от администратора нужна только для системного PATH всех пользователей. Проверяйте симптомы и среду по очереди вместо того, чтобы переустанавливать всё наугад.</p>
+      <p class="warning">Правило диагностики: видна ли команда? Запущена ли она в среде проекта? Верный ли аккаунт? Что сообщает <code>/doctor</code>?</p>
+    </section>
+
+    <section>
+      <h2>Лог первого запуска</h2>
+      <p>Сохраните короткую запись о рабочей среде — это точка сравнения при неполадках после обновлений:</p>
+      <pre><code>Лог первого запуска Claude Code
+Дата: 2026-05-24
+Проект и каталог: ~/projects/commerce-os
+ОС и shell: macOS / zsh (или Windows / PowerShell, WSL и т. п.)
+Версия Claude CLI: 2.1.x
+Авторизация: проверена через /status
+/doctor: результат диагностики
+/status: сессия активна, проект открыт
+Заметки: из какого терминала запускаю Claude</code></pre>
+      <p>Запись помогает быстро увидеть, что изменилось: shell, версия, путь проекта или авторизация.</p>
+    </section>
+
+    <section>
+      <h2>Доступ курса через JavaRush Gateway</h2>
+      <p>Для курса доступ предоставляется через серверный Gateway JavaRush; личная подписка не нужна. CLI направляет запросы на шлюз с индивидуальным токеном, а шлюз маршрутизирует запросы и учитывает расход.</p>
+      <div class="grid">
+        <article>
+          <h3>Глобально: <code>~/.claude/settings.json</code></h3>
+          <p class="muted">Хранит адрес Gateway и индивидуальный ключ. Настройка действует во всех проектах. Файл и ключ нельзя коммитить в Git или публиковать.</p>
+        </article>
+        <article>
+          <h3>Локально в проекте: <code>.claude/settings.local.json</code></h3>
+          <p class="muted">Личные настройки и эксперименты для одного проекта. Не коммитится; обычно добавлен в <code>.gitignore</code>. Его значения имеют приоритет над глобальными.</p>
+        </article>
+      </div>
+      <p>Пример глобальных настроек: вставляйте только выданный вам индивидуальный ключ. Не публикуйте этот файл и не помещайте секреты в проект.</p>
+      <pre><code>{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://llm.javarush.com",
+    "ANTHROPIC_AUTH_TOKEN": "ВАШ_ИНДИВИДУАЛЬНЫЙ_КЛЮЧ",
+    "ANTHROPIC_MODEL": "claude-course-fast[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-course-fast",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-course-fast[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-course-pro[1m]",
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-course-max[1m]",
+    "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY": "1",
+    "CLAUDE_CODE_AUTO_MODE_SERVER": "0"
+  }
+}</code></pre>
+      <p class="muted">Если в <code>settings.json</code> уже есть другие записи, можно заменить их целиком или добавить блок <code>"env"</code> внутрь существующего объекта. Важно сохранить JSON-синтаксис: ключи в кавычках, блоки разделены запятыми.</p>
+      <ul>
+        <li><code>ANTHROPIC_BASE_URL</code> — адрес Gateway, куда CLI отправляет запросы.</li>
+        <li><code>ANTHROPIC_AUTH_TOKEN</code> — личный ключ доступа и учёта расхода.</li>
+        <li><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code> — включает обнаружение моделей Gateway в CLI.</li>
+      </ul>
+      <p class="muted"><code>ANTHROPIC_MODEL</code> задаёт модель при каждом запуске и перекрывает выбор в <code>/model</code>. Если хочется, чтобы выбор в <code>/model</code> запоминался, есть <code>ANTHROPIC_DEFAULT_MODEL</code>: она задаёт стартовую модель, но при заданной <code>ANTHROPIC_MODEL</code> не срабатывает.</p>
+      <p>Для проверки откройте сессию командой <code>claude</code> и посмотрите <code>/status</code>. Если состояние выглядит нормальным, технический старт собран: базовая среда (Git, Node.js), сам Claude Code, остальной стек проекта и рабочий доступ через Gateway.</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Собрать лог первого запуска и проверить, что CLI виден в нужной среде.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Откройте терминал в проекте и выполните <code>claude --version</code>, затем <code>claude doctor</code>.</li>
+        <li>Запустите сессию <code>claude</code> и выполните <code>/doctor</code> и <code>/status</code>.</li>
+        <li>Проверьте <code>which claude</code> (macOS/Linux) или <code>where claude</code> (Windows) и сравните shell обычного терминала и терминала IDE.</li>
+        <li>Создайте <code>first-run-log.md</code>: дата, ОС и shell, путь проекта, версия CLI, статус авторизации, краткий итог <code>/doctor</code> и заметки. Не копируйте токен.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Вы понимаете, что показывает каждый из уровней диагностики.</li>
+        <li>В логе нет токенов, ключей и других секретов.</li>
+        <li>Вы можете объяснить, что делать при <code>command not found</code>.</li>
+      </ul>
+      <p class="muted">Если CLI ещё не установлен, выполните текстовую часть: составьте такой же чек-лист и отметьте, какие команды нужно будет запустить.</p>
+    </section>
+
+    <footer>Главное: успешная установка — это не просто файл CLI, а согласованная среда запуска, нужный проект и shell, проверенные версия и сессия, корректная авторизация и безопасно хранимый токен.</footer>
+  </main>
+</body>
+</html>

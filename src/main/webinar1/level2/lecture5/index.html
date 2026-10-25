@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о цифровых следах сессии, local data hygiene и безопасной модели работы в Claude Code.">
+  <title>Claude Code — 2 уровень, лекция 5</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Usage, hygiene и safe mental model</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">2 уровень · 5 лекция</div>
+    </header>
+
+    <div class="lead">
+      Сессия оставляет цифровые следы: transcripts, вывод команд, снимки файлов и память о проекте. Безопасная работа — это одна модель: секреты не попадают в сессию, артефакты очищаются перед публикацией, а контекст остаётся управляемым.
+    </div>
+
+    <section>
+      <h2>Сессия не исчезает с закрытием окна</h2>
+      <p>Локально остаются история диалога, вывод команд, снимки файлов, точки отката и память о проекте. В следах легко оказываются внутренние адреса, конфиги, токены и клиентские данные.</p>
+      <ul>
+        <li>История сессий и transcripts — ваши сообщения и ответы Claude.</li>
+        <li>История запросов — куски логов, конфигов и неудачно вставленные фрагменты.</li>
+        <li>Вывод инструментов и команд — <code>git diff</code>, <code>docker compose logs</code>, результаты тестов.</li>
+        <li>Снимки файлов и контрольные точки — старые версии файлов с чувствительным содержимым.</li>
+        <li>Память о проекте — устаревшая или неверная информация.</li>
+      </ul>
+      <p>Путь данных короткий:</p>
+      <ol>
+        <li>вы открыли файл или запустили команду;</li>
+        <li>данные появились в выводе;</li>
+        <li>Claude получил этот вывод в сессии;</li>
+        <li>следы остались в transcripts или snapshots;</li>
+        <li>позже вы делитесь логом, скриншотом или проектом.</li>
+      </ol>
+      <div class="callout">Видел Claude данные через файл, команду или ваш текст — следы могли остаться.</div>
+      <p class="muted">Утечка обычно выглядит не как «выложил секрет в интернет», а как скриншот терминала коллеге, лог в тикете или transcript ментору. Local data hygiene — это инженерная аккуратность, а не паранойя. Детали хранения зависят от версии и среды.</p>
+    </section>
+
+    <section>
+      <h2>Разделяйте .env и .env.example</h2>
+      <p>Большинство утечек начинается с «сейчас быстро покажу Claude, что у меня в <code>.env</code>». После этого секрет путешествует по логам и transcripts. Привычка проще, чем кажется: Claude видит структуру конфигурации, но не реальные значения.</p>
+      <p>Секреты живут не в одном месте: переменные окружения контейнеров, вывод неудачных команд, экспортированные CSV, дампы конфигурации, тестовые webhook-ключи и логи платёжных интеграций. В Commerce OS особенно опасно всё про базу, платежи, интеграции поддержки и внутренние сервисы.</p>
+      <pre><code>.env
+.env.*
+!.env.example
+
+.claude/CLAUDE.local.md
+.claude/settings.local.json</code></pre>
+      <p>Реальные значения не уходят в репозиторий, а шаблон остаётся опорой для разговора с Claude:</p>
+      <pre><code># Локально заполните своими значениями
+POSTGRES_URL=postgres://app:ваш_пароль@localhost:5432/commerce
+STRIPE_SECRET_KEY=sk_test_заполните_локально
+SUPPORT_API_TOKEN=token_заполните_локально
+PAYMENT_WEBHOOK_SECRET=whsec_заполните_локально</code></pre>
+      <p>Вопрос ставится не «прочитай мой секрет», а «скажи по шаблону и конфигам, чего приложению не хватает»:</p>
+      <pre><code>Проверь, какие переменные окружения нужны приложению.
+Используй `.env.example`, `README.md` и конфиги запуска.
+Файл `.env` не открывай.
+Реальные значения ключей не запрашивай.
+Если переменной не хватает, перечисли только её имя.</code></pre>
+      <p class="warning">Проверка себя: покажу завтра этот transcript коллеге или ментору — будет ли там то, что нельзя показывать? Если ответ «возможно» — уже зашли слишком далеко.</p>
+    </section>
+
+    <section>
+      <h2>Sanitation перед публикацией</h2>
+      <p>Лог, transcript или скриншот — не просто текст, а пакет данных: адреса, токены, почты, внутренние хосты, идентификаторы клиентов. Перед отправкой наружу очистите, сократите и спрячьте лишнее.</p>
+      <pre><code>До очистки:
+Authorization: Bearer sk_live_xxxxx
+DB host: pg-prod.internal.company
+Customer email: olga@company.com
+
+После очистки:
+Authorization: Bearer ***REDACTED***
+DB host: ***INTERNAL_HOST***
+Customer email: ***REDACTED_EMAIL***</code></pre>
+      <p>Лог не теряет пользы: видно авторизацию, проблему во внутренней базе и клиентские данные в потоке. Проверяйте по категориям:</p>
+      <ul>
+        <li>токены и ключи;</li>
+        <li>внутренние домены и IP;</li>
+        <li>e-mail и персональные данные;</li>
+        <li>реальные ID заказов и платежей;</li>
+        <li>содержимое <code>.env</code> и служебные пути компании.</li>
+      </ul>
+      <p class="muted">Handoff проекта — это не только <code>git push</code>: вместе с кодом передаются локальные заметки, чувствительные transcripts, старые снимки и история сессий.</p>
+    </section>
+
+    <section>
+      <h2>Длинная сессия теряет качество</h2>
+      <p>Даже бесплатная сессия с длинным грязным контекстом дорога: по времени, вниманию и качеству. Смотрят usage не ради статистики, а чтобы понять, где вы начали платить за хаос. Названия команд и экранов зависят от версии — сверяйтесь с <code>/help</code>.</p>
+      <div class="grid">
+        <article>
+          <h3>Огромный лог целиком</h3>
+          <p class="muted">Внимание уходит на шум, теряется сама задача. Лучше дать фрагмент вокруг ошибки.</p>
+        </article>
+        <article>
+          <h3>Пять попыток чинить одно и то же</h3>
+          <p class="muted">Накапливаются старые гипотезы. Лучше остановиться и пересобрать контекст.</p>
+        </article>
+        <article>
+          <h3>Одна сессия «на всё»</h3>
+          <p class="muted">Смешиваются несвязанные задачи. Лучше разделять работу по задачам.</p>
+        </article>
+        <article>
+          <h3>Фоновая работа висит без нужды</h3>
+          <p class="muted">Растут затраты и теряется управляемость. Лучше закрывать лишнее и фиксировать состояние.</p>
+        </article>
+        <article>
+          <h3>Лишние инструменты и плагины</h3>
+          <p class="muted">Растёт контекстная нагрузка. Лучше держать только необходимое.</p>
+        </article>
+      </div>
+      <p>Симптомы: Claude повторяет старую неверную гипотезу, забывает границы задачи, просит перечитать прочитанное или предлагает «на всякий случай переписать половину проекта». Это не злая воля — сессия располнела и устала.</p>
+      <p class="muted">Перед длинной вставкой спросите: это действительно нужно модели для решения задачи? Если убрать девять десятых текста, останется ли суть?</p>
+      <p class="warning">Не уговаривайте модель ещё одним уточнением — сделайте шаг назад: сократите лог, начните свежую сессию или разбейте задачу на две.</p>
+    </section>
+
+    <section>
+      <h2>Пять опор безопасной работы</h2>
+      <ol>
+        <li><strong>Git baseline</strong> — понятная ветка и чистое исходное состояние.</li>
+        <li><strong>Permissions</strong> — Claude не может больше, чем нужно для задачи.</li>
+        <li><strong>Project instructions</strong> — он знает команды, правила и границы проекта.</li>
+        <li><strong>Local data hygiene</strong> — секреты не попадают в сессию и не размазываются по логам.</li>
+        <li><strong>Review человеком</strong> — diff и результат всё равно проверяете вы.</li>
+      </ol>
+      <p>Опоры держат друг друга: уберите любую — система не рухнет мгновенно, но станет заметно хрупче.</p>
+      <p>За то, чтобы секреты не размазывались по transcripts и логам, отвечает именно <strong>Local data hygiene</strong>: не тащить секреты в сессию, очищать артефакты перед публикацией и не перегружать контекст лишними логами.</p>
+      <p>Напоминание о гигиене данных можно вписать в <code>CLAUDE.md</code>, чтобы не надеяться на память:</p>
+      <pre><code>## Гигиена данных
+- не читать `.env` и файлы с секретами без явной причины
+- для конфигурации опираться на `.env.example`
+- перед публикацией логов и transcripts делать sanitation
+- при длинной сессии сначала сократить контекст, потом продолжать</code></pre>
+      <p>Обычная спокойная работа: чистая ветка, понятный scope, умеренный permission mode, короткий <code>CLAUDE.md</code>, нормальный <code>.env.example</code>, секреты только локально. Claude получает нужный кусок лога, а не весь сериал; вы смотрите diff и не отправляете transcript без очистки. Это и есть спокойная, взрослая работа.</p>
+      <p class="muted">Это контекст, а не жёсткая защита: <code>.gitignore</code>, permissions и человеческий контроль памятка не заменяет, но напоминает о правильном поведении, когда хочется срезать угол.</p>
+    </section>
+
+    <div class="callout">Безопасный workflow — это Git baseline, permissions, project instructions, local data hygiene и обязательное человеческое ревью.</div>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Провести гигиену сессии на фейковых данных и потренировать sanitation.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Создайте учебный git-репозиторий с <code>.env</code> (фейковый токен и e-mail), <code>.env.example</code> с заглушками и <code>.gitignore</code> с <code>.env</code>.</li>
+        <li>Создайте фейковый <code>session.log</code> с токеном и e-mail, затем сделайте <code>session.sanitized.log</code>, заменив чувствительные значения на <code>***</code>.</li>
+        <li>Попросите Claude проверить конфигурацию только по <code>.env.example</code> и явно запретите читать <code>.env</code>.</li>
+        <li>Разделите одну длинную задачу на две сессии и добавьте в <code>CLAUDE.md</code> короткий раздел «Гигиена данных».</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li><code>.env</code> игнорируется Git, а в промпт не попали фейковые секреты.</li>
+        <li>В очищенном логе нет токена и e-mail.</li>
+        <li>Вы можете перечислить пять опор безопасной работы.</li>
+      </ul>
+    </section>
+
+    <footer>Названия команд и экранов usage зависят от версии — сверяйтесь с <code>/help</code>. Решение о результате работы по-прежнему принимает человек.</footer>
+  </main>
+</body>
+</html>

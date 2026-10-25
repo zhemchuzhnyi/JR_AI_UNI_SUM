@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о командах запуска Claude Code и командах внутри сессии.">
+  <title>Claude Code — 1 уровень, лекция 4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Команды запуска и команды в сессии</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">1 уровень · 4 лекция</div>
+    </header>
+
+    <div class="lead">
+      У Claude Code есть два слоя команд: команды запуска, которые задают, как открыть CLI, и команды внутри сессии, которые управляют уже открытым разговором. Команда может быть правильной, но оказаться введённой не в тот слой.
+    </div>
+
+    <section>
+      <h2>Два слоя управления</h2>
+      <pre><code>Терминал / shell
+  └─ запуск: claude ...
+       └─ открытая сессия Claude Code
+            └─ команды сессии: /help, /status, /clear, /compact ...</code></pre>
+      <div class="grid">
+        <article>
+          <h3>До открытия сессии — shell</h3>
+          <p class="muted">В обычном терминале (Terminal, iTerm, PowerShell, Git Bash, WSL) выбираются папка проекта, способ запуска, возобновление и параметры вроде режима разрешений или worktree.</p>
+        </article>
+        <article>
+          <h3>После запуска — активная сессия</h3>
+          <p class="muted">Slash-команды управляют текущим разговором: состоянием, историей, контекстом, разрешениями и проверкой изменений. Они не запускают новый CLI.</p>
+        </article>
+      </div>
+    </section>
+
+    <div class="callout">Если Claude Code ещё не открыт — выбирайте команду запуска. Если открыт диалог — управляйте сессией.</div>
+
+    <section>
+      <h2>Команды запуска</h2>
+      <p>Откройте сессию в проекте Commerce OS:</p>
+      <pre><code>cd ~/projects/commerce-os
+claude</code></pre>
+      <p>Другие варианты запуска — это тоже внешний слой:</p>
+      <pre><code>claude -p "Кратко опиши структуру проекта"  # одноразовый запрос
+claude -c                                     # продолжить предыдущую сессию
+claude --permission-mode plan                 # пример режима на старте
+claude --worktree ../commerce-os-exp          # пример отдельного worktree</code></pre>
+      <p class="muted">Названия флагов и режимов зависят от версии. Проверяйте их через <code>claude --help</code> и актуальную документацию. Флаг запуска нельзя добавить задним числом к уже открытому разговору.</p>
+    </section>
+
+    <section>
+      <h2>Команды внутри сессии</h2>
+      <p>Slash-команды вводятся в открытой сессии. Они работают с её текущим контекстом и состоянием:</p>
+      <ul>
+        <li><code>/help</code> — локальная справка о командах вашей версии.</li>
+        <li><code>/status</code>, <code>/doctor</code> — состояние и диагностика.</li>
+        <li><code>/context</code> — что занимает контекст сессии.</li>
+        <li><code>/compact</code>, <code>/clear</code> — сжать или очистить историю текущего разговора.</li>
+        <li><code>/diff</code> — просмотреть изменения в коде.</li>
+        <li><code>/permissions</code>, <code>/review</code> — работа с разрешениями или проверкой в рамках текущей сессии.</li>
+        <li><code>/rewind</code> — восстановить состояние сессии, а не перезапустить CLI.</li>
+        <li><code>/exit</code> — выйти из сессии.</li>
+      </ul>
+      <p><code>/help</code> — источник справки для той версии, которая запущена у вас. Если команда вызывает ошибку в обычном shell, вероятно, она предназначена для сессии.</p>
+      <p><strong>Esc</strong> прерывает текущее действие агента: Claude останавливается и ждёт уточнения. Двойной Esc — перемотка истории разговора (rewind); случайно открывшееся меню закрывается тем же Esc.</p>
+      <p class="muted">Полезное упражнение первого дня: попросить Claude создать в проекте <code>commands.md</code> — шпаргалку по популярным командам: что делает каждая и когда её применять. Это заодно первый наглядный пример того, как агент создаёт и редактирует файлы. Разницу между <code>/clear</code> и <code>/compact</code> тоже можно просто спросить у Claude — он охотно объясняет собственные команды.</p>
+    </section>
+
+    <section>
+      <h2>Как выбрать нужный слой</h2>
+      <div class="grid">
+        <article>
+          <h3>Выбирайте слой запуска, если нужно</h3>
+          <ul>
+            <li>открыть Claude в проекте;</li>
+            <li>выполнить одноразовый запрос;</li>
+            <li>продолжить прошлую сессию;</li>
+            <li>задать режим или отдельный worktree.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>Выбирайте команды сессии, если нужно</h3>
+          <ul>
+            <li>проверить статус и окружение;</li>
+            <li>очистить или сжать историю;</li>
+            <li>посмотреть контекст или diff;</li>
+            <li>управлять уже начатой работой.</li>
+          </ul>
+        </article>
+      </div>
+      <p>Например, <code>/compact</code> в shell введён не по адресу: он предназначен для текущей сессии. И наоборот, запускной флаг нельзя применить к уже открытому разговору — нужно запустить новую сессию с нужными параметрами.</p>
+    </section>
+
+    <section>
+      <h2>Сценарий в Commerce OS</h2>
+      <ol>
+        <li>Перейдите в папку проекта и запустите <code>claude</code>.</li>
+        <li>В сессии проверьте <code>/status</code> и <code>/doctor</code>.</li>
+        <li>После работы с файлами при необходимости проверьте <code>/context</code>, затем используйте <code>/compact</code>.</li>
+        <li>Посмотрите изменения командой <code>/diff</code>.</li>
+        <li>Для отдельного короткого запроса выйдите во внешний слой и запустите новый одноразовый вызов, например <code>claude -p "Кратко опиши текущие изменения"</code>.</li>
+      </ol>
+      <p>В одном рабочем процессе можно переключаться между слоями; важно понимать, в какой момент и где вводить команду.</p>
+      <p>Если нужно не просто очистить разговор, а сменить способ работы — например, открыть отдельный worktree для эксперимента, — <code>/clear</code> не поможет: он относится к текущей сессии, нужен новый запуск с нужными параметрами. А если вы уже в нужной сессии и просто теряетесь в накопленном диалоге, перезапускать ничего не надо — достаточно <code>/compact</code> или <code>/clear</code>.</p>
+    </section>
+
+    <section>
+      <h2>Запоминайте логику, а не список команд</h2>
+      <p>Имена команд и флаги меняются между версиями. Запоминайте назначение: <code>claude --help</code> показывает варианты запуска, <code>/help</code> — команды активной сессии, <code>claude --version</code> — текущую версию, официальная документация — актуальные детали.</p>
+      <p class="warning">Контрольный вопрос: «Я меняю способ запуска или управляю уже начатым разговором?»</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Разделить команды запуска и команды сессии и собрать личную шпаргалку.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В обычном shell выполните <code>claude --help</code> и выпишите три команды запуска.</li>
+        <li>В открытой сессии выполните <code>/help</code>, <code>/status</code> и <code>/context</code>; выпишите три slash-команды и их назначение.</li>
+        <li>Попросите Claude создать <code>commands.md</code> с таблицей из шести команд: три launch и три session, с колонками «что делает» и «когда использовать».</li>
+        <li>Проверьте <code>commands.md</code> и объясните разницу между <code>/clear</code> и <code>/compact</code>. При желании проверьте Esc на длинном ответе.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>commands.md</code> есть две группы команд.</li>
+        <li>Вы можете определить, в каком слое вводится команда.</li>
+        <li>Вы объясняете, что делает Esc и чем <code>/clear</code> отличается от <code>/compact</code>.</li>
+      </ul>
+    </section>
+
+    <footer>Итог: команды запуска открывают сессию и задают условия её старта; команды внутри сессии управляют текущим разговором. Сначала определите нужный момент — потом выбирайте команду.</footer>
+  </main>
+</body>
+</html>

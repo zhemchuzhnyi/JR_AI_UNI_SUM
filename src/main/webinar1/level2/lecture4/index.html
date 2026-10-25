@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о CLAUDE.md, локальных инструкциях, rules и auto memory в Claude Code.">
+  <title>Claude Code — 2 уровень, лекция 4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.12rem; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    article { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #13161c; }
+    article h3 { margin: 0 0 8px; font-size: 1rem; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    .warning { color: var(--warn); }
+    a { color: var(--green); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">CLAUDE.md, rules и auto memory</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">2 уровень · 4 лекция</div>
+    </header>
+
+    <div class="lead">
+      Разделяйте инструкции по аудитории и сроку действия: общее и стабильное храните в <code>CLAUDE.md</code>, локальное — в <code>CLAUDE.local.md</code>, узкоспециализированное — в rules. Auto memory перепроверяйте.
+    </div>
+
+    <section>
+      <h2>Сначала — безопасный старт</h2>
+      <p>Перед настройкой инструкций проверьте, что открыта нужная рабочая директория, состояние Git понятно (чистый working tree, отдельная ветка), а режим разрешений соответствует задаче. <code>CLAUDE.md</code> не заменяет понятный Git baseline и подходящие permissions.</p>
+    </section>
+
+    <section>
+      <h2>Короткая памятка для проекта</h2>
+      <p><code>CLAUDE.md</code> — это инструкции Claude о том, как работать с репозиторием, а не документация и не замена <code>README.md</code>. Записывайте то, что неочевидно из кода и влияет на работу всей команды:</p>
+      <ul>
+        <li>точные команды запуска, сборки и тестов;</li>
+        <li>важные соглашения и скрытые особенности проекта;</li>
+        <li>чувствительные зоны и границы изменений;</li>
+        <li>ожидаемый формат результата: изменённые файлы, проверки, риски.</li>
+      </ul>
+      <p>Особенно полезны точные команды — Claude склонен угадывать, чем запускать проект, и иногда угадывает не туда. А скрытые особенности вроде сумм в копейках, soft delete вместо физического удаления или обязательного worker спасают от «логичных», но неверных правок.</p>
+      <p>Правила делайте конкретными: не «делай всё аккуратно и современно», а «не меняй сигнатуры публичных методов в <code>src/api/**</code> без явного подтверждения»; не «соблюдай стиль проекта», а «не предлагай форматирующие правки вне текущего scope задачи»; не «следи за безопасностью», а «не читай и не редактируй <code>.env*</code> без прямого запроса».</p>
+      <p>Пример для Commerce OS:</p>
+      <pre><code># CLAUDE.md
+
+## Команды проекта
+- run: `docker compose up`
+- test: `./gradlew test`
+- check: `./gradlew check`
+
+## Договорённости
+- не менять `/api/v1/**` без явного подтверждения
+- не переписывать существующие файлы в `db/migration/`
+- в ответе всегда перечислять изменённые файлы и запущенные проверки</code></pre>
+      <p class="muted">Файл хорош тем, что короткий: как запускать проект, где опасные зоны и в каком виде отчитываться. Предпочитайте конкретные, проверяемые правила общим советам вроде «пиши хороший код» и держите файл небольшим и актуальным.</p>
+      <p class="muted">Не записывайте в файл и лишнее: инструкции под одну текущую задачу (вроде «сейчас работаем только с RefundService»), очевидные из кода факты и устаревшие сведения — иначе важные правила прячутся среди шума.</p>
+    </section>
+
+    <section>
+      <h2>Слои CLAUDE.md</h2>
+      <p><code>CLAUDE.md</code> бывает не один: глобальный <code>~/.claude/CLAUDE.md</code> подхватывается всегда; проектный <code>./CLAUDE.md</code> или <code>.claude/CLAUDE.md</code> — при старте работы с проектом; файлы в подпапках (<code>./subfolder/CLAUDE.md</code>) — по необходимости, когда агент доходит до этой области; <code>CLAUDE.local.md</code> — личные заметки.</p>
+      <p>Если в репозитории есть <code>AGENTS.md</code> без <code>CLAUDE.md</code>, Claude прочитает <code>AGENTS.md</code>. Когда появляется <code>CLAUDE.md</code>, читается только он.</p>
+    </section>
+
+    <section>
+      <h2>Куда поместить инструкцию</h2>
+      <div class="grid">
+        <article>
+          <h3><code>CLAUDE.md</code></h3>
+          <p class="muted">Общие, стабильные правила, нужные команде и будущим сессиям. Обычно хранится в репозитории.</p>
+        </article>
+        <article>
+          <h3><code>CLAUDE.local.md</code></h3>
+          <p class="muted">Локальные порты, личные пути к данным и предпочтения. Не коммитится, если добавлен в <code>.gitignore</code> (сам по себе не игнорируется), но доступен Claude — не храните здесь секреты.</p>
+        </article>
+        <article>
+          <h3>Rules</h3>
+          <p class="muted">Правила для одной папки, типа файлов или отдельной области проекта. Не перегружайте ими общий файл.</p>
+        </article>
+        <article>
+          <h3>Auto memory</h3>
+          <p class="muted">Автоматически сохранённые наблюдения. Они могут быть временными или устаревшими, поэтому требуют проверки.</p>
+        </article>
+      </div>
+      <p>Правило для узкой области (например, только для <code>db/migration/**</code> или <code>payments/</code>) выносите в отдельное rule, а в <code>CLAUDE.md</code> оставляйте короткое напоминание, что такие чувствительные зоны существуют.</p>
+      <p>Если строка не нужна никому и понятна прямо из репозитория — не записывайте её вовсе. А формат самих rule-файлов и их синтаксис пока не важен: важна именно логика разделения.</p>
+      <p>Типичный <code>CLAUDE.local.md</code> для личных особенностей среды:</p>
+      <pre><code># CLAUDE.local.md
+
+## Заметки о workspace
+- локальная БД работает на порту 5454
+- тестовые CSV для импорта лежат в `~/projects/data/subscriptions/`
+
+## Личные предпочтения
+- предлагай изменения небольшими diff-блоками
+- если затронуто больше двух файлов, сначала коротко опиши план</code></pre>
+    </section>
+
+    <div class="callout">Если нарушение факта было бы серьёзной проблемой, не полагайтесь только на auto memory.</div>
+
+    <section>
+      <h2>Проверяйте автоматическую память</h2>
+      <p>Например, Claude запомнил временный путь <code>/api/v0/refunds</code>; маршрут давно починили, а память не пересмотрели — и в новой сессии Claude уверенно тянется к устаревшему пути.</p>
+      <ol>
+        <li>Просматривайте, что Claude запомнил.</li>
+        <li>Удаляйте устаревшие или ошибочные записи.</li>
+        <li>Переносите важные и стабильные правила в <code>CLAUDE.md</code> или отдельное rule.</li>
+      </ol>
+      <p class="warning"><code>CLAUDE.md</code> — это context, not enforcement: Markdown-инструкция задаёт контекст, но не является технической блокировкой. Для критичных ограничений используйте технические средства: Git baseline, permission mode, deny-правила в permissions (например, <code>Read(./.env)</code>) и hooks. <code>.gitignore</code> защищает от случайного коммита и скрывает файл из подсказок <code>@</code>, но не мешает Claude прочитать его.</p>
+      <p class="muted">Посмотреть и почистить auto memory можно командой <code>/memory</code>; точное название и синтаксис зависят от версии — сверьтесь с <code>/help</code>.</p>
+    </section>
+
+    <section>
+      <h2>С чего начать</h2>
+      <p>Создайте компактный baseline: команды проекта, несколько неочевидных договорённостей, чувствительные зоны и формат отчёта. Добавляйте правило при повторяющейся проблеме; удаляйте то, что утратило актуальность. У хорошего <code>CLAUDE.md</code> нет цели стать толще — есть цель стать точнее.</p>
+      <p>Пример baseline для маленького проекта:</p>
+      <pre><code># CLAUDE.md
+
+## Команды
+- run: `npm run dev`
+- test: `npm test`
+
+## Договорённости проекта
+- все суммы храним в копейках
+- не отключать TypeScript strict mode
+- в ответе перечисляй изменённые файлы и запущенные проверки
+
+## Не делать
+- не трогать `.env*` без прямого запроса
+- не делать массовый рефакторинг вне текущего запроса</code></pre>
+      <p class="muted">Для Java-проекта на Gradle меняются только команды: run — <code>./gradlew bootRun</code>, test — <code>./gradlew test</code>.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <p>Общие и стабильные правила храните в <code>CLAUDE.md</code>, личные настройки — в <code>CLAUDE.local.md</code>, а правила для отдельных областей — в rules. Регулярно проверяйте auto memory: важные договорённости должны быть явно записаны, а ограничения, которые нельзя нарушить, нужно подкреплять техническими средствами.</p>
+    </section>
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> Написать короткий <code>CLAUDE.md</code> и проверить, как работают слои памяти.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В учебном git-репозитории создайте <code>CLAUDE.md</code> с командами проверки, одним правилом и форматом отчёта.</li>
+        <li>Создайте <code>CLAUDE.local.md</code> с личной заметкой и добавьте его в <code>.gitignore</code>; проверьте через <code>git check-ignore -v</code>.</li>
+        <li>Попросите Claude выполнить маленькую правку и отчитаться по формату из <code>CLAUDE.md</code>.</li>
+        <li>Выполните <code>/memory</code>, посмотрите память и решите, что стоит перенести в <code>CLAUDE.md</code>, а что оставить локально.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li><code>CLAUDE.md</code> короткий и содержит только полезные правила.</li>
+        <li><code>CLAUDE.local.md</code> не попадёт в Git.</li>
+        <li>Вы можете объяснить разницу между контекстом и технической блокировкой.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
