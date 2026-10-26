@@ -26,3 +26,4 @@
 
 - [Вебинар 1 — 30 вопросов](src/main/webinar1/CONTROL_QUESTIONS.md)
 - [Вебинар 2, уровень 3 — 15 вопросов](src/main/webinar2/level3/CONTROL_QUESTIONS.md)
+- [Вебинар 2, уровень 4 — 20 вопросов](src/main/webinar2/level4/CONTROL_QUESTIONS.md)

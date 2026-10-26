@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 4 — контрольные вопросы">
+  <title>Уровень 4 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    pre {
+      overflow-x: auto; margin: 14px 0; padding: 16px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: #101218; color: #d8e0ec;
+      font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 4 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 4: 20 вопросов с короткими ответами и ссылками на конспекты.</p>
+<h2>Лекция 1 — источники контекста и пакет доказательств</h2>
+<ol start="1">
+<li><strong>Что такое пакет доказательств (evidence bundle)?</strong><br>
+ Это компактный набор фактов по одной задаче, на которые опираются и при анализе, и при проверке результата. В него входят шаги воспроизведения, затронутые файлы, логи, скриншоты, тесты и другие конкретные evidence, а не весь контекст «на всякий случай».
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Чем контекст отличается от evidence?</strong><br>
+ Контекст помогает думать: файлы, код, логи, тикет, обсуждение. Evidence помогает доказывать: шаги воспроизведения, конкретный лог, падающий тест, скриншот неверного поведения. Гипотеза — не evidence.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Что не должно попадать в evidence bundle?</strong><br>
+ Пароли, токены, ключи, содержимое <code>.env</code>, персональные данные, неочищенные боевые логи и всё нерелевантное: огромные логи целиком, весь репозиторий, устаревшая документация, старые гипотезы, чужие скриншоты.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>На какие четыре вопроса должен отвечать достаточный evidence bundle?</strong><br>
+ Что именно ломается; как это воспроизвести; где вероятная зона изменений; по каким признакам понять, что исправление сработало.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h2>Лекция 2 — критерии приёмки</h2>
+<ol start="5">
+<li><strong>Что такое критерий приёмки?</strong><br>
+ Короткое проверяемое условие, которое должно выполняться после изменения. Выполняется — принимаем, нет — продолжаем. Критерии пишутся до работы и описывают наблюдаемое поведение, а не реализацию.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Чем хороший критерий приёмки отличается от указания на реализацию?</strong><br>
+ Хороший критерий говорит, что должно стать правдой: «если причина пустая, форма не отправляется и показывает сообщение». Указание на реализацию диктует код: «использовать <code>trim()</code>» или «добавить debounce».
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Какие виды критериев, кроме функциональных, выделяет лекция?</strong><br>
+ Негативные и краевые, на совместимость, на вывод/UI, технические и документационные.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Как извлекать критерии из фактов задачи?</strong><br>
+ Задать четыре вопроса: какое неправильное поведение должно исчезнуть; какое правильное появиться; что обязано остаться прежним; какой позитивный сценарий нельзя сломать.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h2>Лекция 3 — готовность задачи и план проверки</h2>
+<ol start="9">
+<li><strong>Чем план проверки отличается от готовности задачи?</strong><br>
+ План проверки отвечает «как проверяем?»: команды, тесты, логи, expected output. Готовность отвечает «когда считаем завершённым?»: scope, diff, совместимость, риски, human review. План — маршрут, готовность — финишная рамка.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что такое L1 verification?</strong><br>
+ Это первый слой проверки — план проверки одной задачи. Не CI и не стратегия тестирования команды: какие команды запустить, какой тест добавить, какой ответ API ожидать, какой лог проверить и что делать при падении.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что входит в готовность задачи и зачем нужен reproducibility audit?</strong><br>
+ Готовность включает diff в scope, отсутствие лишних файлов, зелёные тесты, совместимость API, записанные риски и human review. Reproducibility audit проверяет, поймёт ли коллега, что сделано, как проверялось и почему задача считается завершённой.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Почему human review остаётся обязательным?</strong><br>
+ Потому что только человек читает diff в контексте проекта и замечает, что тест проверяет не тот слой, правка ухудшила читаемость, задела соседний сценарий или изменила контракт. Финальную ответственность и принятие риска несёт человек.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h2>Лекция 4 — plan-first и review-first workflow</h2>
+<ol start="13">
+<li><strong>В каком порядке идут фазы workflow?</strong><br>
+ Explore → Plan → Implement → Verify → Review → Commit / PR. Цикл не линейный: при падении проверок или расползании scope на Review возвращаемся к Plan.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>В чём смысл Explore перед Plan?</strong><br>
+ Explore строит карту проекта до правок: затронутые файлы, текущий путь данных, существующие тесты и риски. Код не меняется. Без Explore план строится на догадках, а не на фактах.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Когда plan-first обязателен, а когда можно обойтись коротким путём?</strong><br>
+ Plan-first обязателен для незнакомого участка, multi-file change, auth/payments/database/config, рефакторинга в боевом коде, неясного scope и чувствительного production-поведения. Короткий путь допустим для опечатки, правки README, комментария или локального форматирования.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Чем Verify отличается от Review?</strong><br>
+ Verify проверяет, работает ли решение по критериям: тесты, команды, логи, ожидаемое поведение. Review проверяет, стоит ли принимать именно такое изменение: scope, лишние файлы, понятность diff, риски и совместимость. Зелёный тест не доказывает, что изменение хорошее и безопасное.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h2>Лекция 5 — prompt iteration и анти-паттерны</h2>
+<ol start="17">
+<li><strong>Почему постановка задачи не обязана получиться с первой попытки?</strong><br>
+ Рабочая постановка созревает ко второй-третьей версии: первая формулировка обычно черновик. Итерация помогает сузить проблему, отделить факты от предположений и зафиксировать ограничения и проверки.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Что такое Claude interview pattern?</strong><br>
+ Вы приносите краткую заготовку, Claude задаёт уточняющие вопросы и не пишет код. После ответов собирается финальный <code>TASK_SPEC.md</code>, а implementation начинается в новой сессии. Claude помогает сформулировать задачу, но не утверждает её.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Почему implementation лучше начинать в новой сессии?</strong><br>
+ Чтобы не тащить в реализацию черновые гипотезы, отброшенные варианты и временные допущения. Новая сессия получает чистый <code>TASK_SPEC.md</code> и подтверждённый evidence, а спецификация сохраняется отдельным артефактом.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Какие анти-паттерны prompting выделяются и чем их заменять?</strong><br>
+ «Почини всё» — одной проблемой, границами и non-goals; отсутствие критериев — наблюдаемым поведением до implementation; отсутствие плана проверки — проверками заранее; feature + refactor — отдельными задачами; «Claude said it works» — чтением diff и checks; polluted session — свежей сессией.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+</ol>
+<h2>Статус</h2>
+<ul>
+<li>20 вопросов покрывают все 5 лекций уровня 4.
+</li>
+<li>Ответы уже есть в конспектах; блок только собирает и связывает их.
+</li>
+<li>При изменении формулировок в лекциях этот файл нужно обновлять вместе с ними.
+</li>
+</ul>
+    <footer>Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
