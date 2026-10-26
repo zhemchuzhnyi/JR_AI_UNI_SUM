@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о готовности задачи и плане проверки: L1 verification, fail conditions, readiness checklist, human review.">
+  <title>Claude Code — 4 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Готовность задачи и план проверки</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">4 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      «Готово» от Claude — ещё не финал. Нужны две опоры, заданные заранее: план проверки — что и как проверяем, и готовность задачи — когда считаем задачу завершённой целиком.
+    </div>
+
+    <section>
+      <h2>«Готово» от Claude — ещё не финал</h2>
+      <p>Claude пишет: задача завершена, тесты предложены. Само по себе это слово не значит почти ничего — проверять всё равно вам.</p>
+      <p>Целей и критериев приёмки мало. Нужны две опоры, заданные заранее:</p>
+      <ul>
+        <li><strong>план проверки</strong> — что и как проверяем;</li>
+        <li><strong>готовность задачи</strong> — чек-лист завершённости.</li>
+      </ul>
+      <p>Если смешать их, получится «вроде что-то проверили» без понимания, хватает ли для приёмки.</p>
+    </section>
+
+    <section>
+      <h2>План проверки и готовность — не одно и то же</h2>
+      <p>Термины похожи на слух, поэтому их путают. Различие принципиальное.</p>
+      <table>
+        <thead><tr><th>Что сравниваем</th><th>План проверки</th><th>Готовность задачи</th></tr></thead>
+        <tbody>
+          <tr><td>Главный вопрос</td><td>Как проверяем?</td><td>Когда считаем завершённым?</td></tr>
+          <tr><td>Фокус</td><td>Команды, тесты, логи, expected output</td><td>Полная готовность задачи к приёмке</td></tr>
+          <tr><td>Когда появляется</td><td>До implementation</td><td>Тоже до implementation</td></tr>
+          <tr><td>Пример</td><td><code>./gradlew test</code>, smoke-check API, проверка логов</td><td>diff в scope, тесты зелёные, docs обновлены, risks noted, human reviewed</td></tr>
+        </tbody>
+      </table>
+      <p>План — маршрут, готовность — финишная рамка. Маршрут пройден, но задели пять файлов вне scope — задача не done.</p>
+    </section>
+
+    <section>
+      <h2>План проверки пишется до кода</h2>
+      <p>Частая ошибка: пусть Claude сначала напишет, а потом посмотрим, как проверять. Тогда проверка подгоняется под готовый результат. Открыли diff после фикса бага с двойным возвратом денег в Commerce OS: «А что теперь проверять?» — и подстроили план под то, что получилось.</p>
+      <p>План, написанный до implementation, защищает от самообмана. Сигналы заданы заранее: не совпали — «готово» сказать нельзя, даже если diff солиден и Claude уверен в себе. А уверен он бывает и тогда, когда проект уже сломан.</p>
+      <p>Чтобы план не выродился в список команд «по привычке», разложите каждый критерий приёмки на наблюдаемый сигнал, проверку и fail condition.</p>
+      <table>
+        <thead><tr><th>Критерий</th><th>Какой сигнал его подтверждает</th><th>Чем проверяем</th><th>Что считаем fail condition</th></tr></thead>
+        <tbody>
+          <tr><td>Один refund создаётся на один запрос</td><td>В системе появляется только один refund/event на один idempotency key</td><td>regression test + integration/smoke-check на повторный запрос</td><td>появляется второй refund или второй <code>refund.created</code></td></tr>
+          <tr><td>Retry не приводит к повторному refund</td><td>Повторный вызов возвращает безопасный результат без новой записи</td><td>test на retry-сценарий и просмотр логов</td><td>retry создаёт новую запись или повторно зовёт внешнюю оплату</td></tr>
+          <tr><td>Public API <code>/api/refunds</code> не меняется</td><td>Схема ответа и обязательные поля остаются прежними</td><td>smoke-check или API test на текущий контракт</td><td>у ответа меняется структура или семантика полей</td></tr>
+        </tbody>
+      </table>
+      <p>Сначала что должно стать правдой, потом проверяемый сигнал, и только потом команды, тесты и ручные проверки.</p>
+    </section>
+
+    <section>
+      <h2>L1 verification — первый слой проверки</h2>
+      <p>Verification устроен слоями. L1 — самый нижний: план проверки одной задачи. Не CI, не стратегия тестирования команды.</p>
+      <p>Задача: исправить баг в <code>RefundService</code>, из-за которого один запрос на refund иногда создаёт два возврата. На L1 вы не строите архитектуру тестирования — фиксируете приземлённое:</p>
+      <ul>
+        <li>какие команды запустить;</li>
+        <li>какой тест должен появиться или измениться;</li>
+        <li>какой ответ API ожидается;</li>
+        <li>какой лог должен исчезнуть или появиться;</li>
+        <li>что делать, если одна из проверок упала.</li>
+      </ul>
+      <p>L1 — слой «как докажем, что выполнена именно эта задача». Без него остальное — театр.</p>
+    </section>
+
+    <section>
+      <h2>Пример плана проверки для Commerce OS</h2>
+      <pre><code>## План проверки (L1)
+
+Команды:
+- `./gradlew :billing:test --tests RefundServiceTest`
+- `./gradlew :billing:integrationTest`
+
+Проверки:
+- добавить regression test `refund_is_idempotent_under_retry()`
+- тест должен падать до фикса и проходить после
+
+Ожидаемый результат:
+- один refund на один запрос
+- public API `/api/refunds` не меняется
+
+Если проверка не прошла:
+- не делать merge
+- вернуться к анализу логов и retry-логики</code></pre>
+      <p>Подробнее:</p>
+      <pre><code>## План проверки (L1)
+
+Команды:
+- `./gradlew :billing:test --tests RefundServiceTest`     # локальный unit/regression
+- `./gradlew :billing:integrationTest`                    # проверка интеграции
+- `curl -X POST /api/refunds -d @repro/refund.json`       # ручной smoke-check
+
+Логи:
+- не должно быть повторного `refund.created`
+- retry без `Idempotency-Key` не допускается
+
+Ожидаемый результат:
+- один refund event на один запрос
+- API response schema без изменений</code></pre>
+      <p>План не сводится к тестам: сюда входят ручные smoke-check, проверка логов, контроль совместимости API.</p>
+    </section>
+
+    <section>
+      <h2>Готовность задачи — момент завершённости</h2>
+      <p>Второй слой шире: вопрос не «что прогнали», а «завершена ли задача целиком».</p>
+      <pre><code>## Готовность задачи
+
+- [ ] diff затрагивает только refund-related файлы и тесты
+- [ ] нет случайных formatting-изменений вне scope
+- [ ] regression test падает до фикса и проходит после
+- [ ] relevant tests зелёные
+- [ ] public API не изменился
+- [ ] risks и limitations записаны
+- [ ] diff прочитан человеком до merge</code></pre>
+      <p>Часть плана можно честно выполнить и не дойти до done. Тесты зелёные, но diff захватил три лишних файла. Или забыли описать limitation. Или поменялся public API. Готовность возвращает разработку из «в целом ok» в «есть понятные условия завершённости».</p>
+      <p>Машинно-проверяемый набор — tests проходят, build зелёный, lint зелёный, diff в согласованных файлах — становится входом для режима «по цели» на уровне 6. Условие финиша: все машинно-проверяемые пункты дают <code>true</code>, и Claude крутит цикл «правка → запуск проверок → правка» без подтверждения на каждом шаге. Дальше в курсе тот же подход идёт к TDD-циклу, управляемой реализации шагов плана и пилотной миграции.</p>
+      <p>Субъективные пункты — «UX ок», «текст ясный», «архитектура чище» — для автоцикла не годятся, решение за человеком. Делите готовность на два слоя: машинная уходит в автоцикл, человеческая остаётся точкой одобрения. Реализация — интерактивный запрос, slash-команда вроде <code>/goal</code>, цикл через <code>claude -p</code> — зависит от версии. Важна модель: опишите финиш так, чтобы машина сама проверила его достижение.</p>
+    </section>
+
+    <section>
+      <h2>Не уходите в крайности</h2>
+      <p>Другая крайность — документ на два экрана с CI, релизом, безопасностью, деплоем и performance review.</p>
+      <p>Держите границу. Готовность задачи — приёмка на уровне задачи, а не весь процесс команды. Она не заменяет quality gates, release checklist и production policy. Её задача скромнее: понять, завершена ли эта задача в текущем scope.</p>
+      <p>Слишком большая готовность — ею перестанут пользоваться. Слишком маленькая — потеряет смысл.</p>
+    </section>
+
+    <section>
+      <h2>Reproducibility audit задачи</h2>
+      <p>Ещё одна недооценённая идея — reproducibility audit. Если завтра коллега откроет задачу, поймёт ли, что сделано, как проверялось и почему done?</p>
+      <p>В разработке с AI это особенно важно. История работы с Claude — гипотезы, логи, что сначала не работало — остаётся в вашей голове. Другой видит только артефакты: <code>TASK_SPEC.md</code>, diff, tests, описание PR.</p>
+      <p>Поэтому хорошая готовность включает воспроизводимость:</p>
+      <ul>
+        <li>какие команды запускались;</li>
+        <li>какой тест стал regression test;</li>
+        <li>что осталось риском;</li>
+        <li>где ограничения.</li>
+      </ul>
+      <p>Иначе уверенность живёт только в вашей голове.</p>
+    </section>
+
+    <section>
+      <h2>Полный фрагмент TASK_SPEC.md</h2>
+      <p>Верхняя часть <code>TASK_SPEC.md</code> с goal, scope, constraints и evidence уже есть. Добавляем три недостающих блока:</p>
+      <pre><code>## Критерии приёмки
+
+- один refund создаётся на один запрос
+- retry не приводит к повторному refund
+- public API `/api/refunds` не меняется
+
+## План проверки (L1)
+
+Команды:
+- `./gradlew :billing:test --tests RefundServiceTest`
+- `./gradlew :billing:integrationTest`
+
+Проверки:
+- добавить regression test `refund_is_idempotent_under_retry()`
+- проверить, что до фикса тест падает, после фикса проходит
+- выполнить ручной smoke-check через test payload
+
+## Готовность задачи
+
+- diff в рамках scope
+- нет unrelated файлов
+- tests зелёные
+- API совместим
+- risks и limitations записаны
+- human review выполнен</code></pre>
+      <p>Критерии приёмки — что должно стать правдой; план проверки — как проверить; готовность задачи — когда считаем завершённым. Человеку это даёт контроль, Claude — рамку, из которой не уедешь в сторону.</p>
+    </section>
+
+    <section>
+      <h2>Небольшой Java-пример проверки</h2>
+      <p>Пример вне markdown-артефактов. Метод не должен допускать повторный refund для одного запроса.</p>
+      <pre><code>import java.util.HashSet;
+import java.util.Set;
+
+public class Demo {
+    public static void main(String[] args) {
+        Set&lt;String&gt; processedRefunds = new HashSet&lt;&gt;();
+
+        boolean created = processedRefunds.add("refund-123");
+        System.out.println(created);   // true
+
+        created = processedRefunds.add("refund-123");
+        System.out.println(created);   // false
+    }
+}</code></pre>
+      <p>Принцип идемпотентности: первый раз операция проходит, второй — нет. Но это иллюстрация поведения, не план проверки. План начинается там, где вы описываете, какой тест это докажет, в каком модуле он лежит, что происходит до фикса и после.</p>
+      <div class="callout">Код — не доказательство. Код — материал, из которого доказательство собирают.</div>
+    </section>
+
+    <section>
+      <h2>Claude в verification без права на «done»</h2>
+      <p>Claude полезен при узкой задаче. Вместо «проверь, всё ли ок» — конкретный запрос.</p>
+      <pre><code>Составь план проверки для этой задачи.
+Не меняй код.
+Верни:
+1) какие команды запускать,
+2) какие tests добавить или обновить,
+3) какие expected outputs проверить,
+4) что считать fail condition.</code></pre>
+      <p>Или так:</p>
+      <pre><code>Проверь мою готовность задачи для bugfix в RefundService.
+Скажи, чего не хватает для task-level приёмки.
+Не предлагай CI/release-процесс, только task-level done.</code></pre>
+      <p>Claude не утверждает, что задача завершена, — он помогает спроектировать рамку проверки. Надёжнее, чем «проверь всё» в надежде, что модель не забыла про scope, compatibility и risks.</p>
+    </section>
+
+    <section>
+      <h2>Human review остаётся обязательным</h2>
+      <p>План прекрасен, готовность аккуратная, tests зелёные — человеческий review всё равно часть done. Не потому, что AI «плохой», а потому, что diff нужно прочитать и связать с контекстом проекта.</p>
+      <p>Только человек замечает: «тест зелёный, но это не тот слой», «баг исправлен, но метод стал хуже читаться и задел соседний сценарий», «почему поменялся сериализатор, если задача про refund?». Claude часть увидит, но финальная ответственность — за человеком.</p>
+      <div class="callout">Claude может помочь написать код, тесты и даже план проверки. Но сказать «done» по-настоящему может только человек, который прочитал diff и принял риск.</div>
+    </section>
+
+    <section>
+      <h2>Рабочая схема</h2>
+      <p>Критерии приёмки → План проверки → Implementation → Checks and tests → Готовность задачи → Human review and decision.</p>
+      <p>Схема не даёт перескочить ступени — особенно любимую «сразу в implementation». Разберёмся и так, но грустнее и дороже.</p>
+    </section>
+
+    <section>
+      <h2>Подводим итоги</h2>
+      <p>Оформляя задачу для Claude, задайте себе три вопроса:</p>
+      <ol>
+        <li>Что должно стать правдой в конце? — критерии приёмки.</li>
+        <li>Как я это докажу? — план проверки.</li>
+        <li>По каким признакам задача завершена целиком? — готовность задачи.</li>
+      </ol>
+      <p>Есть ответы — implementation идёт спокойнее. Claude не работает в тумане, а вы не убеждаете себя, что зелёный тест равен готовой задаче. Шаг из режима «вроде работает» в нормальную инженерию.</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать L1-план проверки и чек-лист готовности для небольшого bugfix.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите учебную задачу: при сохранении display name нужно убрать пробелы по краям, пустое имя и имя из одних пробелов не сохранять.</li>
+        <li>Для каждого критерия приёмки выпишите: наблюдаемый сигнал, чем проверяем, что считаем fail condition. Используйте только вымышленные имена.</li>
+        <li>Составьте план проверки до кода: команды запуска тестов, какие тесты добавить, какой expected output, что делать при падении.</li>
+        <li>Отдельно составьте чек-лист готовности: scope/diff, отсутствие лишних файлов, зелёные тесты, совместимость, риски и human review.</li>
+        <li>Попросите Claude проверить план и готовность по узкому запросу: не менять код, не предлагать CI/release, только task-level замечания.</li>
+        <li>Прогоните тесты и убедитесь, что план и готовность не противоречат друг другу.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>У каждого критерия есть сигнал, проверка и fail condition.</li>
+        <li>План проверки написан до реализации.</li>
+        <li>В готовности есть scope, тесты, совместимость, риски и human review.</li>
+        <li>Вы можете объяснить разницу между планом проверки и готовностью задачи.</li>
+        <li>Все тесты завершаются успешно.</li>
+      </ul>
+    </section>
+
+    <footer>4 уровень · лекция 3. План проверки — маршрут, готовность — финишная рамка, human review — обязательная точка.</footer>
+  </main>
+</body>
+</html>
