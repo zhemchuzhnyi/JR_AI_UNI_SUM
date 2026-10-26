@@ -5,7 +5,8 @@
 - [Лекция 1 — источники контекста и пакет доказательств](lecture1/index.html)
 - [Лекция 2 — критерии приёмки](lecture2/index.html)
 - [Лекция 3 — готовность задачи и план проверки](lecture3/index.html)
+- [Лекция 4 — plan-first и review-first workflow](lecture4/index.html)
 
-Остальные лекции уровня 4 (4+) пока не добавлены.
+Остальные лекции уровня 4 (5+) пока не добавлены.
 
 Вебинар 2 покрывает темы уровня: критерии приёмки, verification plan, пакет доказательств, готовность задачи и workflow explore → plan → implement → verify → review.
