@@ -159,8 +159,8 @@ Check all of the following:
 ## Current inventory
 
 - **Webinar 1:** level 1 (lectures 1–5), level 2 (lectures 1–5), webinar practice, control questions.
-- **Webinar 2:** level 3 (lectures 1–5), level 4 (lecture 1), two webinar practices, level-3 control questions.
-- **Level 4:** further lectures are not added yet.
+- **Webinar 2:** level 3 (lectures 1–5), level 4 (lectures 1–2), two webinar practices, level-3 control questions.
+- **Level 4:** further lectures (3+) are not added yet.
 
 ## Style and content
 
