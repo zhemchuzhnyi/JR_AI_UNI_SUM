@@ -10,7 +10,7 @@
 ## Статус синхронизации
 
 - Уровень 3 — конспекты лекций 1–5 синхронизированы с вебинаром.
-- Уровень 4 — добавлены [лекция 1 «Источники контекста и пакет доказательств»](level4/lecture1/index.html), [лекция 2 «Критерии приёмки»](level4/lecture2/index.html), [лекция 3 «Готовность задачи и план проверки»](level4/lecture3/index.html), [лекция 4 «Plan-first и review-first workflow»](level4/lecture4/index.html) и [лекция 5 «Prompt iteration и анти-паттерны»](level4/lecture5/index.html); остальные лекции пока не добавлены.
+- Уровень 4 — все 5 лекций добавлены и синхронизированы с вебинаром: [лекция 1](level4/lecture1/index.html), [лекция 2](level4/lecture2/index.html), [лекция 3](level4/lecture3/index.html), [лекция 4](level4/lecture4/index.html), [лекция 5](level4/lecture5/index.html).
 - Практики вебинара 2 добавлены: калькулятор «делим счёт» и две 8-битные симуляции.
 
 ## Контрольные вопросы
