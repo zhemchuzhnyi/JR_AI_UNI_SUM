@@ -15,27 +15,6 @@
 
 - [Вебинар 1](src/main/webinar1/README.md)
 - [Вебинар 2](src/main/webinar2/README.md)
-- [Структура и правила ведения конспектов](src/main/README.md)
-- [Skill для работы с лекциями](.opencode/skills/claude-code-lectures/SKILL.md)
-
-## Структура
-
-```text
-src/main/
-  index.html
-  webinar1/
-    level1/lecture1..5/
-    level2/lecture1..5/
-    practice/
-  webinar2/
-    level3/lecture1..5/
-    level4/lecture1/
-    practice/
-      1-calculator/
-      2-simulations/
-```
-
-Локальная папка `lecture1` соответствует URL `lecture01`. На сайте номер лекции может отображаться на единицу меньше; в репозитории используется локальная нумерация.
 
 ## Практики
 

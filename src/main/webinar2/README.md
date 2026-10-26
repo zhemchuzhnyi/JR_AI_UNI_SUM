@@ -25,4 +25,4 @@
 - [Практика 1 — калькулятор «делим счёт»](practice/1-calculator/index.html)
 - [Практика 2 — две 8-битные симуляции](practice/2-simulations/index.html)
 
-Общая структура и правила ведения конспектов: [../README.md](../README.md).
+

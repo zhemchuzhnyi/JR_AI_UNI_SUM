@@ -39,6 +39,9 @@ build/
 ### Mac OS ###
 .DS_Store
 
+### Local agent skills ###
+.opencode/skills/claude-code-lectures/
+
 ### Secrets and local configuration ###
 .env
 .env.*
