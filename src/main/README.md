@@ -60,6 +60,9 @@ src/main/
       lecture2/
         summary.txt
         index.html
+      lecture3/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -116,7 +119,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов.
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, контрольные вопросы уровней 3 и 4.
 - **Уровень 4:** все 5 лекций добавлены и синхронизированы с вебинаром.
-- **Вебинар 3:** уровень 5 — лекции 1–2 (operational model и context selection).
+- **Вебинар 3:** уровень 5 — лекции 1–3 (operational model, context selection и context budget).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции
