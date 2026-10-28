@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 5 — контрольные вопросы">
+  <title>Уровень 5 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    pre {
+      overflow-x: auto; margin: 14px 0; padding: 16px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: #101218; color: #d8e0ec;
+      font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 5 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 5: 20 вопросов с короткими ответами и ссылками на конспекты.</p>
+<h2>Лекция 1 — Operational model: как устроен контекст Claude</h2>
+<ol start="1">
+<li><strong>Что точнее всего описывает контекст Claude в текущей сессии?</strong><br>
+ Это рабочее окно ограниченного объёма, в котором находятся только реально переданные сигналы: текущий prompt, история диалога, прочитанные файлы, вывод команд и логов, <code>CLAUDE.md</code>/rules/auto memory, фрагменты IDE, system prompt и описания инструментов, включая MCP. Это не вся память о проекте и не весь репозиторий.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Почему контекст называют рабочим окном, а не памятью?</strong><br>
+ Память предполагает, что знания сохраняются между сессиями. Контекст — лента сообщений текущей сессии: Claude смотрит на неё и дописывает следующий ответ. Окно конечно, его размер зависит от модели, а точную цифру в текущей сессии показывает <code>/context</code>.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Почему новая сессия — не полная амнезия?</strong><br>
+ Стабильные инструкции (<code>CLAUDE.md</code>, rules, auto memory) и часть постоянных слоёв подгружаются заново. Но детали рассуждений, прочитанные файлы, отвергнутые гипотезы и логи предыдущего расследования не переносятся: их нужно восстановить через task spec или заново принести в сессию.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Назовите четыре причины ощущения «Claude не знает очевидного».</strong><br>
+ Сигнал вообще не попал в окно; сигнал был, но утонул в длинной сессии; возник конфликт сигналов; информация подана как настроение, а не как проверяемый факт или гипотеза.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h2>Лекция 2 — Context selection: контекст как бюджет</h2>
+<ol start="5">
+<li><strong>Почему «дай весь проект» делает результат хуже?</strong><br>
+ Лишний контекст конкурирует за внимание с важными сигналами, расширяет область поиска, размывает фокус и повышает риск широкого diff. Нужен минимально достаточный набор под конкретную задачу.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что стоит дать для bugfix с пустым экраном после неверного пароля?</strong><br>
+ Goal, scope и ограничения; два-три файла auth-области; failing test; короткий stack trace или фрагмент лога; reproduction steps; при необходимости config snippet без секретов и <code>CLAUDE.md</code>. Не весь backend, не полный лог за день и не <code>.env</code>.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Чем контекст отличается от evidence?</strong><br>
+ Контекст помогает думать: файлы, код, логи, тикет, обсуждение. Evidence помогает доказывать: шаги воспроизведения, конкретный лог, падающий тест, скриншот неверного поведения. Гипотеза — не evidence.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что делать с контекстом, если проекта ещё нет?</strong><br>
+ Собирать его не из кода, а из <code>SPEC.md</code>: что строим, какой первый кусок делаем, какие границы у задачи. Если spec пока нет, начать с мини-спеки в чате: цель, 2–3 ограничения и что проверить первым. Первый заход может быть discovery-планом, а не кодом.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h2>Лекция 3 — Context budget, /context и compaction</h2>
+<ol start="9">
+<li><strong>Что такое context budget и что за него конкурирует?</strong><br>
+ Это ограниченный объём окна сессии. За место конкурируют system prompt и описания инструментов, MCP-серверы, <code>CLAUDE.md</code>, rules и auto memory, история диалога, прочитанные файлы и вывод команд. Разросшийся <code>CLAUDE.md</code> оплачивается заново в каждой сессии, а по ходу работы растёт в первую очередь <code>Messages</code>.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что показывает <code>/context</code> и на какие три вопроса помогает ответить?</strong><br>
+ Он показывает вклад слоёв — system prompt, tools, MCP tools, memory files, messages, free space — и помогает понять: не съела ли история слишком много места; не лежат ли в окне ненужные выводы команд и логи; остались ли в фокусе файлы и ограничения. Если занято около 60% окна, стоит усилить контроль за качеством.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что делает <code>/compact</code> и как уменьшить потерю деталей?</strong><br>
+ Сжимает историю в сводку и освобождает место, но теряет нюансы и детали формулировок. Перед compaction задайте список сохраняемого: goal, scope, non-goals, ограничения, текущую гипотезу, stack trace excerpt, отвергнутые причины и следующий шаг.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что такое auto-compact и как контекст ведёт себя после сжатия?</strong><br>
+ При заполнении окна Claude Code сам запускает auto-compact; в строке состояния виден индикатор «Context left until auto-compact», а порог можно сдвинуть командой <code>/autocompact 500k</code>. После сжатия project-root <code>CLAUDE.md</code>, общие rules и auto memory подгружаются заново; path-scoped rules и вложенные <code>CLAUDE.md</code> — только при чтении файла из нужной области; до пяти файлов, которые Claude недавно менял, он перечитывает сам, остальные остаются строкой в сводке.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h2>Лекция 4 — Context pollution и recovery actions</h2>
+<ol start="13">
+<li><strong>Что такое context pollution?</strong><br>
+ Это загрязнение контекста: в окне накопились сигналы, мешающие текущей задаче, — устаревшие или противоречивые данные, старые гипотезы, длинные логи, побочные темы, устаревшие docs или разросшийся <code>CLAUDE.md</code>. Это не «модель сломалась», а потеря дисциплины сессии.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Чем загрязнение отличается от нехватки контекста?</strong><br>
+ При нехватке Claude просит уточнение, файл, лог или stack trace — добавьте точечный источник. При загрязнении данных много, но часть плохая: Claude уверенно рассуждает на старом мусоре, игнорирует свежие ограничения и возвращается к отвергнутым гипотезам — сессию нужно чистить, сжимать или пересобирать.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Какие recovery actions существуют и когда их выбирать?</strong><br>
+ <code>/compact</code> — та же задача, но история длинная; <code>/clear</code> — задача сменилась или разговор смешался; <code>/rewind</code> — последняя ветка рассуждений ушла не туда; fresh session — хаос, противоречия или несколько failed attempts; остановка и чтение diff — если файлы уже изменены.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Что входит в task spec как аварийный комплект и зачем он после <code>/compact</code> или fresh session?</strong><br>
+ Goal, current behavior, desired behavior, scope, non-goals, constraints, evidence, критерии приёмки и следующий шаг. После compaction сводка сглаживает нюансы, а fresh session не помнит разговор: task spec возвращает рамку и не даёт потерять важные ограничения.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h2>Лекция 5 — Session lifecycle: контейнер задачи</h2>
+<ol start="17">
+<li><strong>Что такое контейнер задачи и какие пять вопросов задают его границы?</strong><br>
+ Это сессия, привязанная к одной задаче или рабочему потоку. Пять вопросов: что делаем, где, что решили, что неясно, какой следующий шаг. У контейнера есть goal, scope, ограничения и понятная точка продолжения.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Что входит в шапку сессии и зачем она нужна?</strong><br>
+ Имя сессии, цель, область изменений, не-цели, открытые вопросы и следующий шаг. Шапка задаёт рамку с первого сообщения, чтобы Claude не достраивал задачу «старательно и не туда», и переживает паузу или сжатие истории.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Как принять решение о жизненном цикле сессии и что сохранить на выходе?</strong><br>
+ Тот же task и goal/scope легко пересказать — продолжайте; истории слишком много — сожмите и повторите опоры; task сменился или цель трудно пересказать — открывайте новый контейнер. На выходе сохраните короткую сводку: цель, подтверждённую причину или открытый вопрос, ограничения и следующий шаг; полную стенограмму тащить не нужно.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Какие команды помогают управлять сессиями?</strong><br>
+ <code>/rename</code> задаёт имя, <code>claude -n auth-refactor</code> — имя при запуске; <code>/resume</code> и <code>--continue</code> возвращают к сессии; <code>/branch</code> и <code>/fork-session</code> отводят ветку; <code>/export</code> выгружает сессию; <code>claude --resume</code> открывает session picker; <code>/fork</code> запускает копию разговора отдельной фоновой сессией, а <code>/subtask</code> отдаёт побочную задачу субагенту.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+</ol>
+<h2>Статус</h2>
+<ul>
+<li>20 вопросов покрывают все 5 лекций уровня 5.
+</li>
+<li>Ответы уже есть в конспектах; блок только собирает и связывает их.
+</li>
+<li>При изменении формулировок в лекциях этот файл нужно обновлять вместе с ними.
+</li>
+</ul>
+    <footer>Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
