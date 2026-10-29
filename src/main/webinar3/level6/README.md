@@ -9,3 +9,7 @@
 - [Лекция 5 — Handoff Note и Fresh Reviewer Pattern](lecture5/index.html)
 
 Все лекции уровня 6 добавлены.
+
+## Контрольные вопросы
+
+- [20 вопросов по уровню 6](CONTROL_QUESTIONS.html)

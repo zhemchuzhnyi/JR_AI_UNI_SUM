@@ -112,6 +112,7 @@ pwd                         # /projects/commerce-os-hotfix</code></pre>
 └── commerce-os-hotfix/   # ветка hotfix/refund-amount-typo, своя сессия Claude</code></pre>
       <p>У вас теперь не одна папка, которую приходится мучить <code>stash</code>, <code>switch</code>, <code>switch back</code>, «ой, а где мои незакоммиченные изменения», а две отдельные поверхности. В одной продолжается длинный рефакторинг. В другой спокойно делается срочный hotfix.</p>
       <p>У каждой папки свои локальные build-артефакты, свои незакоммиченные изменения, свои открытые вкладки IDE, свои терминалы. Для Commerce OS, где есть и Java-часть, и Next.js-часть, это особенно удобно.</p>
+      <p>В Claude Code worktree можно создать и без ручного <code>git worktree add</code>: команда <code>claude -w locales-ui</code> создаст worktree в <code>.claude/worktrees/locales-ui</code> и откроет сессию в нём. Если в одном <code>TASK_SPEC</code> есть независимые куски — backend, UI, тесты, миграции — их можно вести параллельно в разных worktree, не перетирая файлы.</p>
       <p>Git пытается вас защитить. Одну и ту же ветку он обычно не даст держать в двух worktree одновременно:</p>
       <pre><code>git worktree add ../commerce-os-copy refund-refactor
 # fatal: 'refund-refactor' is already checked out at '/projects/commerce-os'</code></pre>

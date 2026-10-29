@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 6 — контрольные вопросы">
+  <title>Уровень 6 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    pre {
+      overflow-x: auto; margin: 14px 0; padding: 16px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: #101218; color: #d8e0ec;
+      font: .9rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 6 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 6: 20 вопросов с короткими ответами и ссылками на конспекты.</p>
+<h2>Лекция 1 — длинные задачи, milestones и context rot</h2>
+<ol start="1">
+<li><strong>Чем по сути является длинная AI-assisted задача?</strong><br>
+ Не одним большим prompt, а маленьким инженерным процессом: task spec, milestones, именованная сессия, stop points, summary/decision log и маленькие коммиты. Процесс делает задачу управляемой, проверяемой и передаваемой.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Какие три вопроса задают каркас длинной задачи и как он превращается в milestones?</strong><br>
+ Что делаем, чего не делаем и где останавливаемся проверять состояние. Task spec делится на этапы с проверяемым финишем; например, новый проект: M1 — backend API и тесты, M2 — UI со списком, M3 — поиск и фильтр. Если форма продукта неясна, первым может быть M0 — разведка или прототип.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Что должно быть хорошим stop point?</strong><br>
+ Конец осмысленного куска или milestone, а не момент усталости. В этой точке есть проверки, короткий summary, зафиксированные решения, маленький commit и один конкретный следующий шаг. Задачу можно безопасно передать другому человеку или себе будущему.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+<li><strong>Что такое context rot и когда выбирают goal-driven режим?</strong><br>
+ Context rot — загрязнение на длинной дистанции: контекст стареет, и Claude тащит старые гипотезы и отвергнутые идеи как актуальные. Лечение — summary, фиксация решений и чистый контекст. Goal-driven выбирают, когда финиш проверяется машиной: например, <code>/goal &lt;условие&gt;</code>, тесты или build зелёные. <code>/goal clear</code> снимает цель; при субъективной проверке безопаснее пошаговый режим.
+ → <a href="lecture1/index.html">Лекция 1</a>
+</li>
+</ol>
+<h2>Лекция 2 — checkpoints и /rewind</h2>
+<ol start="5">
+<li><strong>Чем checkpoint в Claude Code отличается от Git-коммита?</strong><br>
+ Checkpoint живёт внутри сессии Claude и позволяет вернуться к точке через <code>/rewind</code>; откатывается ветка разговора и часто связанные правки файлов. Git-коммит живёт в истории проекта, переживает сессию, может быть опубликован и не откатывается через <code>/rewind</code>. Checkpoint — session-level recovery, а не замена version control.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что именно откатывает <code>/rewind</code> и как работает checkpoint?</strong><br>
+ Только состояние текущей сессии: ветку разговора, гипотезы, решения и часто правки, сделанные инструментами Claude. Checkpoint создаётся автоматически на каждый промпт; меню открывается через <code>/rewind</code> или двойной <code>Esc</code>, где можно вернуть код, разговор или оба, либо выбрать <code>Summarize from here</code> / <code>Summarize up to here</code>. После случайного <code>/clear</code> можно вернуть предыдущую сессию, пока Claude Code не закрыт.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Что <code>/rewind</code> точно не откатит?</strong><br>
+ Уже созданные Git-коммиты, особенно в shared-истории; внешние эффекты — миграции БД, деплой, письма, платежи, запросы во внешние сервисы; ручные правки в IDE; изменения через shell-команды вроде <code>rm</code>, <code>mv</code>, <code>cp</code> и скрипты. Для этих слоёв нужны Git, миграции/бэкапы или системный rollback.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Когда пора нажимать <code>/rewind</code> и что означает «третий <code>/rewind</code> к одной развилке»?</strong><br>
+ Пора, если Claude возвращается к отвергнутой гипотезе, diff расползается, появляются латки на латках или вам уже не хочется читать diff. Третий откат к одной и той же развилке — не стратегия, а диагноз: проблема в task spec, evidence или слишком расплывчатом scope. Нужно переписать постановку, сузить границы или открыть fresh session.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+</ol>
+<h2>Лекция 3 — Git-first recovery</h2>
+<ol start="9">
+<li><strong>Какой первый шаг рекомендует лекция после неудачной AI-итерации, тронувшей лишние файлы?</strong><br>
+ Остановиться и не просить «исправить всё» поверх хаоса. Сначала посмотреть на факты: <code>git status</code>, затем <code>git diff</code> по конкретным подозрительным файлам. Только после этого выбирать минимальный rollback.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Как выбрать между <code>git restore</code>, <code>git revert</code>, <code>git reset</code> и новой веткой?</strong><br>
+ <code>git restore</code> — лишние правки в файлах, коммита ещё нет. <code>git revert</code> — плохой коммит уже есть, особенно в shared-истории. <code>git reset</code> — только локальный коммит, который никто не видел; на общей истории опасен. Новая ветка — текущая попытка слишком грязная и дорогая в спасении.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Что делать с плохим коммитом в shared-истории?</strong><br>
+ Предпочесть <code>git revert</code>: он создаёт новый коммит, отменяющий изменения плохого, и не переписывает историю. <code>git reset</code> в такой ситуации опасен, потому что меняет ветку и историю, которую уже могли получить другие.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+<li><strong>Почему маленькие milestone-коммиты делают rollback дешёвым?</strong><br>
+ Гигантский коммит «refactor + cleanup + tests» нельзя откатить частично. Маленькие коммиты на границах этапов позволяют отменить только неудачный шаг, не трогая полезные предыдущие. Milestone задаёт смысл шага, commit фиксирует состояние файлов.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
+<h2>Лекция 4 — параллельные сессии и worktree</h2>
+<ol start="13">
+<li><strong>Что отвечает каждая из сущностей: ветка, сессия, worktree?</strong><br>
+ Ветка хранит историю изменений в Git. Сессия хранит контекст разговора и решения по задаче в Claude Code. Worktree — отдельная физическая рабочая папка того же репозитория. Они связаны, но не заменяют друг друга.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>В каком сценарии worktree оправдан сильнее всего?</strong><br>
+ Когда идёт длинный рефакторинг с незакоммиченными изменениями, а параллельно нужен срочный hotfix. Worktree даёт отдельную папку и ветку, убирая <code>stash</code>-цирк. Также полезен для сравнения альтернатив бок о бок и для двух редактирующих Claude-сессий с разным файловым состоянием.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Как создать worktree и проверить, что вы в нужном месте?</strong><br>
+ Например: <code>git worktree add -b hotfix/refund-amount-typo ../commerce-os-hotfix main</code>, затем <code>cd ../commerce-os-hotfix</code>. В Claude Code можно использовать <code>claude -w locales-ui</code> — worktree появится в <code>.claude/worktrees/locales-ui</code>. Проверка: <code>pwd</code>, <code>git branch --show-current</code>, <code>git status -sb</code>; список — <code>git worktree list</code>.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>Как правильно убрать worktree после merge?</strong><br>
+ Из основной папки: <code>git worktree remove ../commerce-os-hotfix</code>, затем <code>git branch -d hotfix/refund-amount-typo</code> и <code>git worktree list</code>. Не удалять папку вручную через <code>rm -rf</code>: Git хранит список worktree. При незакоммиченных изменениях сначала проверить, можно ли их потерять, и только потом использовать <code>--force</code>.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
+<h2>Лекция 5 — handoff и fresh reviewer</h2>
+<ol start="17">
+<li><strong>Что такое handoff и когда нужен HANDOFF_NOTE.md?</strong><br>
+ Компактный пакет смысла для продолжения или проверки задачи: <code>HANDOFF_NOTE.md</code>, <code>TASK_SPEC.md</code>, актуальный diff и результаты проверок. Для маленькой правки хватит пяти пунктов в PR или issue; отдельный файл нужен, когда задача переживает сессию, день работы или передачу другому человеку.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Какие поля должны быть в HANDOFF_NOTE.md?</strong><br>
+ Goal, Task spec, Changed files, Decisions, Assumptions, Evidence, Tests/checks, Known failures/Risks и Next step. Формулировки должны быть конкретными: не «тесты зелёные», а команда и результат; не «продолжить работу», а один следующий шаг.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Что такое fresh reviewer pattern и что он проверяет?</strong><br>
+ Это проверка задачи в свежем контексте — новой сессией Claude или человеком — по компактному пакету: TASK_SPEC, HANDOFF_NOTE, diff и checks. Reviewer смотрит не как автор и ищет пропущенные edge cases, выход за scope и недоказанные утверждения. Всю переписку ему давать не нужно, иначе он заразится старыми гипотезами.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+<li><strong>Чем HANDOFF_NOTE.md отличается от PR description, commit message и changelog?</strong><br>
+ Handoff написан для следующей сессии или человека, который продолжит/проверит незавершённую задачу. PR description — для reviewer’а готового изменения перед merge. Commit message — для истории Git. Changelog — для пользователя или команды релиза. Смешивать их роли нельзя.
+ → <a href="lecture5/index.html">Лекция 5</a>
+</li>
+</ol>
+<h2>Статус</h2>
+<ul>
+<li>20 вопросов покрывают все 5 лекций уровня 6.
+</li>
+<li>Ответы собраны из конспектов и дополнены темами вебинара 3: <code>/goal</code>, новый проект, механика checkpoint и <code>claude -w</code>.
+</li>
+<li>При изменении лекций этот файл нужно обновлять вместе с ними.
+</li>
+</ul>
+    <footer>Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
