@@ -144,7 +144,6 @@ HTML-аналог:
 
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов. Аудит покрытия: [вебинар 1](webinar1/COVERAGE.md).
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, 15 и 20 контрольных вопросов. Аудит покрытия: [вебинар 2](webinar2/COVERAGE.md).
-- **Уровень 4:** все 5 лекций добавлены и синхронизированы с вебинарной частью.
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 20 вопросов; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 20 вопросов; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
