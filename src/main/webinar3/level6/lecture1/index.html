@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о длинных задачах: task spec, milestones, именованные сессии, stop points, context rot и goal-driven режим.">
+  <title>Claude Code — 6 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Длинные задачи без бесконечного чата</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">6 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      Длинная задача — это не один большой prompt, а маленький инженерный процесс: task spec, milestones, именованная сессия, stop points и внешняя память. Без этой формы контекст разрастается, гипотезы смешиваются, а diff становится невозможно читать.
+    </div>
+
+    <section>
+      <h2>Длинная задача ломается не в коде, а в процессе</h2>
+      <p>Длинная задача ломается не оттого, что модель «плохо кодит», а когда процесс теряет форму: контекст разрастается, гипотезы перемешиваются, вы обсуждаете три проблемы сразу, diff не читается.</p>
+      <p>Возьмём AI Commerce Growth OS. Надо вынести refund-логику из <code>RefundController</code> в <code>RefundService</code>: не сломать API, не трогать платёжного провайдера, сохранить поведение. Дайте Claude запрос «отрефактори refund-flow и сделай код нормальным» — и полезность без границ расползётся: через полчаса обсуждаете DTO, exception handler, логи и pagination в соседнем модуле. Не задача, а клубок задач.</p>
+      <table>
+        <thead><tr><th>Если работать «одним заходом»</th><th>Если работать как инженерный процесс</th></tr></thead>
+        <tbody>
+          <tr><td>Один большой запрос</td><td>task spec + milestones</td></tr>
+          <tr><td>Безымянная сессия</td><td>Именованная сессия под конкретную задачу</td></tr>
+          <tr><td>Правки «раз уж мы тут»</td><td>Жёсткий scope и запрет на unrelated work</td></tr>
+          <tr><td>Один коммит в конце</td><td>Маленькие коммиты на границах этапов</td></tr>
+          <tr><td>Остановка по усталости</td><td>Stop points по плану</td></tr>
+          <tr><td>Память только в диалоге</td><td>Summary и decision log</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">Длинная AI-assisted задача — это не большой prompt, а маленький инженерный процесс. Не спроектируете его — задача поплывёт раньше, чем сломается код.</div>
+    </section>
+
+    <section>
+      <h2>Каркас длинной задачи: spec и milestones</h2>
+      <p>Чтобы задача не расползалась, ей нужен каркас на три вопроса: что делаем, чего не делаем, где останавливаемся проверять состояние. Превращайте task spec сразу в скелет процесса — цель, ограничения, деление на этапы:</p>
+      <pre><code># TASK_SPEC: refund-flow refactor
+
+## Цель
+Вынести refund decision logic из RefundController в RefundService.
+
+## Область изменений
+Только refund-flow.
+
+## Не-цели
+Не менять payment provider integration.
+Не менять публичный API.
+Не менять схему БД.
+
+## Ограничения
+Сохранить текущее поведение и зелёные тесты.
+
+## Майлстоуны
+M1 — зафиксировать текущее поведение тестами
+M2 — вынести логику в RefundService
+M3 — сделать контроллер тонким и перепроверить интеграционные тесты
+
+## Точки остановки
+После каждого milestone: summary + checks + commit</code></pre>
+      <p>Задача получила форму: Claude не блуждает «улучшу ещё пару мест», а идёт по коридору.</p>
+      <pre><code>TASK_SPEC
+  ↓
+Named session
+  ↓
+Milestone 1
+  ↓
+Summary + checks + small commit
+  ↓
+Milestone 2
+  ↓
+Summary + checks + small commit
+  ↓
+Milestone 3
+  ↓
+Stop point / finish</code></pre>
+      <p>Milestones делают задачу переносимой и проверяемой. Без них непонятно, где она, и любая пауза становится болью.</p>
+    </section>
+
+    <section>
+      <h2>Именованная сессия: у задачи должно быть имя</h2>
+      <p>Задача живёт дольше десяти минут — безымянная сессия работает против вас. Скоро у вас «та длинная про refunds», «ещё одна похожая, но там тесты» и «какая-то, где Claude предлагал util-класс». Память подводит уже не модель, а вас.</p>
+      <p>Дайте задаче имя, совпадающее с workstream, branch и смыслом task spec:</p>
+      <table>
+        <thead><tr><th>Что именуем</th><th>Пример</th></tr></thead>
+        <tbody>
+          <tr><td>Задача</td><td><code>refund-refactor</code></td></tr>
+          <tr><td>Branch</td><td><code>feature/refund-refactor</code></td></tr>
+          <tr><td>Session</td><td><code>refund-refactor</code></td></tr>
+        </tbody>
+      </table>
+      <p>Тогда у вас не три сущности, а один маршрут: задача, ветка, сессия, изменения. До первого перерыва — мелочь, после первого обеда — спасение.</p>
+      <p>Переоткрытие:</p>
+      <pre><code># точное имя команды и флага зависит от версии Claude Code
+claude --resume refund-refactor</code></pre>
+      <p>Важна не команда, а привычка: сессия привязана к задаче, а не висит как «ещё один чат». Название вроде <code>new chat</code>, <code>session-12</code> или <code>test2-final-final</code> — сигнал, что процесс уходит в хаос.</p>
+    </section>
+
+    <section>
+      <h2>Milestone summary и decision log</h2>
+      <p>Истории диалога мало: память выносят наружу короткими выводами. Milestone summary — «где мы сейчас», decision log — «какие решения приняты, чтобы через полчаса не спорить заново».</p>
+      <p>Минимальный summary после этапа:</p>
+      <pre><code>## Summary майлстоуна: M1
+
+Готово:
+- добавлены тесты на текущее refund-поведение
+- зафиксированы кейсы partial refund и approval &gt; $100
+
+Открытые вопросы:
+- кейс refund &gt; $1000 пока не покрыт
+
+Риски:
+- integration path с payment provider ещё не перепроверен
+
+Дальше:
+- вынести decision logic в RefundService</code></pre>
+      <p>Decision log:</p>
+      <pre><code>## Лог решений
+- threshold $100 оставляем в configuration property
+- payment provider integration не трогаем в этом refactor
+- не переносим exception mapping в эту же задачу</code></pre>
+      <p>Жить в одном «правильном» файле эти заметки не обязаны: рядом с задачей, в заметке к ветке, в markdown. Из них собирается handoff для fresh session или reviewer.</p>
+      <p>Без журнала сессия живёт в режиме «кажется, мы это уже обсуждали»: Claude снова предлагает отвергнутый вариант, а вы вспоминаете об этом через пару сообщений. Хороший summary — снимок состояния, не отчёт для начальства.</p>
+    </section>
+
+    <section>
+      <h2>Stop points: останавливаться по плану</h2>
+      <p>Задачи портятся от неудачной остановки. Самый частый stop point: «Ладно, устал, завтра продолжу». Усталость — плохой критерий: задача брошена в случайной точке.</p>
+      <p>Хороший stop point — конец осмысленного куска: добавили characterization tests; вынесли логику в сервис и прогнали проверки; сделали контроллер тонким и посмотрели diff. Это место, где задачу можно безопасно передать даже себе будущему: ясно, что сделано, что нет, какие проверки запускались, какой шаг следующий.</p>
+      <p>Маленький commit на границе этапа снижает цену продолжения:</p>
+      <pre><code>git commit -m "test(refund): characterize approval rules"
+git commit -m "refactor(refund): extract RefundService"</code></pre>
+      <p>Summary объясняет смысл этапа, commit фиксирует состояние файлов. Только commit — не видно решений за ним; только текст — нечего продолжать.</p>
+      <p>И ещё: stop point не даёт тащить постороннее. «Сейчас бы заодно поправить формат логов» — спросите: это часть milestone или другая история? В девяти случаях из десяти — другая.</p>
+    </section>
+
+    <section>
+      <h2>Context rot: когда сессия помнит лишнее</h2>
+      <p>Загрязнение контекста вы уже видели на коротких задачах. На длинной оно коварнее: контекст не просто переполняется — он стареет. Это <strong>context rot</strong>: сессия тащит старые гипотезы и отвергнутые идеи как живые.</p>
+      <p>Вы решили не выносить refund-логику в <code>RefundUtils</code> — размоет границы ответственности. Через сорок минут контекст разросся, и Claude снова: «Возможно, стоит вынести общую логику в utility class». Не назло — старая гипотеза сидит рядом с новыми данными.</p>
+      <pre><code>Вы: utility class не подходит, оставляем сервисный слой
+Claude: понял, идём через RefundService
+...
+через 30 минут
+Claude: чтобы уменьшить дублирование, можно вынести логику в RefundUtils</code></pre>
+      <p>Проблема не в ответе — сессия начала гнить. Другие признаки: ходит кругами по отвергнутым вариантам, смешивает подходы, ссылается на устаревшие assumptions, лезет в файлы вне scope.</p>
+      <div class="callout">Не дожимайте. Остановитесь, соберите summary, зафиксируйте решения, продолжайте из чистого состояния. Распознать context rot — не слабость, а дисциплина.</div>
+    </section>
+
+    <section>
+      <h2>Два режима задачи: пошаговый и goal-driven</h2>
+      <p>Каркас есть — как вести задачу? Два режима: пошаговый и goal-driven (работа до формально проверяемого условия завершения). Вопрос — какой безопаснее.</p>
+      <table>
+        <thead><tr><th>Пошаговый режим</th><th>Goal-driven режим</th></tr></thead>
+        <tbody>
+          <tr><td>После каждого шага вы подтверждаете, что делать дальше</td><td>Claude идёт несколько ходов подряд до достижения условия завершения</td></tr>
+          <tr><td>Лучше для рискованных изменений</td><td>Лучше для хорошо ограниченных задач</td></tr>
+          <tr><td>Подходит, когда нужно много человеческих решений</td><td>Подходит, когда есть детерминированные проверки</td></tr>
+          <tr><td>Медленнее, но прозрачнее</td><td>Быстрее, но требует хорошего verification harness</td></tr>
+        </tbody>
+      </table>
+      <p>Пошаговый — классика для чувствительных задач: шаг, diff, проверки, решение, дальше. Особенно где затронуты деньги, внешние контракты или форма решения ещё не ясна.</p>
+      <p>Goal-driven хорош только когда конец проверяет машина — есть machine-checkable termination condition без ваших субъективных оценок.</p>
+      <h3>Плохие условия</h3>
+      <table>
+        <thead><tr><th>Плохая формулировка</th><th>Почему она плохая</th></tr></thead>
+        <tbody>
+          <tr><td>«Сделай аккуратно»</td><td>Машина не знает, что такое «аккуратно»</td></tr>
+          <tr><td>«Когда станет лучше»</td><td>Это субъективно</td></tr>
+          <tr><td>«Когда код будет чистым»</td><td>Тоже субъективно</td></tr>
+        </tbody>
+      </table>
+      <h3>Хорошие условия</h3>
+      <table>
+        <thead><tr><th>Хорошая формулировка</th><th>Почему она хорошая</th></tr></thead>
+        <tbody>
+          <tr><td><code>./gradlew test</code> завершается без ошибок</td><td>Проверяется машинно</td></tr>
+          <tr><td><code>./gradlew build</code> зелёный</td><td>Проверяется машинно</td></tr>
+          <tr><td>Нужные тесты проходят</td><td>Проверяется машинно</td></tr>
+        </tbody>
+      </table>
+      <p>Пример в task spec:</p>
+      <pre><code>## Условие завершения
+Задача считается завершённой, когда:
+- RefundControllerTest проходит
+- RefundServiceTest проходит
+- ./gradlew test завершается с code 0
+- публичный API refund endpoint не изменён</code></pre>
+      <p>Здесь есть тонкий, но важный нюанс. Goal-driven режим безопасен только при детерминированной верификации. Если у вас нет надёжных тестов, если проверка субъективна, если задача про «на глаз стало удобнее», запускать такой режим опасно. Это уже не инженерный автопилот, а игра в «надеюсь, мы где-нибудь вовремя остановимся». А надежда, как известно, не входит в официальный стек quality assurance.</p>
+    </section>
+
+    <section>
+      <h2>Сквозной пример: refund-flow в Commerce OS</h2>
+      <p>Соберём один цельный сценарий. В Commerce OS есть задача: refactor refund-flow так, чтобы decision logic ушла из контроллера в сервисный слой, а поведение осталось прежним. Задача не на пять минут, но и не на две недели. Классический кандидат на аккуратную длинную сессию.</p>
+      <p>Скелет:</p>
+      <pre><code># TASK_SPEC: refund-flow refactor
+
+Цель:
+Вынести refund decision logic из RefundController в RefundService.
+
+Область:
+Только refund-flow.
+
+Ограничения:
+Не менять API, не трогать payment provider integration, сохранить tests green.
+
+Майлстоуны:
+M1 — characterization tests
+M2 — RefundService extraction
+M3 — controller cleanup + verification
+
+Точки остановки:
+После каждого milestone: summary + checks + commit</code></pre>
+      <p>Сессию называем <code>refund-refactor</code>. Branch — <code>feature/refund-refactor</code>. После первого этапа фиксируем короткий summary:</p>
+      <pre><code>## Summary майлстоуна: M1
+Готово:
+- добавлены тесты на approval threshold
+- partial refund поведение зафиксировано
+
+Решения:
+- threshold не переносим в БД
+- payment integration вне scope
+
+Дальше:
+- выделить RefundService без изменения API</code></pre>
+      <p>Дальше, на втором этапе, вам уже не нужно заново вспоминать, почему threshold не ушёл в БД и зачем мы не трогаем интеграцию. Решение записано. Контекст не обязан таскать это только в своей истории.</p>
+      <p>Если на втором этапе Claude начинает снова предлагать utility class или лезть в <code>PaymentGatewayClient</code>, вы не спорите бесконечно. Вы видите: задача начинает уходить из рамки. Значит, пора остановиться, посмотреть summary и вернуть процесс в границы milestone. А если задача достаточно формализована и тесты надёжны, можно задать машинно проверяемое условие завершения именно для этого этапа: например, все refund-тесты зелёные и билд не падает.</p>
+      <p>В таком режиме длинная задача перестаёт быть бесконечным чатом, который страшно закрыть. Она превращается в последовательность небольших, понятных состояний. У каждого состояния есть имя, границы, short summary, зафиксированные решения и ясный следующий шаг. А это уже совсем другой уровень контроля. И, что особенно приятно, здесь Claude действительно начинает усиливать разработчика, а не тащить его за собой в хаос из «ещё одной хорошей идеи».</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> превратить длинную задачу в управляемый процесс с task spec, milestones, именованной сессией, stop points и внешней памятью.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите вымышленный рефакторинг refund-flow в Commerce OS. Создайте учебную папку и <code>TASK_SPEC.md</code>: цель, область изменений, не-цели, ограничения, три milestone и точки остановки после каждого. Используйте только фейковые данные.</li>
+        <li>Придумайте одно имя для задачи, branch и сессии. Запишите команду переоткрытия сессии и отметьте, что точный флаг зависит от версии Claude Code.</li>
+        <li>Для M1 напишите шаблон milestone summary и decision log: что готово, что открыто, какие риски, какой следующий шаг и какие решения нельзя пересматривать заново.</li>
+        <li>Выберите режим: пошаговый или goal-driven. Для goal-driven сформулируйте 2–4 машинно проверяемых условия завершения; субъективные критерии вынесите на human review.</li>
+        <li>Если Claude CLI доступен, начните сессию с <code>TASK_SPEC.md</code> и попросите пересказать цель, границы и следующий milestone без правок. Затем спросите, что он сделает дальше, и отметьте попытки выйти за scope. Если CLI недоступен, разыграйте сценарий в редакторе.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Task spec отвечает на три вопроса: что делаем, чего не делаем, где останавливаемся.</li>
+        <li>У каждого milestone есть проверяемый финиш, summary и маленький commit.</li>
+        <li>Задача, branch и сессия называются одинаково и понятно.</li>
+        <li>Summary и decision log лежат вне истории чата и позволяют продолжить работу после паузы.</li>
+        <li>Режим выбран осознанно; goal-driven опирается на детерминированные проверки.</li>
+        <li>Вы заметили хотя бы один возможный выход за scope и вернули задачу в границы milestone.</li>
+        <li>В практике нет реальных данных, секретов и полных логов.</li>
+      </ul>
+    </section>
+
+    <footer>6 уровень · лекция 1. Длинная задача — это процесс: spec → milestones → stop points → summary и decisions.</footer>
+  </main>
+</body>
+</html>
