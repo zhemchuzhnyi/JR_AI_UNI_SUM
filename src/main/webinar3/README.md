@@ -16,6 +16,10 @@
 
 - [Лекция 1 — Длинные задачи без бесконечного чата](level6/lecture1/index.html)
 
+## Практика
+
+- [Справочник локалей: план, M1 backend, M2 UI и handoff](practice/index.html)
+
 ## Контрольные вопросы
 
 - [Уровень 5 — 20 вопросов](level5/CONTROL_QUESTIONS.html)
