@@ -15,6 +15,7 @@
 ### Уровень 6
 
 - [Лекция 1 — Длинные задачи без бесконечного чата](level6/lecture1/index.html)
+- [Лекция 2 — Checkpoints и /rewind: откат сессии](level6/lecture2/index.html)
 
 ## Практика
 
