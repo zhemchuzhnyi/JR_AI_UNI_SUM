@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Саммари лекции о Git-first recovery: git status, diff, restore, revert, reset и новых ветках после неудачных AI-итераций.">
+  <title>Claude Code — 6 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Git-first recovery: откат AI-итераций</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">6 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Когда AI-итерация ушла не туда, не просите «исправить всё» поверх хаоса. Сначала посмотрите на Git: что изменено, чем именно, есть ли коммит. Потом выберите минимальный rollback — restore, revert, reset или новую ветку.
+    </div>
+
+    <section>
+      <h2>Сначала остановить лавину, потом лечить</h2>
+      <p>Claude полез не туда — и хочется ответить эмоционально: «нет-нет, исправь всё обратно и сделай нормально». В этот момент вы теряете управление. У вас уже один плохой diff, а таким запросом вы дописываете второй, ещё менее понятный.</p>
+      <p>Пример из Commerce OS. Вы просили вынести refund decision logic из <code>RefundController</code> в отдельный <code>RefundService</code>. Scope узкий. А Claude «заодно» тронул <code>OrderService</code>, поменял таймаут в <code>PaymentProviderClient</code> и прошёлся форматированием по чужому файлу. Скажете «почини всё» — он чинит поверх собственного хаоса. Станет только труднее понять, что произошло.</p>
+      <p>Сначала остановите лавину: перестаньте просить правки и посмотрите на состояние проекта как на факт. Git для этого и нужен. Он не спорит и не обещает, что «теперь точно всё готово». Он показывает: какие файлы изменены, чем отличаются, какие коммиты есть.</p>
+      <table>
+        <thead><tr><th>Ситуация</th><th>Импульсивная реакция</th><th>Рабочая реакция</th></tr></thead>
+        <tbody>
+          <tr><td>Claude тронул лишние файлы</td><td>«Исправь всё обратно»</td><td>Посмотреть <code>git status</code>, потом <code>git diff</code> по каждому подозрительному файлу</td></tr>
+          <tr><td>Тесты упали после серии правок</td><td>«Попробуй ещё раз починить»</td><td>Решить, что оставить, а что откатить, и вернуть проект в понятное состояние</td></tr>
+          <tr><td>Появился плохой коммит</td><td>«Сейчас поверх него сделаем хороший»</td><td>Выбрать осознанный rollback: revert, reset или новая ветка</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">AI-assisted разработку взрослой делает не скорость первой правки, а умение спокойно восстановиться после неудачной.</div>
+    </section>
+
+    <section>
+      <h2>Git разделяет черновик, staging и историю</h2>
+      <p>Чтобы команды отката не казались заклинаниями, держите в голове три слоя Git. Без этого restore, revert и reset сливаются в кашу: всё «что-то откатывает», а что именно — непонятно.</p>
+      <table>
+        <thead><tr><th>Слой</th><th>Что это</th><th>Что обычно с ним делают</th></tr></thead>
+        <tbody>
+          <tr><td>Рабочая директория</td><td>Файлы на диске прямо сейчас</td><td>Смотрят <code>git diff</code>, возвращают через <code>git restore</code></td></tr>
+          <tr><td>Подготовленные изменения</td><td>То, что уже добавили в staging area</td><td>Проверяют перед коммитом, при необходимости убирают из staged</td></tr>
+          <tr><td>История коммитов</td><td>Уже сохранённые шаги</td><td>Отменяют через <code>git revert</code> или локально переписывают через <code>git reset</code></td></tr>
+        </tbody>
+      </table>
+      <p>Почему это важно в AI-работе? Потому что Claude за один проход может задеть все три слоя. Просто поменять файлы. Подготовить их к коммиту. Или уже создать коммит. Команда восстановления зависит от того, где сейчас проблема.</p>
+      <p>Ещё граница. Git возвращает код и историю проекта, но не внешние эффекты. Запустил Claude миграцию БД, дёрнул внешний сервис, изменил удалённую систему — Git вернёт файлы, но не это. В этой лекции речь про файловое и коммитное восстановление, которое Git делает очень хорошо.</p>
+    </section>
+
+    <section>
+      <h2>Первая пара команд: git status и git diff</h2>
+      <p>После неудачной итерации хочется сразу нажать Undo. Но первый шаг — диагностический: понять масштаб. Команд для этого нужно две.</p>
+      <p><code>git status</code> отвечает на вопрос, что затронуто: на какой вы ветке, какие файлы изменены. Часто уже видно, что Claude вышел за scope. Работали с refund-flow, а в выводе <code>OrderService</code> и <code>PaymentProviderClient</code> — сигнал смотреть diff по ним.</p>
+      <pre><code>git status
+# On branch refund-refactor
+# Changes not staged for commit:
+#   modified: src/main/java/com/acme/commerce/refund/RefundController.java
+#   modified: src/main/java/com/acme/commerce/order/OrderService.java
+#   modified: src/main/java/com/acme/commerce/payments/PaymentProviderClient.java</code></pre>
+      <p><code>git diff</code> отвечает на вопрос, в чём именно проблема. Открывать diff по всему проекту сразу не нужно — на длинной задаче удобнее по конкретным файлам.</p>
+      <pre><code>git diff -- src/main/java/com/acme/commerce/payments/PaymentProviderClient.java
+# - private int timeoutMs = 5000;
+# + private int timeoutMs = 30000;
+# + // additional formatting changes below</code></pre>
+      <p>Тут видно, что правка не относится к задаче. Просили вынести refund logic — получили изменение таймаута в payment-клиенте. Это не «может, пригодится». Это лишнее: либо объясните серьёзной причиной, либо откатите без сантиментов.</p>
+      <p>Маршрут принятия решения:</p>
+      <pre><code>Неудачная AI-итерация
+  ↓
+git status
+  ↓
+git diff
+  ↓
+Есть нужные изменения?
+  ├─ нет → откатить лишнее
+  └─ да → есть commit?
+           ├─ нет → git restore по файлам
+           └─ да → история уже shared?
+                    ├─ да → git revert
+                    └─ нет → git reset или новая ветка</code></pre>
+      <p>Алгоритм убирает суету. Сначала видите реальность, потом выбираете минимальный rollback.</p>
+    </section>
+
+    <section>
+      <h2>Карта rollback: restore, revert, reset, ветка</h2>
+      <p>На словах команды отката похожи: что-то вернуть, убрать, отменить. На практике задачи разные, и не та команда усложняет жизнь. Мыслите не названиями, а сценариями: что произошло и насколько далеко ушло.</p>
+      <table>
+        <thead><tr><th>Команда / подход</th><th>Когда применять</th><th>Что меняется</th><th>Где нужна осторожность</th></tr></thead>
+        <tbody>
+          <tr><td><code>git restore</code></td><td>Лишние правки есть в файлах, но коммита ещё нет</td><td>Возвращает содержимое файла</td><td>Можно случайно стереть полезные несохранённые изменения</td></tr>
+          <tr><td><code>git revert</code></td><td>Плохой коммит уже есть, и историю лучше не переписывать</td><td>Создаёт новый коммит-отмену</td><td>История становится длиннее, но безопаснее</td></tr>
+          <tr><td><code>git reset</code></td><td>Плохой коммит есть только в вашей локальной ветке</td><td>Сдвигает указатель ветки назад</td><td>Опасен на общей истории и при привычке делать всё бездумно</td></tr>
+          <tr><td>Новая ветка</td><td>Текущая попытка слишком грязная и дорогая в спасении</td><td>Вы начинаете заново с чистой базы</td><td>Нужно не потерять полезное, если оно всё-таки было</td></tr>
+        </tbody>
+      </table>
+      <p>Коммита ещё нет — самый мягкий вариант <code>git restore</code>. Основной инструмент против «Claude полез не туда», особенно когда полезное перемешано с лишним по нескольким файлам.</p>
+      <pre><code>git restore src/main/java/com/acme/commerce/order/OrderService.java
+git restore src/main/java/com/acme/commerce/payments/PaymentProviderClient.java
+git diff
+# в diff остались только refund-related изменения</code></pre>
+      <p>Файл уже в staging area — сначала уберите его оттуда, потом верните содержимое:</p>
+      <pre><code>git restore --staged src/main/java/com/acme/commerce/order/OrderService.java
+git restore src/main/java/com/acme/commerce/order/OrderService.java
+# файл убран и из staged, и из рабочего diff</code></pre>
+      <p>Плохой шаг стал коммитом — выходит <code>git revert</code>. Спокойная команда: не делает вид, что коммита не было, а честно создаёт новый, который его отменяет. Для истории, которую уже видели другие, это обычно лучший путь.</p>
+      <pre><code>git log --oneline -3
+# a1b2c3d M2: выделил RefundService
+# 7f8e9d0 M1: добавил тесты refund-flow
+
+git revert a1b2c3d
+# создан новый commit, отменяющий изменения a1b2c3d</code></pre>
+      <p><code>git reset</code> сильнее и опаснее. Он не отменяет коммит, а передвигает ветку назад — будто шагов не было. Удобно, если коммит локальный и его никто не видел. На общей истории — плохая идея. Правило простое: сомневаетесь — revert, не reset.</p>
+      <pre><code>git reset --hard HEAD~1
+# последний локальный commit убран из ветки
+# все несохранённые изменения тоже потеряны</code></pre>
+      <p>И честный сценарий: попытку дешевле бросить, чем спасать. Иногда самый разумный ход — Claude натворил столько, что вы уже сами не понимаете, что в diff полезное, а что мусор.</p>
+      <pre><code>git switch -c refund-refactor-retry main
+# новая чистая ветка от main для повторной аккуратной попытки</code></pre>
+      <p>Старая ветка остаётся как след попытки. Иногда из неё потом вытащишь пару идей, но спасать всё сразу вы больше не обязаны.</p>
+    </section>
+
+    <section>
+      <h2>Маленькие коммиты делают rollback дешёвым</h2>
+      <p>Проблемы с откатом начинаются раньше ошибки — в момент плохой дисциплины коммитов. Один гигантский коммит «refactor refund flow + cleanup + fix tests + small improvements» откатить частично почти нельзя: либо отменяете всё, либо режете коммит вручную.</p>
+      <p>Дешевле жить с маленькими milestone-коммитами. Сделали характеризационные тесты — зафиксировали. Выделили <code>RefundService</code> без изменения публичного контракта — зафиксировали. Вынесли порог одобрения refund в конфиг — зафиксировали. Тогда любой rollback локальный, а не катастрофический.</p>
+      <pre><code>git log --oneline -3
+# f34a1d2 M3: вынес refund-threshold в application.yml
+# c91be10 M2: выделил RefundService
+# 6aa43ff M1: добавил характеризационные тесты refund-flow</code></pre>
+      <p>Допустим, плохим оказался шаг M3. Вы не трогаете полезные M1 и M2 — откатываете только последний шаг и продолжаете с понятной базы. Не теряете целый день из-за одной неудачной идеи.</p>
+      <p>Поэтому milestone и commit идут рядом. Milestone без коммита — только намерение. Коммит без milestone — абстрактная запись в истории. Вместе они дают дешёвый rollback: отменить один понятный шаг, не трогая остальное.</p>
+    </section>
+
+    <section>
+      <h2>Сценарий Commerce OS: спасаем refund-flow</h2>
+      <p>Задача: вынести decision logic из <code>RefundController</code> в <code>RefundService</code>, не меняя публичный API и не трогая интеграцию с платёжным провайдером. Scope узкий, тесты на refund-flow добавлены на прошлом milestone. Вы дали Claude понятный шаг — а он включил режим «инициативный стажёр».</p>
+      <p>После правок изменены не только <code>RefundController</code> и новый <code>RefundService</code>, но и <code>OrderService</code> с <code>PaymentProviderClient</code>. В <code>PaymentProviderClient</code> вырос таймаут, в <code>OrderService</code> — перестановки методов и лишнее форматирование. Тот момент, когда нельзя писать «исправь всё». Сначала смотрите на Git.</p>
+      <pre><code>git status
+git restore src/main/java/com/acme/commerce/order/OrderService.java
+git restore src/main/java/com/acme/commerce/payments/PaymentProviderClient.java
+./gradlew test --tests "*Refund*"   # BUILD SUCCESSFUL
+git add src/main/java/com/acme/commerce/refund/RefundController.java \
+        src/main/java/com/acme/commerce/refund/RefundService.java \
+        src/test/java/com/acme/commerce/refund/RefundControllerTest.java
+git commit -m "Выделил RefundService без изменения публичного контракта"</code></pre>
+      <p>Смысл не в командах, а в порядке. Сначала убираете лишнее. Потом запускаете проверку по refund-направлению. И только когда остаётся чистый diff внутри согласованного scope — делаете commit.</p>
+      <p>Вариант посложнее: плохой коммит уже сохранён локально. Не отправлен никому, живёт только в вашей ветке — допустим аккуратный reset. Попал в общую историю — берите revert. История будет длиннее, но это честная длина: через два дня вы или коллега поймёте, что был неудачный шаг, его отдельно отменили, работа пошла дальше.</p>
+      <div class="callout">Не каждый diff надо спасать. Если ветка слишком грязная, новая ветка от чистой базы часто дешевле, чем часы археологии.</div>
+    </section>
+
+    <section>
+      <h2>Подключаем Claude заново после отката</h2>
+      <p>После rollback главное — не вернуться в ту же ловушку. Откатили лишнее, а потом снова пишете «ну теперь доделай всё нормально» — история повторится. Claude должен получить не упрёк, а чистое узкое состояние проекта и точную следующую задачу.</p>
+      <p>Обопритесь на task spec и текущий diff. Скажите буквально: вот ветка, вот какие файлы остались чисто, вот чего делать нельзя, вот обязательная команда проверки.</p>
+      <pre><code>Сейчас в ветке refund-refactor оставлены только изменения по refund-flow.
+Не трогай OrderService и PaymentProviderClient.
+Сделай только один шаг: перенеси decision logic в RefundService,
+сохрани публичный API RefundController и не меняй конфигурацию таймаутов.
+После изменений покажи список файлов и команду проверки.</code></pre>
+      <p>Это работает лучше эмоционального «переделай». Вы задаёте Claude не настроение, а границы. А Git к этому моменту убрал хаос и вернул проект в состояние, где следующая итерация снова дешёвая и понятная.</p>
+      <div class="callout">Git-first recovery — это привычка сначала работать с фактами: смотреть на diff, выбирать минимальный rollback, держать историю ветки понятной.</div>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> потренировать Git-first recovery: увидеть лишнее в diff, убрать только его и безопасно отменить плохой коммит.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В отдельной учебной папке создайте маленький Git-репозиторий с тремя фейковыми файлами: <code>RefundService.java</code>, <code>OrderService.java</code>, <code>PaymentProviderClient.java</code>. Сделайте первый commit с рабочим baseline и запустите любую доступную проверку.</li>
+        <li>Внесите полезную правку в <code>RefundService.java</code> и одновременно «лишние» правки в <code>OrderService.java</code> и <code>PaymentProviderClient.java</code>. Выполните <code>git status</code> и <code>git diff</code> по каждому файлу. Определите, что относится к задаче, а что нет.</li>
+        <li>Уберите лишнее через <code>git restore</code> по конкретным файлам. Проверьте <code>git diff</code>: должен остаться только <code>RefundService.java</code>. Зафиксируйте полезный шаг отдельным commit.</li>
+        <li>Сделайте второй, намеренно плохой commit, который меняет <code>PaymentProviderClient.java</code>. Посмотрите <code>git log --oneline -3</code>, затем отмените его через <code>git revert &lt;hash&gt;</code>. Убедитесь, что появился новый commit-отмена, а рабочее дерево чистое.</li>
+        <li>Напишите короткую <code>RECOVERY_NOTE.md</code>: какая команда восстановления выбрана на каждом шаге, почему не reset и как вы проверили результат. Если репозитория нет, выполните упражнение на копии папки и опишите команды.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Сначала выполнены <code>git status</code> и <code>git diff</code>, а не эмоциональный «исправь всё».</li>
+        <li>Лишние файлы восстановлены через <code>git restore</code>, полезная правка сохранена.</li>
+        <li>Плохой commit отменён через <code>git revert</code>, история не переписана.</li>
+        <li>В <code>RECOVERY_NOTE.md</code> объяснено, почему выбран restore/revert, а не reset.</li>
+        <li>После отката проверка снова проходит, diff соответствует scope.</li>
+        <li>В практике только фейковые данные; реальные БД, деплой и внешние сервисы не затрагиваются.</li>
+      </ul>
+    </section>
+
+    <footer>6 уровень · лекция 3. Сначала факты: git status → git diff → минимальный rollback → чистая следующая итерация.</footer>
+  </main>
+</body>
+</html>
