@@ -89,6 +89,14 @@ src/main/
     practice/
       summary.txt
       index.html
+  webinar4/
+    README.md
+    COVERAGE.md
+    level7/
+      README.md
+      lecture1/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -145,6 +153,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов. Аудит покрытия: [вебинар 1](webinar1/COVERAGE.md).
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, 15 и 20 контрольных вопросов. Аудит покрытия: [вебинар 2](webinar2/COVERAGE.md).
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 20 вопросов; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 20 вопросов; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
+- **Вебинар 4:** уровень 7 — лекция 1 (discovery в незнакомом репозитории, безопасный обзор и `CODEBASE_INVENTORY.md`); остальные лекции уровней 7–8 будут добавляться по мере разбора. Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

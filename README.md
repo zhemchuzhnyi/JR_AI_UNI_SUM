@@ -11,12 +11,14 @@
 - **Вебинар 1** — уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов.
 - **Вебинар 2** — уровень 3 (5 лекций), уровень 4 (5 лекций), практики «калькулятор» и «симуляции», контрольные вопросы уровней 3 и 4.
 - **Вебинар 3** — уровень 5, лекции 1–5: operational model, context selection, context budget, context pollution, session lifecycle; 20 контрольных вопросов. Уровень 6 — лекции 1–5: длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer; 20 контрольных вопросов. Практика вебинара — справочник локалей.
+- **Вебинар 4** — уровень 7, лекция 1: discovery в незнакомом репозитории, безопасный обзор и `CODEBASE_INVENTORY.md`.
 
 ## Навигация
 
 - [Вебинар 1](src/main/webinar1/README.md)
 - [Вебинар 2](src/main/webinar2/README.md)
 - [Вебинар 3](src/main/webinar3/README.md)
+- [Вебинар 4](src/main/webinar4/README.md)
 
 ## Практики
 
