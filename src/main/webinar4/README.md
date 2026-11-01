@@ -12,6 +12,7 @@
 - [Лекция 2 — Evidence-based Q&amp;A по codebase](level7/lecture2/index.html)
 - [Лекция 3 — CODEBASE_INVENTORY.md — карта проекта](level7/lecture3/index.html)
 - [Лекция 4 — Dependency map и карта модулей проекта](level7/lecture4/index.html)
+- [Лекция 5 — Runtime flow и точки входа](level7/lecture5/index.html)
 
 ### Уровень 8
 
@@ -23,7 +24,7 @@
 
 ## Статус
 
-- Уровень 7 — добавлены лекции 1–4.
+- Уровень 7 — добавлены лекции 1–5.
 - Уровень 8 — материалы готовятся.
 - Практика вебинара 4 — Haiku 50 — добавлена отдельным capstone-заданием.
 - [Анализ покрытия](COVERAGE.md)
