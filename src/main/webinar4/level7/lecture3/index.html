@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CODEBASE_INVENTORY.md как рабочая карта проекта: разделы inventory, отличие от README, сборка с Claude Code, зоны риска и открытые вопросы.">
+  <title>Claude Code — 7 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">CODEBASE_INVENTORY.md — карта проекта</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">7 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Разговор о проекте заканчивается вместе с сессией. Inventory превращает discovery в рабочий артефакт: короткую карту проекта, где есть модули, команды, точки входа, зоны риска и честно отмеченные открытые вопросы.
+    </div>
+
+    <section>
+      <h2>1. Разговор нужно превращать в артефакт</h2>
+      <p>Разговор с Claude про новый codebase кажется почти решением: он суммирует структуру, перечисляет модули, говорит, где что лежит. Но всё это живёт внутри сессии. Сессии заканчиваются и засоряются — через пару дней остаётся ощущение умного совещания без протокола.</p>
+      <p>Поэтому discovery надо фиксировать в файле, чтобы следующий вопрос к проекту начинался не с нуля. <code>CODEBASE_INVENTORY.md</code> — рабочая карта местности: где логика, как запускать, где тесты, что не трогать без подготовки, что вы ещё не поняли.</p>
+      <pre><code>Discovery по репозиторию
+  → вопросы с evidence
+  → черновик CODEBASE_INVENTORY.md
+  → проверка файлов и команд
+  → рабочая карта проекта</code></pre>
+      <p>Без файла завтра вы снова спросите: «А где обработка заказов?» С inventory открыли файл и за минуту восстановили картину.</p>
+    </section>
+
+    <section>
+      <h2>2. README.md и CODEBASE_INVENTORY.md: коллеги</h2>
+      <p>Inventory легко спутать с README. Но README отвечает: «Что это и как поднять?» Inventory: «Как внутри ориентироваться, чтобы что-то понять или изменить?»</p>
+      <table>
+        <thead><tr><th>Артефакт</th><th>Главный вопрос</th><th>Для кого полезен в первую очередь</th><th>Что в нём обычно есть</th></tr></thead>
+        <tbody>
+          <tr><td><code>README.md</code></td><td>Что это за проект и как его запустить?</td><td>Новый разработчик, внешний читатель, ревьюер репозитория</td><td>назначение проекта, быстрый старт, зависимости, базовые команды</td></tr>
+          <tr><td><code>CODEBASE_INVENTORY.md</code></td><td>Как этот проект устроен изнутри и где что искать?</td><td>Разработчик, который исследует или меняет код</td><td>модули, ответственность частей системы, точки входа, тесты, конфиги, опасные зоны, открытые вопросы</td></tr>
+        </tbody>
+      </table>
+      <p>На Commerce OS это видно. README скажет: «ecommerce-платформа, backend на Spring Boot, frontend на Next.js» — хватит, чтобы стартовать. Но где обрабатываются возвраты, почему <code>ai-assist/</code> рискованная — README молчит.</p>
+      <div class="callout">README — входная дверь. Inventory — план здания.</div>
+    </section>
+
+    <section>
+      <h2>3. Содержимое CODEBASE_INVENTORY.md</h2>
+      <p>Первый inventory тянет в крайности: впихнуть всё подряд или ограничиться тремя строчками. Рабочий — короткий и насыщенный: не пересказывает код, а помогает ориентироваться. Набор разделов стабильный.</p>
+      <table>
+        <thead><tr><th>Раздел</th><th>Что вы туда записываете</th><th>Пример для Commerce OS</th></tr></thead>
+        <tbody>
+          <tr><td>Стек и технологии</td><td>Языки, основные фреймворки, база данных</td><td>Java 25, Spring Boot, React, Next.js, PostgreSQL</td></tr>
+          <tr><td>Модули и их ответственность</td><td>Крупные папки и за что каждая отвечает</td><td><code>orders/</code> — корзина, оформление, статусы</td></tr>
+          <tr><td>Точки входа</td><td>Откуда стартует приложение или отдельные потоки</td><td>HTTP-контроллеры, frontend entry, фоновые задачи</td></tr>
+          <tr><td>Полезные команды</td><td>Как запустить, собрать и протестировать проект</td><td><code>./gradlew test</code>, <code>npm run dev</code></td></tr>
+          <tr><td>Тесты</td><td>Где лежат тесты и что покрывают</td><td>backend integration tests, frontend tests</td></tr>
+          <tr><td>Конфиги</td><td>Какие конфигурационные файлы важны</td><td><code>application.yml</code>, <code>.env.example</code>, frontend config</td></tr>
+          <tr><td>Зоны повышенного риска</td><td>Что менять особенно осторожно</td><td><code>payments/</code>, <code>migrations/</code>, чувствительные интеграции</td></tr>
+          <tr><td>Открытые вопросы</td><td>Что пока непонятно и требует проверки</td><td>откуда берётся confidence score в <code>ai-assist/</code></td></tr>
+        </tbody>
+      </table>
+      <p>На старте хватит каркаса:</p>
+      <pre><code># CODEBASE_INVENTORY.md
+
+## Стек и технологии
+
+## Модули и ответственность
+
+## Точки входа
+
+## Полезные команды
+
+## Тесты и конфиги
+
+## Карта зависимостей
+
+## Runtime-потоки
+
+## Зоны повышенного риска
+
+## Открытые вопросы</code></pre>
+      <p><code>Dependency map</code> и <code>Runtime flows</code> сначала могут быть пустыми — inventory растёт вместе с пониманием проекта. Для нетривиальных утверждений оставляйте короткую ссылку на источник: файл, метод, тест или команду. В inventory попадают и непонятые части: «не подтверждено, нужно проверить» полезнее выдуманного объяснения.</p>
+    </section>
+
+    <section>
+      <h2>4. Сборка inventory вместе с Claude Code</h2>
+      <p>Inventory не пишут в одиночку — Claude полезен. Но только если держите привычку прошлого занятия: каждое важное утверждение опирается на файл, тест или команду. Иначе он напишет гладкий текст, не совпадающий с кодом.</p>
+      <p>Идите в три прохода:</p>
+      <table>
+        <thead><tr><th>Проход</th><th>Что делаем</th><th>Что получаем</th></tr></thead>
+        <tbody>
+          <tr><td>Первый</td><td>Просим Claude собрать черновик по структуре</td><td>Быстрый обзор проекта</td></tr>
+          <tr><td>Второй</td><td>Проверяем спорные места по файлам и командам</td><td>Подтверждённые факты</td></tr>
+          <tr><td>Третий</td><td>Укорачиваем формулировки и добавляем риск-зоны</td><td>Рабочий навигационный артефакт</td></tr>
+        </tbody>
+      </table>
+      <p>Запрос первого прохода:</p>
+      <pre><code>Помоги собрать черновик CODEBASE_INVENTORY.md для этого репозитория.
+
+Нужны разделы:
+- стек и основные технологии
+- модули и их ответственность
+- точки входа
+- полезные команды запуска и тестов
+- тесты и конфиги
+- зоны повышенного риска
+- открытые вопросы
+
+Для каждого важного утверждения укажи файл или команду, на которую ты опираешься.
+Если что-то не проверено — пометь как "не подтверждено".
+Пиши кратко: это навигационная карта, а не пересказ кода.</code></pre>
+      <p>Результат не принимайте за готовый файл. Откройте упомянутые файлы, запустите команды. Написал, что backend стартует через Gradle, — проверьте. Назвал <code>payments/</code> зоной риска — убедитесь, что там возвраты и интеграции с платёжным провайдером. Доказательства не храните: достаточно ссылок.</p>
+      <p>Claude собирает каркас, вы превращаете его в карту. Inventory растёт из проверенного контекста.</p>
+    </section>
+
+    <section>
+      <h2>5. Первая рабочая версия для Commerce OS</h2>
+      <p>Длинной inventory быть не нужно: файл на шесть экранов перестаёт быть навигацией.</p>
+      <pre><code># CODEBASE_INVENTORY.md
+
+## Стек и технологии
+- Backend: Java 25, Spring Boot, Gradle Wrapper (`build.gradle`)
+- Frontend: React + Next.js, Node.js (`frontend/package.json`)
+- Хранилище: PostgreSQL (`docker-compose.yml`, `application.yml`)
+
+## Модули и ответственность
+- `catalog/` — товары, категории, поиск (`catalog/`)
+- `orders/` — корзина, оформление заказа, статусы (`orders/`)
+- `payments/` — оплата, возвраты, интеграция с PSP (`payments/`, `RefundController.java`)
+- `support/` — тикеты, ответы, эскалации (`support/`)
+- `ai-assist/` — классификация тикетов и подсказки оператору (`ai-assist/`, `application.yml`)</code></pre>
+      <p>Файл описывает ответственность модулей, а не пересказывает классы. Напишете «<code>OrderService.java</code> содержит <code>placeOrder</code>, <code>cancelOrder</code>…» — получите каталог методов, который не читают.</p>
+      <p>Команды:</p>
+      <pre><code>./gradlew bootRun   # запуск backend в режиме разработки
+./gradlew test      # запуск backend-тестов
+npm run dev         # запуск frontend в режиме разработки
+npm test            # запуск frontend-тестов</code></pre>
+      <p>Секция команд часто самая полезная: через неделю вы не помните, как стартовал проект, а тут всё в одном месте.</p>
+      <p>Тесты и конфиги фиксируйте сжато:</p>
+      <pre><code>## Тесты и конфиги
+- backend-конфиг: `src/main/resources/application.yml`
+- frontend-настройки: `frontend/package.json`, `next.config.*`
+- основные backend-тесты лежат рядом с backend-модулями (`src/test`)
+- часть поведения `ai-assist/` покрыта слабо, нужно уточнять по коду и тестам (`ai-assist/`, `src/test`)</code></pre>
+      <p>Последняя строка не делает вид, что всё понятно, — она честно отмечает зону неопределённости.</p>
+    </section>
+
+    <section>
+      <h2>6. Зоны риска и открытые вопросы — ценная часть файла</h2>
+      <p>Главное в inventory — не перечислить модули, а зафиксировать <strong>что здесь опасно</strong> и <strong>что вы пока не поняли</strong>. Это экономит время, когда вы вернётесь менять код, а не исследовать.</p>
+      <pre><code>## Зоны повышенного риска
+- `payments/` — возвраты, статусы платежей, риск двойного списания (`payments/RefundController.java`, `payments/RefundService.java`)
+- `migrations/` — менять только после проверки и review (`migrations/`)
+- `ai-assist/` — часть поведения зависит от конфигов и покрыта тестами не полностью (`ai-assist/`, `src/main/resources/application.yml`)</code></pre>
+      <p>Запись предупреждает: сюда нельзя с настроением «сейчас быстренько подчистим». Особенно в <code>payments/</code> — деньги, статусы платежей, возвраты: цена ошибки высока.</p>
+      <p>Открытых вопросов не стыдитесь. Они значат, что вы не выдумали ответы там, где данных не хватило.</p>
+      <pre><code>## Открытые вопросы
+- откуда `ai-assist/` получает confidence score — не подтверждено, нужен поиск по `git grep "confidence"`
+- где описана политика retry для возвратов в `payments/` — пока не найдено, проверить `git grep "retry" payments/`
+- есть ли отдельный фоновый поток пересчёта метрик кроме основного HTTP-пути — не подтверждено, смотреть `jobs/` и планировщики</code></pre>
+      <p>Такие записи — золото: завтра не вспоминаете мучительно «там было что-то непонятное, а что — забыл». Inventory работает как внешняя память проекта — и для Claude, и для вашего мозга.</p>
+    </section>
+
+    <section>
+      <h2>7. Inventory не должен стать бесполезным сувениром</h2>
+      <p>Главная опасность — писать inventory «слишком правильно»: красиво, полированно и бесполезно. Путь в эту яму — спутать навигацию с пересказом кода: начнёте перечислять классы и методы — файл продублирует репозиторий.</p>
+      <p>Плохо:</p>
+      <pre><code>- `OrderService.java` содержит 14 методов для обработки заказа, включая
+  `placeOrder`, `cancelOrder`, `recalculateDiscount`, `notifyCustomer`...</code></pre>
+      <p>Хорошо:</p>
+      <pre><code>- `orders/` — корзина, оформление заказа, статусы и история заказа</code></pre>
+      <p>Второй короче и отвечает на вопрос «куда идти за заказами?». Первый только создаёт иллюзию детализации.</p>
+      <p>Вторая ловушка — мешать факты и догадки без маркировки. Не уверены — пишите прямо: «предположительно», «не подтверждено». В больших codebase проект почти никогда не понят полностью, и inventory это признаёт.</p>
+      <p>И главное: inventory — живой артефакт. Узнали новый модуль — добавили. Нашли скрытую точку входа — уточнили. Зона риска расплывчата — переписали.</p>
+      <p>Первая версия может быть короткой. Но если она отвечает на три вопроса — <strong>где искать, как запускать и что опасно менять</strong> — inventory уже работает. А когда добавятся dependency map и runtime flows, проект перестаёт быть тёмным лесом.</p>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать рабочий <code>CODEBASE_INVENTORY.md</code> по учебному репозиторию, проверить его по файлам и исправить ошибки AI-черновика.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите небольшой учебный репозиторий или создайте фейковый <code>commerce-os-mini</code> с <code>README.md</code>, <code>build.gradle</code> или <code>package.json</code>, папками <code>orders/</code>, <code>payments/</code>, <code>src/test</code>, конфигом и baseline-коммитом. Используйте только вымышленные данные.</li>
+        <li>Соберите сырой материал через терминал: <code>pwd</code>, <code>git status</code>, <code>find . -maxdepth 2</code>, <code>git grep</code> по модулям и тестам, <code>cat README.md</code>, <code>cat build.gradle</code> или <code>cat package.json</code>. Запишите команды и наблюдаемые факты.</li>
+        <li>Сделайте AI-черновик inventory по шаблону из лекции. Добавьте в него одну заведомо несуществующую папку, например <code>analytics/</code>, и пару неподтверждённых утверждений.</li>
+        <li>Проверьте черновик по файлам: удалите или пометьте несуществующий модуль, подтвердите команды и тесты, добавьте зоны риска и открытые вопросы. Соберите итоговый <code>CODEBASE_INVENTORY.md</code> с короткими ссылками на источники.</li>
+        <li>Проверьте, что файл отвечает на три вопроса — где искать, как запускать и что опасно менять, — и что <code>git status</code> не показывает изменений кода.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В inventory есть стек, модули, точки входа, команды, тесты/конфиги, риск-зоны и открытые вопросы.</li>
+        <li>Несуществующий модуль найден и исправлен по файлам, а не оставлен «на всякий случай».</li>
+        <li>Для нетривиальных утверждений указан файл, тест или команда.</li>
+        <li>Неподтверждённые места помечены честно, без выдуманных объяснений.</li>
+        <li>Файл короткий и навигационный: ответственность модулей, а не каталог методов.</li>
+        <li>Описаны минимум две зоны риска и два открытых вопроса.</li>
+        <li>В практике только фейковые данные, без секретов и реальных репозиториев.</li>
+      </ul>
+    </section>
+
+    <footer>7 уровень · лекция 3. Inventory — это карта для следующего изменения, а не пересказ всех классов проекта.</footer>
+  </main>
+</body>
+</html>

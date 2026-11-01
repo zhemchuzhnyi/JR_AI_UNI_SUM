@@ -10,6 +10,7 @@
 
 - [Лекция 1 — Discovery в незнакомом репозитории](level7/lecture1/index.html)
 - [Лекция 2 — Evidence-based Q&amp;A по codebase](level7/lecture2/index.html)
+- [Лекция 3 — CODEBASE_INVENTORY.md — карта проекта](level7/lecture3/index.html)
 
 ### Уровень 8
 
@@ -21,7 +22,7 @@
 
 ## Статус
 
-- Уровень 7 — добавлены лекции 1–2.
+- Уровень 7 — добавлены лекции 1–3.
 - Уровень 8 — материалы готовятся.
 - Практика вебинара 4 — Haiku 50 — добавлена отдельным capstone-заданием.
 - [Анализ покрытия](COVERAGE.md)
