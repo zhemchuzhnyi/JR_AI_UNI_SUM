@@ -33,3 +33,4 @@
 - [Вебинар 2, уровень 4 — 20 вопросов](src/main/webinar2/level4/CONTROL_QUESTIONS.md)
 - [Вебинар 3, уровень 5 — 20 вопросов](src/main/webinar3/level5/CONTROL_QUESTIONS.md)
 - [Вебинар 3, уровень 6 — 20 вопросов](src/main/webinar3/level6/CONTROL_QUESTIONS.md)
+- [Вебинар 4, уровень 7 — 20 вопросов](src/main/webinar4/level7/CONTROL_QUESTIONS.md)
