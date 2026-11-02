@@ -119,6 +119,9 @@ src/main/
       lecture2/
         summary.txt
         index.html
+      lecture3/
+        summary.txt
+        index.html
     practice/
       summary.txt
       index.html
@@ -178,7 +181,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов. Аудит покрытия: [вебинар 1](webinar1/COVERAGE.md).
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, 15 и 20 контрольных вопросов. Аудит покрытия: [вебинар 2](webinar2/COVERAGE.md).
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 20 вопросов; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 20 вопросов; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
-- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–2 (карта API и интеграций; IDE, терминал и логи как доказательства); практика — Haiku 50 (аудит чужого проекта и генератор хайку); остальные материалы уровня 8 будут добавляться по мере разбора. Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
+- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–3 (карта API и интеграций; IDE, терминал и логи как доказательства; subagents); практика — Haiku 50 (аудит чужого проекта и генератор хайку); остальные материалы уровня 8 будут добавляться по мере разбора. Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

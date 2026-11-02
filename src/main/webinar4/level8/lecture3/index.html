@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Subagents: отдельное окно контекста для расследования, mini task spec, output contract, evidence и возврат выводов в основную сессию.">
+  <title>Claude Code — 8 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.3rem, 7vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Subagents: тихое расследование</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">8 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Большое расследование засоряет основную сессию. Subagent даёт отдельное окно контекста: много читает, но возвращает только summary, evidence, assumptions, open questions и next steps.
+    </div>
+
+    <section>
+      <h2>1. Большое расследование засоряет основную сессию</h2>
+      <p>Компактный пакет улик — код, команду, вывод, trace, скриншот — вы уже умеете приносить. Этого хватает на локальный вопрос. Но как только надо пройтись по нескольким модулям и вернуться с коротким проверяемым выводом, всплывает другая проблема: расследование захламляет основную сессию.</p>
+      <p>Расследование почти всегда шире, чем правка одного метода. Claude читает много файлов, держит гипотезы, сравнивает тесты, копит куски логов. Это нормально. Плохо то, что дальше: основная сессия тащит весь этот багаж с собой, даже когда вам нужен только итог.</p>
+      <p>Пример. В Commerce OS вы разбираете refund flow. Claude читает <code>OrderController</code>, <code>RefundService</code>, <code>OrderService</code>, клиент платёжного провайдера, пару конфигов, тесты и старый лог с ошибкой. На этапе поиска всё полезно. Но потом вы хотите просто дописать строку в <code>API_MAP.md</code> — а сессия всё ещё «помнит» весь промежуточный шум, включая отброшенные гипотезы.</p>
+      <p>Решение — subagent. Тяжёлое чтение уходит в отдельное окно контекста. Назад возвращается не мусор, а выжимка: что нашли, где, что не проверили, что дальше.</p>
+      <pre><code>Основная сессия
+  └─ ставит задачу investigation
+  └─ subagent читает много файлов и логов
+  └─ возвращает только summary + evidence
+  └─ основная сессия принимает решение</code></pre>
+    </section>
+
+    <section>
+      <h2>2. Subagent — это отдельное окно контекста</h2>
+      <p>Subagent — не «мини-разработчик» и не «магический стажёр», а <strong>отдельное окно контекста под узкую исследовательскую задачу</strong>. Его сила не в уме, а в изоляции: он много читает, много ищет и отдаёт наружу только то, что нужно для следующего шага.</p>
+      <p>Модель простая. Основная сессия формулирует вопрос. Subagent проводит исследование. Основная сессия получает короткий результат и на его основе обновляет артефакты и решает дальше. Subagent — не замена сессии, а её «комната для шума».</p>
+      <table>
+        <thead><tr><th>Механизм</th><th>Что происходит</th><th>Когда уместно</th></tr></thead>
+        <tbody>
+          <tr><td>Основная сессия</td><td>Всё исследование остаётся в одном контексте</td><td>Когда вопрос маленький и ответ тоже маленький</td></tr>
+          <tr><td>Subagent</td><td>Исследование уходит в отдельное окно, назад приходит только выжимка</td><td>Когда нужно прочитать много, а вернуть мало</td></tr>
+          <tr><td>Свежая сессия</td><td>Вы начинаете новый диалог почти с нуля</td><td>Когда текущая сессия уже загрязнена целиком</td></tr>
+        </tbody>
+      </table>
+      <p>Очень важно и то, чем subagent сегодня не является. Мы не конфигурируем кастомных агентов, не настраиваем разрешения, не собираем multi-agent pipeline и не строим «армию исследователей». Пока это просто паттерн — вынести тяжёлое расследование из основной сессии.</p>
+    </section>
+
+    <section>
+      <h2>3. Subagent нужен, когда читать надо много, а вернуть мало</h2>
+      <p>Новый приём тянет применять везде. Удержитесь. Subagents полезны не тем, что звучат красиво, а тем, что уменьшают context pollution.</p>
+      <p>Один файл, одна строчка в тесте, известный заранее обработчик — subagent тут лишний посредник. А вот просканировать все routes, найти все точки вызова Stripe, собрать тесты вокруг refund flow, обойти большой модуль и вернуть только summary — его работа.</p>
+      <table>
+        <thead><tr><th>Хороший кандидат для subagent</th><th>Плохой кандидат для subagent</th></tr></thead>
+        <tbody>
+          <tr><td>Найти все точки интеграции с платёжным провайдером</td><td>Прочитать один контроллер</td></tr>
+          <tr><td>Проверить, какие тесты покрывают конкретный эндпоинт</td><td>Понять одну строку stack trace</td></tr>
+          <tr><td>Собрать evidence по большому diff</td><td>Уточнить имя метода в уже открытом файле</td></tr>
+          <tr><td>Просканировать конфиги, тесты и клиенты по одному потоку</td><td>Сделать маленькое исправление в docs</td></tr>
+        </tbody>
+      </table>
+      <p>Вопрос к себе один: «Мне нужно, чтобы Claude много прочитал, но мало вернул?» Если да — subagent почти наверняка полезен. Если нужен длинный интерактивный разговор по ходу чтения — оставайтесь в основной сессии. Subagent любит чёткие рамки и короткий проверяемый результат.</p>
+    </section>
+
+    <section>
+      <h2>4. Ставьте задачу как мини-версию task spec</h2>
+      <p>Бесполезное investigation почти всегда от размытой постановки, а не от плохого Claude. С subagent это видно особенно хорошо. Скажете «посмотри, что тут с платежами» — он честно посмотрит, подумает и вернёт туман. Поэтому subagent task оформляется как маленький task spec.</p>
+      <p>Рабочий шаблон очень простой:</p>
+      <pre><code>Цель: что именно нужно выяснить.
+Область поиска: где можно смотреть, а где не нужно.
+Верни: какой формат ответа ожидается.
+Не делай: что запрещено или не требуется.</code></pre>
+      <p>Хороший пример для Commerce OS:</p>
+      <pre><code>Исследуй, где в Commerce OS проходят refund-операции.
+Смотри только controllers, services, payment client, configs и tests.
+Верни короткое summary, file:line ссылки, связанные тесты и open questions.
+Не меняй файлы и не присылай длинные куски кода.</code></pre>
+      <p>Заметьте, здесь нет магии. Вы не пишете «будь лучшим аналитиком на свете». Вы задаёте цель, границы и формат ответа. Это всё та же инженерная дисциплина из предыдущих модулей, только на более мелком уровне.</p>
+      <p>Ещё один пример — под задачу из текущего модуля, где вы поддерживаете <code>API_MAP.md</code>:</p>
+      <pre><code>Найди все точки, где проект общается со Stripe.
+Проверь build file, client code, config keys, env vars и integration tests.
+Верни только подтверждённые места с file:line ссылками.
+Если что-то похоже на гипотезу, пометь это явно.</code></pre>
+      <p>Такой запрос особенно хорош тем, что сразу заставляет subagent разделять факт и предположение. А это сильно экономит вам время на проверке.</p>
+    </section>
+
+    <section>
+      <h2>5. Хороший ответ — это output contract</h2>
+      <p>Subagent полезен, только если назад приходит рабочий результат, а не «литературное расследование на шесть экранов». Для этого нужен <strong>output contract</strong>. Не пугайтесь громкого слова: это просто заранее оговорённый формат ответа.</p>
+      <p>Хороший ответ почти всегда содержит пять вещей:</p>
+      <ul>
+        <li><strong>summary</strong> — суть в двух строках;</li>
+        <li><strong>evidence</strong> — <code>file:line</code> ссылки для проверки;</li>
+        <li><strong>assumptions</strong> — где subagent догадался, а не увидел;</li>
+        <li><strong>open questions</strong> — что не смог подтвердить;</li>
+        <li><strong>next steps</strong> — что логично делать основной сессии дальше.</li>
+      </ul>
+      <pre><code>Summary: refund flow входит через `OrderController`, дальше идёт в
+`RefundService`, а внешний вызов уходит через `StripeClient`.
+
+Доказательства:
+- `src/orders/OrderController.java:41-67`
+- `src/refunds/RefundService.java:18-73`
+- `src/payments/StripeClient.java:88-123`
+- `src/test/.../RefundServiceTest.java:22-64`
+
+Предположения:
+- webhook-обработка, вероятно, есть, но не подтверждена.
+
+Открытые вопросы:
+- не найден тест на проверку подписи webhook.
+
+Следующие шаги:
+- проверить webhook handler и обновить `API_MAP.md`.</code></pre>
+      <p>Ответ короткий и проверяемый. Плохой — наоборот: двадцать file paths без контекста, огромные цитаты кода, неявные догадки, «всё вроде находится тут». Правило простое: subagent должен сжимать исследование, а не дублировать его. Иначе вы поменяли место хранения шума, а не убрали его.</p>
+    </section>
+
+    <section>
+      <h2>6. Subagent помогает заполнить API_MAP.md</h2>
+      <p>Свяжем это с Commerce OS. В <code>API_MAP.md</code> уже зафиксированы первые маршруты и интеграции. Теперь надо дополнить раздел внешних интеграций — описать платёжного провайдера и точки refund flow. Целиком в основной сессии это утопит её в деталях, поэтому работаете через subagent.</p>
+      <p>Основная сессия ставит задачу: «Найди все подтверждённые точки интеграции со Stripe: dependency, client, config keys, места вызова checkout/refund, связанные tests. Верни короткую выжимку с evidence и open questions». Subagent уходит читать код, сессия держит только цель — обновить артефакт.</p>
+      <p>Возвращается, допустим, такое:</p>
+      <pre><code>Summary: Stripe подключён как внешний payment provider; checkout и refund
+идут через один client class.
+
+Доказательства:
+- `build.gradle:34`
+- `src/payments/StripeClient.java:14-145`
+- `src/orders/OrderService.java:132-154`
+- `src/refunds/RefundService.java:87-104`
+- `src/main/resources/application.yml:54-61`
+
+Открытые вопросы:
+- webhook signature validation не подтверждена тестом.</code></pre>
+      <p>Из такой выжимки удобно обновлять <code>API_MAP.md</code>, troubleshooting note или черновик документации, не перетаскивая назад весь сырой поиск. Но в <code>API_MAP.md</code> это не копируется вслепую: основная сессия проверяет два-три опорных места, чтобы убедиться, что выводы не фантазия, и только потом обновляет артефакт.</p>
+      <p>Фрагмент <code>API_MAP.md</code> может стать таким:</p>
+      <pre><code>## Внешние интеграции
+
+- Stripe payment provider
+  - dependency: `build.gradle:34`
+  - client: `src/payments/StripeClient.java:14-145`
+  - checkout call: `src/orders/OrderService.java:132-154`
+  - refund call: `src/refunds/RefundService.java:87-104`
+  - config: `src/main/resources/application.yml:54-61`
+  - open question: webhook signature validation not verified</code></pre>
+      <p>Тут сходятся предыдущие лекции. Из лекции 1 — формат карты. Из лекции 2 — привычка опираться на evidence. Из сегодняшней — способ добыть evidence, не утопив основную сессию. Новые приёмы не живут отдельно, а достраивают знакомый workflow.</p>
+    </section>
+
+    <section>
+      <h2>7. Возвращаем выводы в основную сессию</h2>
+      <p>Финиш — место, где легко всё испортить. Subagent отработал хорошо, а основная сессия тащит назад весь сырой материал или начинает спорить с ним на эмоциях. Спасает простой порядок.</p>
+      <p>Сначала сессия принимает только summary и evidence. Потом выборочно проверяет два-три опорных места — те ссылки, на которых держится вывод. Потом обновляет артефакт: <code>API_MAP.md</code>, investigation note или docs draft. И только затем, если нужно, ставит следующий вопрос.</p>
+      <pre><code>Основная сессия
+  ↓ формулирует mini task spec
+Subagent
+  ↓ приносит summary + citations
+Вы
+  ↓ проверяете опорные места
+Артефакт
+  ↓ обновляется через diff</code></pre>
+      <p>Subagent не снимает с вас ответственность. Он не решает за разработчика — он сокращает стоимость исследования. Владелец результата по-прежнему вы: какие выводы войдут в <code>API_MAP.md</code>, какие останутся open questions, а какие уйдут в корзину как неподтверждённые, решаете вы.</p>
+      <div class="callout">Subagent не делает сессию умнее. Он не даёт ей захламиться — а чистая сессия работает лучше.</div>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> оформить investigation brief для subagent, получить короткую выжимку с evidence и обновить артефакт, не перетаскивая шум в основную сессию.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите небольшой учебный репозиторий или создайте фейковый <code>commerce-os-mini</code> с refund flow, <code>StripeClient</code>, конфигом, тестами и baseline-коммитом. Используйте только вымышленные данные.</li>
+        <li>Составьте investigation brief по шаблону: цель, область поиска, ожидаемый формат ответа и запрет на правки. Например: найти подтверждённые точки интеграции со Stripe и тесты вокруг refund.</li>
+        <li>Запустите subagent или смоделируйте его отдельной сессией. Потребуйте output contract: summary, <code>file:line</code> evidence, assumptions, open questions, next steps. Не принимайте длинные дампы кода и логи.</li>
+        <li>Выборочно проверьте два-три опорных места из evidence. Неподтверждённое оставьте в open questions и обновите <code>API_MAP.md</code> или <code>EVIDENCE_NOTE.md</code>.</li>
+        <li>Проверьте, что основная сессия не получила сырой шум, артефакт обновлён через diff, а код проекта не изменён.</li>
+      </ol>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Brief содержит цель, границы поиска, формат ответа и запрет на изменения.</li>
+        <li>Ответ subagent короткий и состоит из summary, evidence, assumptions, open questions и next steps.</li>
+        <li>В evidence есть проверяемые <code>file:line</code> ссылки.</li>
+        <li>Вы проверили минимум два опорных места самостоятельно.</li>
+        <li>Неподтверждённые выводы не попали в артефакт как факты.</li>
+        <li>Обновлён <code>API_MAP.md</code> или другой рабочий артефакт, а не просто сохранён ответ в чате.</li>
+        <li>Основная сессия не забита длинными логами и случайными файлами.</li>
+        <li>В практике только фейковые данные, без секретов и реального платёжного ключа.</li>
+      </ul>
+    </section>
+
+    <footer>8 уровень · лекция 3. Subagent — отдельное окно для шумного поиска, а не замена вашей инженерной проверке.</footer>
+  </main>
+</body>
+</html>
