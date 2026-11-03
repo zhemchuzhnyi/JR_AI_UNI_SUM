@@ -31,6 +31,7 @@
 ## Контрольные вопросы
 
 - [Уровень 7 — 20 вопросов](level7/CONTROL_QUESTIONS.html)
+- [Уровень 8 — 20 вопросов](level8/CONTROL_QUESTIONS.html)
 
 ## Статус
 

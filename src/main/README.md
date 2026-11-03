@@ -113,6 +113,8 @@ src/main/
         index.html
     level8/
       README.md
+      CONTROL_QUESTIONS.md
+      CONTROL_QUESTIONS.html
       lecture1/
         summary.txt
         index.html
@@ -146,7 +148,7 @@ src/main/
 - Для Git, permissions, секретов и других потенциально опасных действий используем только учебный scratch-проект и фейковые данные.
 - Полное эталонное решение в лекцию не добавляем: практика должна оставаться практикой.
 - Практики вебинара — отдельные capstone-задания в `webinarN/practice/`. Они не заменяют практику в конце каждой лекции и не дублируются в лекциях.
-- Контрольные вопросы уровня живут отдельно: `webinar1/CONTROL_QUESTIONS.md`, `webinar2/level3/CONTROL_QUESTIONS.md`, `webinar4/level7/CONTROL_QUESTIONS.md`.
+- Контрольные вопросы уровня живут отдельно: `webinar1/CONTROL_QUESTIONS.md`, `webinar2/level3/CONTROL_QUESTIONS.md`, `webinar4/level7/CONTROL_QUESTIONS.md`, `webinar4/level8/CONTROL_QUESTIONS.md`.
 
 ## Шаблон практики
 
@@ -187,7 +189,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов. Аудит покрытия: [вебинар 1](webinar1/COVERAGE.md).
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, 15 и 20 контрольных вопросов. Аудит покрытия: [вебинар 2](webinar2/COVERAGE.md).
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 20 вопросов; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 20 вопросов; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
-- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–5 (карта API и интеграций; IDE, терминал и логи; subagents; AI-assisted documentation; docs-as-code review); практика — Haiku 50 (аудит чужого проекта и генератор хайку). Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
+- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–5 (карта API и интеграций; IDE, терминал и логи; subagents; AI-assisted documentation; docs-as-code review), 20 контрольных вопросов; практика — Haiku 50 (аудит чужого проекта и генератор хайку). Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

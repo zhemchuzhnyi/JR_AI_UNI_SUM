@@ -9,3 +9,7 @@
 - [Лекция 5 — Docs-as-code review rubric](lecture5/index.html)
 
 Все лекции уровня 8 собраны.
+
+## Контрольные вопросы
+
+- [20 вопросов по уровню 8](CONTROL_QUESTIONS.html)

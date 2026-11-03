@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 8 — контрольные вопросы по API_MAP, runtime evidence, subagents, AI-assisted documentation и docs-as-code review.">
+  <title>Уровень 8 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 8 — контрольные вопросы</h1>
+    <p>Контрольный блок по 5 лекциям уровня 8: 20 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с вебинарной частью: уровень 7 даёт discovery и карту проекта, уровень 8 расширяет её интеграциями, runtime evidence, subagents и docs-as-code.</p>
+
+    <h2>Лекция 1 — карта API и интеграций</h2>
+    <ol start="1">
+      <li><strong>Чем <code>API_MAP.md</code> отличается от <code>CODEBASE_INVENTORY.md</code>?</strong><br>
+        <code>CODEBASE_INVENTORY.md</code> отвечает, что есть в проекте и где это искать. <code>API_MAP.md</code> отвечает, куда идёт запрос: через какой маршрут он входит, где уходит в сервисы, базу, очередь или внешний клиент. Inventory — карта города, API_MAP — маршрут конкретной поездки.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Что считается интеграцией в карте API и что такое граница авторизации?</strong><br>
+        Интеграция — любой важный стык, влияющий на поведение: HTTP-эндпоинт, контроллер, внутренний клиент, база, очередь, конфиг и тесты, а не только внешние сервисы. Граница авторизации показывает, кто имеет право дойти до маршрута: аннотация, фильтр, security-конфиг или тест. MCP и подключения Claude к внешним инструментам сюда не входят.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Какие источники подтверждают запись в API_MAP и почему комментарий в коде недостаточен?</strong><br>
+        Маршрут и обработчик подтверждаются контроллером, дальнейший путь — сервисом или клиентом, зависимости — конфигом, поведение — тестом, подключение библиотеки — файлом сборки. Комментарий иногда помогает, но сам по себе не является доказательством. Если evidence нет, утверждение должно попасть в «Открытые вопросы».
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Какие поля нужны в таблице API_MAP и зачем колонка «Открытые вопросы»?</strong><br>
+        Метод и путь, обработчик, авторизация, интеграции, конфиг, тесты и открытые вопросы. Последняя колонка не даёт выдумывать недостающие факты: если использование мобильным клиентом не подтверждено, пишем «не проверено», а не правдоподобную догадку. Карта должна быть короткой и жить в репозитории.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 2 — runtime evidence</h2>
+    <ol start="5">
+      <li><strong>Почему исходного кода и конфигов недостаточно для расследования?</strong><br>
+        Код показывает, как система задумана, но не что произошло в рантайме. Нужны команда, воспроизводящая сбой, вывод упавшего теста, stack trace, логи и состояние интерфейса. Пока нет воспроизводимого сигнала, объяснение остаётся гипотезой.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Что такое selection-as-context при работе с IDE?</strong><br>
+        Это передача Claude точного выделенного фрагмента — метода, блока условий или строки — как основного контекста, часто с <code>file:line</code>. Вместо всего модуля на 600 строк Claude получает 12 нужных строк, лучше понимает область поиска и меньше засоряет контекст. Выделение в IDE — точный канал контекста, а не просто красивый редактор.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Что и в каком объёме показывать из терминала?</strong><br>
+        Нужны команда, которая воспроизводит проблему, и её реальный вывод. Обычно достаточно 10–30 строк вокруг ошибки; если лог сокращён, это нужно пометить. Перед передачей удалите токены, внутренние URL и другие секреты.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Как использовать stack trace и скриншот как evidence?</strong><br>
+        В stack trace смотрят тип ошибки и первые строки своего проекта, а не только framework internals, затем открывают проблемный метод в IDE. Скриншот полезен для состояния UI, но требует короткой подписи в одну-две строки; он не заменяет логи, тесты и trace.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 3 — subagents</h2>
+    <ol start="9">
+      <li><strong>Зачем нужен subagent, если основная сессия уже умеет читать код?</strong><br>
+        Большое расследование засоряет основную сессию: файлы, гипотезы и логи остаются в контексте, даже когда нужен только итог. Subagent даёт отдельное окно контекста: много читает, но возвращает короткую выжимку с evidence. Его сила — в изоляции, а не в «более умной модели».
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Когда задача — хороший кандидат для subagent?</strong><br>
+        Когда нужно много прочитать, но мало вернуть: найти все точки интеграции, собрать тесты вокруг потока, просканировать конфиги и клиентов, собрать evidence по большому diff. Один контроллер, одна строка trace или маленькая правка docs не требуют subagent.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Как ставится задача subagent и какой output contract считается хорошим?</strong><br>
+        Задача оформляется как mini task spec: цель, область поиска, ожидаемый формат и запрет на лишнее. Хороший ответ содержит summary, evidence с <code>file:line</code>, assumptions, open questions и next steps; он короткий и проверяемый, без длинных дампов кода и логов.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Как возвращать выводы subagent в основную сессию?</strong><br>
+        Принять только summary и evidence, выборочно проверить два-три опорных места, затем обновить <code>API_MAP.md</code> или другой артефакт через diff. Неподтверждённое оставить в open questions. Subagent сокращает стоимость исследования, но ответственность за выводы остаётся у разработчика.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 4 — AI-assisted documentation</h2>
+    <ol start="13">
+      <li><strong>Почему документацию стоит писать именно сейчас и каким должен быть её набор?</strong><br>
+        Уже есть <code>CODEBASE_INVENTORY.md</code>, <code>API_MAP.md</code>, evidence из терминала и тестов; документ собирается из подтверждённых артефактов, а не из памяти. Лучше набор небольших документов: README/onboarding, <code>docs/refund-flow.md</code>, troubleshooting, docstring. Правило — один документ, одна задача.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>В чём главная опасность AI-документации без проверки?</strong><br>
+        Это «вежливая галлюцинация»: текст выглядит как работа опытного инженера, но может описывать несуществующий модуль, команду или интеграцию. Всё, что сгенерировал Claude, — черновик, пока не сверено с кодом, конфигами, командами и тестами.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Как дать Claude правильный материал для документа о возвратах?</strong><br>
+        Явно перечислить источники: <code>API_MAP.md</code>, <code>OrderController</code>, <code>RefundService</code>, тесты и конфиги; отделять факты от предположений, добавлять открытые вопросы и запрещать выдумывать классы и интеграции. Если модуль большой, сначала subagent собирает evidence, а затем основная сессия пишет <code>docs/refund-flow.md</code>.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Как превратить <code>API_MAP.md</code> в живую документацию и проверить README?</strong><br>
+        Из карты API собрать маршрут сценария с разделом «Что проверено»; пример — поток возврата с <code>RefundService</code> и <code>PENDING_REFUND_REVIEW</code>. Команды запуска проверять буквально по <code>package.json</code>, <code>build.gradle</code> и <code>application.yml</code>, а в докстроках и архитектурных заметках описывать наблюдаемое поведение, предположения и ограничения.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 5 — docs-as-code review</h2>
+    <ol start="17">
+      <li><strong>По какому принципу документ принимается при docs review?</strong><br>
+        Не по уверенности тона и не по красоте текста, а по совпадению с кодом, конфигами, командами запуска и реальным поведением системы. Документация живёт в репозитории, проходит через diff и review, даже если вы работаете один.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Назовите восемь критериев хорошего docs review.</strong><br>
+        Accurate, source-anchored, complete enough, no hallucinations, commands checked, assumptions listed, limitations included, diff reviewable. Complete enough не означает энциклопедию: объём зависит от читателя и задачи. Source-anchored означает, что нетривиальное утверждение можно быстро привязать к файлу, конфигу или тесту.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Как проверять команды и архитектурные/API-утверждения?</strong><br>
+        Команды запускать буквально: <code>npm start</code> или <code>./gradlew run</code> должны работать, иначе документ ошибся. Вымышленные сущности искать через <code>find</code> и <code>grep</code>, API сверять с <code>API_MAP.md</code>, контроллером и тестами. Если карта уже содержит проверенные факты, не пересочинять их в каждом документе.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Почему Assumptions, Limitations и размер diff важны для review?</strong><br>
+        Они показывают, что документ предполагает и где заканчиваются гарантии: нужна ли база, собран ли <code>.env</code>, работают ли платежи в тестовом режиме. Большой diff трудно проверить, поэтому изменения режут на запуск, refund flow и архитектуру отдельно. Непроверенное «полезное сразу» становится риском.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+    </ol>
+
+    <h2>Статус</h2>
+    <ul>
+      <li>20 вопросов покрывают все 5 лекций уровня 8.</li>
+      <li>Вопросы синхронизированы с вебинаром 4: API_MAP и интеграции, runtime evidence, subagents, AI-документация и docs-as-code review.</li>
+      <li>Уровень 7 даёт discovery, evidence-based Q&amp;A, inventory, dependency map и runtime flow; уровень 8 расширяет и углубляет эти темы до карты интеграций и проверяемой документации.</li>
+      <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+    </ul>
+
+    <footer>Уровень 8 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
