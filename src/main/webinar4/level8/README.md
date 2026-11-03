@@ -5,5 +5,6 @@
 - [Лекция 1 — Карта API и интеграций проекта](lecture1/index.html)
 - [Лекция 2 — IDE, терминал и логи как доказательства](lecture2/index.html)
 - [Лекция 3 — Subagents: тихое расследование](lecture3/index.html)
+- [Лекция 4 — AI-assisted documentation](lecture4/index.html)
 
 Остальные лекции уровня 8 будут добавляться по мере разбора.
