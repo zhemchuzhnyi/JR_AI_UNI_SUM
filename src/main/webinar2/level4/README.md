@@ -12,6 +12,6 @@
 
 ## Контрольные вопросы
 
-- [20 вопросов по уровню 4](CONTROL_QUESTIONS.html)
+- [26 вопросов по уровню 4](CONTROL_QUESTIONS.html)
 
 Вебинар 2 покрывает темы уровня: критерии приёмки, verification plan, пакет доказательств, готовность задачи и workflow explore → plan → implement → verify → review.

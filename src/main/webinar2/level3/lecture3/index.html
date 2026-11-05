@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Current vs desired behavior: язык фактов</div>
       <h1>Claude Code</h1>
@@ -120,7 +121,7 @@
 Фактический результат: экран становится пустым, сообщения об ошибке нет.
 Наблюдается в: локальный запуск и staging.</code></pre>
       <p class="warning">Ни «сломалась backend-валидация», ни «React где-то падает». Пока это не доказано — не факт, а версия.</p>
-      <p class="muted">Для нового проекта current behavior — тоже факт: «проекта ещё нет, repo пустой», а desired: «компания вводит итог чека и число людей — каждый видит свою сумму; при пустых полях расчёта нет, есть подсказка».</p>
+      <p class="muted">Для нового проекта current behavior на старте — тоже факт: «проекта ещё нет, repo пустой», а desired: «компания вводит итог чека и число людей — каждый видит свою сумму; при пустых полях расчёта нет, есть подсказка». Но после первой песочницы current behavior уже не «пустой repo»: в нём появилась версия, и evidence вроде «при 1000,50 доли показывают NaN» нужно фиксировать по ней. До воспроизведения это только ожидаемый failure mode, а не evidence.</p>
     </section>
 
     <section>
@@ -240,6 +241,19 @@
     </section>
 
     <div class="callout">Сначала факты, потом гипотезы — и только затем изменения кода.</div>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Goal задаёт направление, Current и Desired behavior описывают разрыв.</li>
+        <li>Current behavior — только наблюдаемые факты: симптом, шаги, actual result, окружение, impact.</li>
+        <li>Desired behavior — проверяемый результат глазами пользователя, UI, API и данных, без технического решения.</li>
+        <li>Current behavior нужен и для багфиксов, и для фич.</li>
+        <li>Гипотезу помечайте явно и просите проверить; не выдавайте её за evidence.</li>
+        <li>Сначала подтвердите факты, потом меняйте код — иначе получается random patching.</li>
+        <li>Current/Desired — устойчивые части spec; гипотезы и evidence — временные заметки до проверки.</li>
+      </ul>
+    </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>

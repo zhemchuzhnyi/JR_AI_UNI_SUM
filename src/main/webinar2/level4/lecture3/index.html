@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Готовность задачи и план проверки</div>
       <h1>Claude Code</h1>
@@ -287,6 +288,17 @@ public class Demo {
         <li>По каким признакам задача завершена целиком? — готовность задачи.</li>
       </ol>
       <p>Есть ответы — implementation идёт спокойнее. Claude не работает в тумане, а вы не убеждаете себя, что зелёный тест равен готовой задаче. Шаг из режима «вроде работает» в нормальную инженерию.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>План проверки отвечает «как проверяем?», готовность — «когда считаем задачу завершённой?».</li>
+        <li>План проверки пишется до кода: команды, тесты, expected output и действия при падении.</li>
+        <li>L1 verification — проверка одной задачи, а не CI и не стратегия тестирования всего проекта.</li>
+        <li>Reproducibility audit проверяет, сможет ли коллега повторить проверку и понять, почему задача считается готовой.</li>
+        <li>Зелёный тест не равен готовности: diff, scope, совместимость и риски проверяет человек.</li>
+      </ul>
     </section>
 
     <section>

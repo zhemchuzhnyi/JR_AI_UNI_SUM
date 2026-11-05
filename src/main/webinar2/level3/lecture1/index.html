@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">От prompting к task spec</div>
       <h1>Claude Code</h1>
@@ -211,6 +212,17 @@ Diff должен оставаться небольшим и reviewable.
     </section>
 
     <div class="callout">Здесь prompt перестаёт быть просто prompt — он становится task spec.</div>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Расплывчатый prompt → Claude додумывает → изменение расползается → дорогой diff.</li>
+        <li>Task spec — короткий рабочий договор: что, зачем, где, scope, non-goals, ограничения, проверка, артефакт.</li>
+        <li><code>CLAUDE.md</code> — общие правила проекта; <code>TASK_SPEC.md</code> — границы одной задачи.</li>
+        <li>Размер спецификации выбирайте по риску: tiny spec для маленькой задачи, full spec — когда легко зацепить соседнюю логику.</li>
+        <li>Issue отвечает «зачем бизнесу», task spec — «как Claude должен работать в репозитории».</li>
+      </ul>
+    </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>

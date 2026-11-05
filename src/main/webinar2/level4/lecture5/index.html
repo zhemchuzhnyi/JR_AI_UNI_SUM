@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
     <header>
       <div class="eyebrow">Prompt iteration и анти-паттерны</div>
       <h1>Claude Code</h1>
@@ -89,6 +90,10 @@
       <h2>Claude interview pattern</h2>
       <p>Задача не умещается в один прозрачный запрос — не пишите сразу полный <code>TASK_SPEC.md</code>. Используйте Claude interview pattern: вы приносите рабочую заготовку, Claude вопросами вытаскивает недостающие детали. На первом шаге он не пишет код — он технический интервьюер.</p>
       <p>В Claude Code вопросы приходят через встроенный <code>AskUserQuestion</code>: интерактивный список с вариантами, отвечать быстрее, чем печатать. Точное поведение зависит от версии.</p>
+      <p>Стартовая заготовка из трёх фраз:</p>
+      <pre><code>Не редактируй код.
+Задай вопросы, которых тебе не хватает для task spec.
+Когда информации хватит, предложи пошаговый план.</code></pre>
       <pre><code>Короткое описание проблемы
 → Claude задаёт уточняющие вопросы
 → вы отвечаете и сужаете границы
