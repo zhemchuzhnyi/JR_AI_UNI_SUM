@@ -100,7 +100,7 @@
 - В конспекте лекции 5 сохранены все пять смысловых разделов её источника.
 - Все лекции уровня 9 собраны; практика `/prompt-improve` добавлена.
 - Для уровня 9 подготовлены 25 контрольных вопросов, синхронизированных с вебинаром 5.
-- Исправлены `allowed_tools` → `allowed-tools` и `read, grep` → `Read, Grep` во всех примерах.
+- Исправлена запись поля инструментов: старое имя с underscore заменено на каноническое через дефис, а имена инструментов приведены к `Read` и `Grep`.
 - `/git-commit` дополнен Best Practices, Git Safety Protocol, Current Context, `argument-hint`, `arguments`, `$type` и `!`-блоками.
 - Добавлены permissions JSON и различие body / allowed-tools / disallowed-tools / permissions.deny.
 - Dynamic context дополнен `${CLAUDE_SKILL_DIR}`, `scripts/` и ориентиром до ~500 строк.

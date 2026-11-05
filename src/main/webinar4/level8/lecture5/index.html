@@ -112,7 +112,7 @@ npm start
       <pre><code>npm start                         # npm ERR! Missing script: "start"
 ./gradlew run                     # Task 'run' not found in root project
 ./gradlew bootRun                 # backend запускается на :8080
-cd apps/web && npm run dev        # frontend запускается на :3000
+cd apps/web &amp;&amp; npm run dev        # frontend запускается на :3000
 docker compose up -d db           # PostgreSQL поднимается в фоне</code></pre>
       <p>За тридцать секунд выясняется: документ даёт две неправильные команды подряд. Для нового разработчика это первая точка контакта с проектом. После такого доверие к документации падает до «лучше вообще ничего не читать».</p>
       <p>Принцип простой: <strong>команда верна только после запуска</strong>. Не запускается — либо документ ошибся, либо проект сломан. Обе ситуации полезно обнаружить.</p>
@@ -122,7 +122,7 @@ docker compose up -d db           # PostgreSQL поднимается в фон�
 ```bash
 docker compose up -d db        # PostgreSQL
 ./gradlew bootRun              # backend, порт 8080
-cd apps/web && npm run dev     # frontend, порт 3000
+cd apps/web &amp;&amp; npm run dev     # frontend, порт 3000
 ```
 
 Проверено по:
@@ -187,7 +187,7 @@ grep -R "SmsGateway" src             # совпадений нет</code></pre>
 ```bash
 docker compose up -d db        # PostgreSQL
 ./gradlew bootRun              # backend, :8080
-cd apps/web && npm run dev     # frontend, :3000
+cd apps/web &amp;&amp; npm run dev     # frontend, :3000
 ```
 
 ### Assumptions
@@ -210,6 +210,7 @@ cd apps/web && npm run dev     # frontend, :3000
         <li>Проверьте именованные сущности через <code>find</code>, <code>grep</code>, IDE и <code>API_MAP.md</code>. Удалите вымышленный <code>SmsGateway</code> или пометьте его как непроверенную гипотезу; добавьте Assumptions и Limitations.</li>
         <li>Разбейте изменения на маленькие diff, проверьте, что документ отвечает на вопрос читателя, и убедитесь, что код проекта не изменён.</li>
       </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе и терминале; недоступные команды разберите по документации. Критерии проверки те же.</p>
       <h3>Проверка</h3>
       <ul>
         <li>Все восемь критериев rubric пройдены осознанно.</li>

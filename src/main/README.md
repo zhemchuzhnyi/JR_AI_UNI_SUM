@@ -55,8 +55,11 @@ src/main/
         index.html
   webinar3/
     README.md
+    COVERAGE.md
     level5/
       README.md
+      CONTROL_QUESTIONS.md
+      CONTROL_QUESTIONS.html
       lecture1/
         summary.txt
         index.html
@@ -74,6 +77,8 @@ src/main/
         index.html
     level6/
       README.md
+      CONTROL_QUESTIONS.md
+      CONTROL_QUESTIONS.html
       lecture1/
         summary.txt
         index.html
@@ -182,7 +187,7 @@ src/main/
 - Для Git, permissions, секретов и других потенциально опасных действий используем только учебный scratch-проект и фейковые данные.
 - Полное эталонное решение в лекцию не добавляем: практика должна оставаться практикой.
 - Практики вебинара — отдельные capstone-задания в `webinarN/practice/`. Они не заменяют практику в конце каждой лекции и не дублируются в лекциях.
-- Контрольные вопросы уровня живут отдельно: `webinar1/CONTROL_QUESTIONS.md`, `webinar2/level3/CONTROL_QUESTIONS.md`, `webinar4/level7/CONTROL_QUESTIONS.md`, `webinar4/level8/CONTROL_QUESTIONS.md`, `webinar5/level9/CONTROL_QUESTIONS.md`.
+- Контрольные вопросы уровня живут отдельно: `webinar1/CONTROL_QUESTIONS.md`, `webinar2/level3/CONTROL_QUESTIONS.md`, `webinar2/level4/CONTROL_QUESTIONS.md`, `webinar3/level5/CONTROL_QUESTIONS.md`, `webinar3/level6/CONTROL_QUESTIONS.md`, `webinar4/level7/CONTROL_QUESTIONS.md`, `webinar4/level8/CONTROL_QUESTIONS.md`, `webinar5/level9/CONTROL_QUESTIONS.md`.
 
 ## Шаблон практики
 

@@ -6,6 +6,7 @@ const path = require('path');
 // Найдите его во время аудита и замените чтением из process.env.
 const OPENAI_API_KEY = 'sk-test-not-a-real-key';
 const MODEL = 'gpt-5-nano-2025-08-07';
+const PUBLIC_FILES = new Set(['index.html', 'styles.css', 'app.js']);
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt'];
 const ROOT = __dirname;
 
@@ -17,8 +18,11 @@ function json(res, status, payload) {
 function serveStatic(req, res) {
   const url = new URL(req.url, 'http://localhost');
   const file = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
+  // Учебный сервер отдаёт только явно разрешённые файлы.
+  // .env, .gitignore и другие служебные файлы наружу не попадают.
+  if (!PUBLIC_FILES.has(file)) return false;
   const target = path.join(ROOT, file);
-  if (!target.startsWith(ROOT) || !fs.existsSync(target)) return false;
+  if (!target.startsWith(ROOT + path.sep) || !fs.existsSync(target)) return false;
   const ext = path.extname(target);
   const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript' };
   res.writeHead(200, { 'Content-Type': types[ext] || 'text/plain; charset=utf-8' });
@@ -64,6 +68,6 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(Number(process.env.PORT) || 3000, () => {
+server.listen(Number(process.env.PORT) || 3000, '127.0.0.1', () => {
   console.log(`Haiku 50 starter: http://localhost:${process.env.PORT || 3000}`);
 });

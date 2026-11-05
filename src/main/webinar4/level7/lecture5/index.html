@@ -239,6 +239,7 @@ void createOrder_returnsConflict_when_item_is_unavailable() throws Exception {
         <li>Возьмите AI-flow с неверным порядком вызовов, например <code>PaymentService#authorize</code> до <code>InventoryService#reserve</code> или сохранение заказа до проверки оплаты. Найдите расхождение по коду и тестам и исправьте вывод.</li>
         <li>Добавьте в <code>CODEBASE_INVENTORY.md</code> секцию «Runtime flow — оформление заказа» с точкой входа, цепочкой, побочными эффектами, ветками ошибок, конфигами, тестами и честным «не проверено». Проверьте, что <code>git status</code> не показывает изменений кода.</li>
       </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе и терминале; недоступные команды разберите по документации. Критерии проверки те же.</p>
       <h3>Проверка</h3>
       <ul>
         <li>Flow начинается с конкретной точки входа, а не с <code>main()</code> по умолчанию.</li>
