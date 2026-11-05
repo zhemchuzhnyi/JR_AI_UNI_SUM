@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
     <header>
       <div class="eyebrow">Dynamic context и supporting files</div>
       <h1>Claude Code</h1>
@@ -127,8 +128,12 @@ orders/api/RefundController.java</code></pre>
     refund-sorting-bugfix.md
     pagination-duplicates.md
   references/
-    commerce-risk-notes.md</code></pre>
+    commerce-risk-notes.md
+  scripts/
+    collect-refund-candidates.sh</code></pre>
       <p>Такая папка хороша по трём причинам. Во-первых, её легко ревьюить: сразу видно, где инструкция, где шаблоны, где примеры. Во-вторых, ею удобно пользоваться повторно. В-третьих, вы обновите шаблон или пример, не трогая процедуру.</p>
+      <p>Если нужен детерминированный сбор кандидатов, добавьте небольшой скрипт в <code>scripts/</code>. Ссылайтесь на него через <code>${CLAUDE_SKILL_DIR}/scripts/...</code>, а не через абсолютный путь: переменная указывает на каталог установленного skill и переживает перенос между машинами. Скрипт должен быть безопасным, без записи и без вывода секретов; его тоже нужно ревьюить.</p>
+      <p>Практический ориентир: держите <code>SKILL.md</code> коротким — примерно до 500 строк. Если файл разросся, это обычно значит, что шаблоны, примеры или справочники не вынесены в supporting files. 500 — не магический лимит, а сигнал остановиться и проверить структуру.</p>
       <p>Шаблон <code>TASK_SPEC</code> может быть совсем коротким:</p>
       <pre><code># TASK SPEC
 
@@ -175,7 +180,7 @@ orders/api/RefundController.java</code></pre>
           <tr><td>Ясен выход?</td><td>Назван артефакт и его формат</td></tr>
           <tr><td>Есть evidence-first поведение?</td><td>Skill не подменяет факты догадками</td></tr>
           <tr><td>Ограничены инструменты?</td><td>Нет лишних прав «на всякий случай»</td></tr>
-          <tr><td><code>SKILL.md</code> не раздут?</td><td>Шаблоны и примеры вынесены во вспомогательные файлы</td></tr>
+          <tr><td><code>SKILL.md</code> не раздут?</td><td>Ориентир — до ~500 строк; шаблоны, примеры и скрипты вынесены в supporting files</td></tr>
           <tr><td>Контекст экономный?</td><td>Загружается только нужный сигнал</td></tr>
           <tr><td>Результат можно ревьюить?</td><td>Есть повторяемый контракт результата</td></tr>
         </tbody>

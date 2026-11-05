@@ -12,4 +12,4 @@
 
 ## Контрольные вопросы
 
-- [20 вопросов по уровню 9](CONTROL_QUESTIONS.html)
+- [25 вопросов по уровню 9](CONTROL_QUESTIONS.html)

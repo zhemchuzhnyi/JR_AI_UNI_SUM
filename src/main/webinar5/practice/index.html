@@ -48,6 +48,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../level9/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level9/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a></nav>
     <header>
       <div class="eyebrow">Практика вебинара 5</div>
       <h1>/prompt-improve</h1>
@@ -134,7 +135,15 @@ After:
 Результат: та же задача в структуре «роль — контекст — задача — ограничения — формат» и before/after.
 Нельзя: запускать Git, менять файлы проекта, добавлять секреты, выдумывать недостающие требования.
 Проверка: before/after показывает, что именно прояснилось; структура содержит роль, контекст, задачу, ограничения и формат.</code></pre>
-      <p>Для запуска вручную можно использовать <code>disable-model-invocation: true</code>; <code>argument-hint</code> помогает принять черновик. Точные поля и синтаксис зависят от версии Claude Code.</p>
+      <p>Каркас frontmatter:</p>
+      <pre><code>---
+name: prompt-improve
+description: Превращает расплывчатое задание в ясную постановку с before/after.
+argument-hint: "[черновик задания]"
+allowed-tools: []
+disable-model-invocation: true
+---</code></pre>
+      <p>Пустой <code>allowed-tools</code> означает, что skill не получает инструментов и работает только с переданным текстом. Если нужен доступ к файлу, укажите конкретный инструмент, например <code>Read</code>; не выдавайте <code>Bash</code>, <code>Write</code> или Git «на всякий случай». Точные поля и синтаксис зависят от версии Claude Code.</p>
     </section>
 
     <section>

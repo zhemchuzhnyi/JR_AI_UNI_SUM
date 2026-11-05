@@ -1,6 +1,6 @@
 # Покрытие вебинара 5
 
-Сверка презентации вебинара 5 с конспектами. Разобраны лекции 1–5 уровня 9 и практика `/prompt-improve`; содержательное покрытие вебинара закрыто.
+Сверка презентации вебинара 5 с конспектами. Разобраны лекции 1–5 уровня 9 и практика `/prompt-improve`; покрытие структурное, а расширенные примеры отмечены отдельно.
 
 ## Покрытие лекции 1
 
@@ -76,22 +76,22 @@
 | Блок презентации | Где отражено | Статус |
 |---|---|---|
 | Карта расширений и выбор механизма по повторяющейся боли | Уровень 9, лекция 1 | Покрыто |
-| Skill: папка, `SKILL.md`, frontmatter, `description`, `allowed-tools`, body | Уровень 9, лекция 4 | Покрыто |
+| Skill: папка, `SKILL.md`, frontmatter, `description`, `allowed-tools`, body | Уровень 9, лекция 4 | Покрыто; `allowed-tools` исправлен и показан с permissions |
 | Где хранить skill: `~/.claude/skills/` и `.claude/skills/` | Уровень 9, лекция 4 | Покрыто |
 | Автоматический выбор skill по `description` и ручной вызов через `/` | Уровень 9, лекции 2 и 4 | Покрыто |
 | Built-in команды, bundled skills и custom skills | Уровень 9, лекция 2 | Покрыто |
 | Skill Creator: установка и создание skill с его помощью | Уровень 9, лекция 4 | Покрыто |
 | Создание skill вместе с Claude через CLI | Уровень 9, лекция 4 | Покрыто |
-| Пример `/git-commit`, полный `SKILL.md` и `disable-model-invocation` | Уровень 9, лекция 4 | Покрыто |
+| Пример `/git-commit`, полный `SKILL.md` и `disable-model-invocation` | Уровень 9, лекция 4 | Покрыто как расширенный пример; не production-шаблон |
 | `description` как механизм выбора skill | Уровень 9, лекция 4 | Покрыто |
 | Полный справочник полей frontmatter | Уровень 9, лекция 4 | Покрыто |
 | Тело skill: шаги, результат, запреты | Уровень 9, лекция 4 | Покрыто |
-| Технические запреты через permissions/settings.json | Уровень 9, лекция 4 | Покрыто |
-| Dynamic context и живое состояние Git | Уровень 9, лекция 5 | Покрыто |
+| Технические запреты через permissions/settings.json | Уровень 9, лекция 4 | Покрыто как пример; синтаксис зависит от версии |
+| Dynamic context и живое состояние Git | Уровень 9, лекция 5 | Покрыто; добавлены `${CLAUDE_SKILL_DIR}`, `scripts/` и ориентир 500 строк |
 | Supporting files: шаблоны, examples, references | Уровень 9, лекция 5 | Покрыто |
 | Практика `/prompt-improve`, `prompt-architect` и best practices | `webinar5/practice/` | Покрыто |
 
-## Остаточные ограничения
+## Что проверено
 
 - В конспекте лекции 1 сохранены все пять смысловых разделов её источника.
 - В конспекте лекции 2 сохранены все семь смысловых разделов её источника.
@@ -99,10 +99,23 @@
 - В конспекте лекции 4 сохранены все семь смысловых разделов её источника.
 - В конспекте лекции 5 сохранены все пять смысловых разделов её источника.
 - Все лекции уровня 9 собраны; практика `/prompt-improve` добавлена.
-- Для уровня 9 подготовлены 20 контрольных вопросов, синхронизированных с вебинаром 5.
-- Вебинар 5 покрыт: лекции раскрывают механизмы, slash-поверхность, skill, `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context и supporting files.
+- Для уровня 9 подготовлены 25 контрольных вопросов, синхронизированных с вебинаром 5.
+- Исправлены `allowed_tools` → `allowed-tools` и `read, grep` → `Read, Grep` во всех примерах.
+- `/git-commit` дополнен Best Practices, Git Safety Protocol, Current Context, `argument-hint`, `arguments`, `$type` и `!`-блоками.
+- Добавлены permissions JSON и различие body / allowed-tools / disallowed-tools / permissions.deny.
+- Dynamic context дополнен `${CLAUDE_SKILL_DIR}`, `scripts/` и ориентиром до ~500 строк.
+- Добавлены вопросы по Skill Creator, `/git-commit`, permissions, dynamic context и `/prompt-improve`.
+- Вебинар 5 покрыт структурно: лекции раскрывают механизмы, slash-поверхность, skill, `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context и supporting files.
 - Точные названия полей, команд и расположение файлов зависят от версии Claude Code.
+
+## Остаточные ограничения
+
+- `/git-commit` — учебный пример, а не готовый production-skill; его команды и permissions нужно адаптировать под проект.
+- Синтаксис `allowed-tools`, `disallowed-tools` и `permissions` может отличаться между версиями Claude Code.
+- Skill Creator и marketplace могут быть недоступны в конкретной сборке; проверяйте `/help` и документацию.
+- Ориентир «до ~500 строк» — эвристика для структуры, а не жёсткий лимит.
+- Практика `/prompt-improve` работает только с текстом и не запускает Git.
 
 ## Итог
 
-Лекции 1–5 уровня 9 и практика `/prompt-improve` покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context, supporting files и best practices. Вебинар 5 покрыт содержательно.
+Лекции 1–5 уровня 9 и практика `/prompt-improve` структурно покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context, supporting files и best practices. Расширенные примеры отмечены отдельно.

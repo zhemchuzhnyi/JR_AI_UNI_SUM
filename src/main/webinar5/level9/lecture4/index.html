@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="SKILL.md: frontmatter и тело, базовые поля, when_to_use, вход и результат, ограничения, ручной запуск, allowed_tools и review чужого skill.">
+  <meta name="description" content="SKILL.md: frontmatter и тело, базовые поля, when_to_use, вход и результат, ограничения, ручной запуск, allowed-tools и review чужого skill.">
   <title>Claude Code — 9 уровень, лекция 4</title>
   <style>
     :root {
@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">SKILL.md: метаданные, тело и права</div>
       <h1>Claude Code</h1>
@@ -116,7 +117,7 @@ when_to_use: Когда задачу нужно сначала проанали�
         <thead><tr><th>Уровень</th><th>Что сюда входит</th><th>Что делаем сегодня</th></tr></thead>
         <tbody>
           <tr><td>Базовые поля</td><td><code>name</code>, <code>description</code>, <code>when_to_use</code>, указание входа, ожидаемый результат, ограничения</td><td>Обязательно понимаем и используем</td></tr>
-          <tr><td>Полезные поля</td><td><code>allowed_tools</code>, связь с файлами или областями проекта, примеры</td><td>Подключаем, если есть ясная причина</td></tr>
+          <tr><td>Полезные поля</td><td><code>allowed-tools</code>, связь с файлами или областями проекта, примеры</td><td>Подключаем, если есть ясная причина</td></tr>
           <tr><td>Продвинутые поля</td><td>тонкая настройка вызова, специальные режимы, привязки к другим механизмам</td><td>Пока не усложняем ими первый skill</td></tr>
         </tbody>
       </table>
@@ -183,7 +184,7 @@ when_to_use: Когда есть баг, фича или рефакторинг,
       <p>Концептуально верх файла может отражать это так:</p>
       <pre><code>---
 name: issue-analysis
-allowed_tools: read, grep
+allowed-tools: Read, Grep
 # запуск только вручную; точное поле зависит от версии
 # редактирование файлов не разрешаем
 ---</code></pre>
@@ -204,7 +205,7 @@ allowed_tools: read, grep
 name: issue-analysis
 description: Превращает входящий issue Commerce OS в TASK_SPEC.md
 when_to_use: Когда по багу, фиче или рефакторингу сначала нужен анализ, а не реализация
-allowed_tools: read, grep
+allowed-tools: Read, Grep
 ---</code></pre>
       <p>Тело:</p>
       <pre><code>## Что сделать
@@ -276,6 +277,10 @@ description: >-
   Делает git commit: разбирает diff, выбирает type и scope
   по Conventional Commits и пишет сообщение. Используйте,
   когда нужно сделать commit или вызвать /git-commit.
+argument-hint: "[type] [scope]"
+arguments:
+  - type
+  - scope
 disable-model-invocation: true
 allowed-tools:
   - Bash(git status *)
@@ -284,6 +289,23 @@ allowed-tools:
   - Bash(git commit *)
   - Bash(git show *)
 ---
+
+## Best Practices
+- Один commit — один понятный change set.
+- Type и scope выбираются по реальному diff, а не по названию ветки.
+- Сообщение объясняет «почему», а не только «что».
+- Hooks не обходятся; упавший hook останавливает работу.
+
+## Git Safety Protocol
+- Не выполнять `git push`, `--amend`, `--no-verify` и не менять `git config`.
+- При `.env`, `*.pem`, `*.key` или другом чувствительном пути остановиться до чтения diff и staging.
+- Если изменения нельзя безопасно разделить, попросить пользователя выбрать файлы.
+- Не коммитить секреты и не печатать значения ключей в отчёте.
+
+## Current Context
+!`git status --short`
+!`git diff --cached`
+!`git log --oneline -5`
 
 ## Workflow
 1. Проверить status и имена изменённых файлов.
@@ -297,6 +319,11 @@ allowed-tools:
 7. Создать Conventional Commit.
 8. Если hook завершился ошибкой — показать её и остановиться.
 
+## Arguments
+- `$type` — Conventional Commits type: feat, fix, docs, test, refactor и т. п.
+- `$scope` — затронутая область проекта.
+- `$ARGUMENTS` — исходные аргументы вызова, если версия их поддерживает.
+
 ## Result
 После успешного commit вернуть:
 - commit hash;
@@ -305,6 +332,37 @@ allowed-tools:
 - изменения, оставшиеся незакоммиченными.</code></pre>
       <p><code>disable-model-invocation: true</code> сознательно выключает автоподбор: commit — это side effect, и мы не хотим, чтобы Claude коммитил сам. Запускаем только вручную через <code>/git-commit</code>. Подробный <code>description</code> при этом работает на поиск в <code>/</code>-меню и будущее переиспользование.</p>
       <p><code>allowed-tools</code> — не deny-list и не sandbox. Это предодобрение ожидаемых команд, чтобы skill не спрашивал подтверждение на каждом <code>git status</code>, <code>diff</code>, <code>add</code>, <code>commit</code> и <code>show</code>. Технические запреты на <code>push</code>, <code>--amend</code>, <code>--no-verify</code> и изменение <code>git config</code> настраиваются отдельно через project permissions, например в <code>settings.json</code>. Точный синтаксис зависит от версии Claude Code; <code>allowed-tools</code> сам по себе не делает запрет техническим.</p>
+      <p><code>argument-hint</code> подсказывает формат аргументов в autocomplete, <code>arguments</code> объявляет позиционные имена, а <code>$type</code>, <code>$scope</code> и <code>$ARGUMENTS</code> подставляются в тело. Точный набор подстановок зависит от версии — проверяйте его, но принцип один: вход skill должен быть явным, а не угаданным.</p>
+      <p><code>Current Context</code> с блоками <code>!`git status --short`</code>, <code>!`git diff --cached`</code> и <code>!`git log --oneline -5`</code> собирает живое состояние перед запуском. Такие команды выполняются автоматически при вызове skill: они должны быть быстрыми, безопасными, без записи и без вывода секретов.</p>
+      <h3>permissions: технический запрет, а не просьба</h3>
+      <p><code>allowed-tools</code> и <code>disallowed-tools</code> управляют доступом в рамках skill, а жёсткие ограничения проекта лучше закреплять в <code>.claude/settings.json</code>:</p>
+      <pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git commit --amend:*)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(git config:*)"
+    ]
+  }
+}</code></pre>
+      <p>Это пример, а не универсальная схема: синтаксис и точные имена правил зависят от версии Claude Code. Если <code>allow</code> и <code>deny</code> пересекаются, более строгое правило должно побеждать; проверьте это в своей версии.</p>
+      <table>
+        <thead><tr><th>Где задано</th><th>Что означает</th><th>Чем не является</th></tr></thead>
+        <tbody>
+          <tr><td>Тело <code>SKILL.md</code></td><td>Процедура и просьбы к агенту</td><td>Техническим ограничением</td></tr>
+          <tr><td><code>allowed-tools</code></td><td>Предодобрение ожидаемых инструментов</td><td>Deny-list или sandbox</td></tr>
+          <tr><td><code>disallowed-tools</code></td><td>Временно убрать инструменты из пула skill</td><td>Полной политикой проекта</td></tr>
+          <tr><td><code>permissions.deny</code></td><td>Жёсткий запрет в настройках</td><td>Заменой human review</td></tr>
+        </tbody>
+      </table>
+      <p><code>allowed-tools</code> ускоряет нормальную работу, но не делает запрет техническим. <code>disallowed-tools</code> убирает инструмент, но не объясняет, почему он запрещён. <code>permissions.deny</code> — это уже политика, которую нужно проверить в реальном окружении.</p>
     </section>
 
     <section>
@@ -343,7 +401,7 @@ allowed-tools:
         <li>В вымышленном Workflow Kit создайте <code>.claude/skills/issue-analysis/SKILL.md</code> с неполным черновиком: только <code>name</code> и расплывчатый <code>description</code>. Используйте фейковые данные.</li>
         <li>Добавьте базовые поля: короткий <code>name</code>, конкретный <code>description</code>, триггерный <code>when_to_use</code>, явный вход, ожидаемый результат и ограничения. Проверьте, что по описанию понятно, когда skill запускать, а когда нет.</li>
         <li>Добавьте тело: цель, порядок работы, что вернуть и чего не делать. Сделайте результатом <code>TASK_SPEC.md</code> плюс открытые вопросы; запретите менять код и начинать реализацию.</li>
-        <li>Настройте ручной запуск и минимальные инструменты чтения/поиска. Точное поле invocation и <code>allowed_tools</code> сверьте с текущей версией Claude Code; если синтаксис отличается, зафиксируйте эквивалент.</li>
+        <li>Настройте ручной запуск и минимальные инструменты чтения/поиска. Точное поле invocation и <code>allowed-tools</code> сверьте с текущей версией Claude Code; если синтаксис отличается, зафиксируйте эквивалент.</li>
         <li>Прогоните skill на фейковом issue про сортировку refund-запросов, затем прочитайте <code>SKILL.md</code> как чужой файл по пяти вопросам из лекции и запишите вывод в <code>SKILL_REVIEW.md</code>. Проверьте, что код не изменён.</li>
       </ol>
       <h3>Проверка</h3>

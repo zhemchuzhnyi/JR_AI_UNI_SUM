@@ -44,7 +44,7 @@
 </head>
 <body>
   <main>
-    <a class="back" href="../../index.html">← Все конспекты</a>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
     <h1>Уровень 9 — контрольные вопросы</h1>
     <p>Контрольный блок по 5 лекциям уровня 9: 20 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с вебинаром 5: лекции раскрывают карту расширений, slash-поверхность, переход от prompt к skill и устройство <code>SKILL.md</code>.</p>
 
@@ -148,9 +148,33 @@
       </li>
     </ol>
 
+    <h2>Дополнительные вопросы — Skill Creator, /git-commit и dynamic context</h2>
+    <ol start="21">
+      <li><strong>Как создать skill через Skill Creator и что проверить после генерации?</strong><br>
+        Добавьте marketplace (<code>/plugin marketplace add anthropics/claude-plugins-official</code>), затем вызовите Skill Creator через <code>/skill-creator</code> или попросите Claude создать skill. После генерации проверьте план файлов, <code>SKILL.md</code>, <code>description</code>, тело, supporting files и права. Сгенерированный skill — черновик, а не истина: его нужно прочитать и протестировать.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Что входит в безопасный <code>/git-commit</code> skill?</strong><br>
+        <code>disable-model-invocation: true</code>, <code>argument-hint</code>, аргументы, <code>allowed-tools</code> для status/diff/add/commit/show, <code>Best Practices</code>, <code>Git Safety Protocol</code>, <code>Current Context</code> с <code>!</code>-командами и <code>Result</code>. Запрещены push, <code>--amend</code>, <code>--no-verify</code> и изменение <code>git config</code>; при чувствительных файлах skill останавливается.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Чем body, <code>allowed-tools</code>, <code>disallowed-tools</code> и <code>permissions.deny</code> отличаются по силе?</strong><br>
+        Body задаёт процедуру и просьбы, но не является техническим ограничением. <code>allowed-tools</code> предодобряет инструменты, <code>disallowed-tools</code> убирает их из пула skill, а <code>permissions.deny</code> в <code>settings.json</code> задаёт жёсткий запрет проекта. <code>allowed-tools</code> не заменяет deny и не является sandbox.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Как работают <code>${CLAUDE_SKILL_DIR}</code>, <code>!</code>-блоки и <code>scripts/</code> и зачем ограничивать размер <code>SKILL.md</code>?</strong><br>
+        <code>${CLAUDE_SKILL_DIR}</code> указывает на каталог установленного skill, поэтому шаблоны и скрипты подключаются переносимо. <code>!</code>-блоки выполняют команды при вызове skill автоматически — только безопасные и без секретов. Скрипты в <code>scripts/</code> детерминированно собирают сигналы; <code>SKILL.md</code> держат коротким (ориентир — до ~500 строк), а материалы выносят в supporting files.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Что делает практика <code>/prompt-improve</code> и как проверить её результат?</strong><br>
+        Skill принимает сырое задание и возвращает структуру «роль — контекст — задача — ограничения — формат» плюс before/after. Он не запускает Git, не меняет файлы, не добавляет секреты и задаёт 1–3 вопроса при нехватке данных. Проверка — минимум три реальных черновика, видимый before/after и отсутствие выдуманных требований.
+        → <a href="../practice/index.html">Практика</a>
+      </li>
+    </ol>
+
     <h2>Статус</h2>
     <ul>
-      <li>20 вопросов покрывают все 5 лекций уровня 9.</li>
+      <li>25 вопросов покрывают все 5 лекций уровня 9 и практику <code>/prompt-improve</code>.</li>
       <li>Вопросы синхронизированы с вебинаром 5: карта расширений, slash-поверхность, skill как процедура, <code>SKILL.md</code> и dynamic context.</li>
       <li>Лекции раскрывают и дополняют вебинар: taxonomy, различение механизмов, контракт skill, supporting files и quality review.</li>
       <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
