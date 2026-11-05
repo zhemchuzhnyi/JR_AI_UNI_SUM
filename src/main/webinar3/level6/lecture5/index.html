@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
     <header>
       <div class="eyebrow">Handoff Note и Fresh Reviewer Pattern</div>
       <h1>Claude Code</h1>
@@ -78,7 +79,7 @@ Fresh session / человек-ревьюер
         ↓
 Продолжение задачи / проверка и замечания</code></pre>
       <p>Handoff — не один файл в вакууме, а компактный пакет смысла: <code>HANDOFF_NOTE.md</code>, рядом <code>TASK_SPEC.md</code>, актуальный diff и результаты проверок. Есть этот набор — следующий человек продолжает задачу. Есть только ваша уверенность — он начинает расследование.</p>
-      <p>Для маленькой правки handoff может быть не отдельным файлом, а пятью пунктами в PR или issue. <code>HANDOFF_NOTE.md</code> нужен, когда задача переживает сессию, день работы или передачу другому человеку.</p>
+      <p>Для маленькой правки handoff может быть не отдельным файлом, а сокращённым чек-листом из пяти пунктов в PR или issue. Если заводите <code>HANDOFF_NOTE.md</code>, используйте полный контракт из девяти полей. Отдельный файл нужен, когда задача переживает сессию, день работы или передачу другому человеку.</p>
     </section>
 
     <section>
@@ -117,15 +118,23 @@ Fresh session / человек-ревьюер
 - threshold &gt; $100 оставлен как property, не hardcode
 - controller стал тоньше, правила перенесены в service
 
+## Assumptions
+- threshold приходит из существующей конфигурации и не меняется в этой задаче
+- других вызовов RefundController с изменённой семантикой нет
+
+## Evidence
+- git diff --stat: 3 files changed, 48 insertions(+), 19 deletions(-)
+- ./gradlew test --tests "*Refund*": 8 tests passed
+
 ## Tests/checks
 - ./gradlew test --tests "*Refund*"  # 8 tests passed
 
-## Known risks
+## Known failures / Risks
 - кейс refund &gt; $1000 без approval пока не покрыт тестом
 
 ## Next step
 Добавить тест на &gt; $1000 и проверить, нужен ли audit log для bypass</code></pre>
-      <p>Заметка сохраняет не каждую мысль, а инженерную картину. Строка Known risks — не признание провала, а признак зрелости: честное «кейс &gt; 1000 пока не покрыт» лучше, чем дать читателю наткнуться на это через сорок минут. Прозрачная незавершённость лучше красивой недосказанности.</p>
+      <p>Заметка сохраняет не каждую мысль, а инженерную картину. Строка Known failures / Risks — не признание провала, а признак зрелости: честное «кейс &gt; 1000 пока не покрыт» лучше, чем дать читателю наткнуться на это через сорок минут. Прозрачная незавершённость лучше красивой недосказанности.</p>
     </section>
 
     <section>
@@ -213,14 +222,14 @@ git status
       <h3>Что сделать</h3>
       <ol>
         <li>Возьмите вымышленную задачу Commerce OS: вынести refund decision logic из <code>RefundController</code> в <code>RefundService</code> без изменения API. Создайте краткий <code>TASK_SPEC.md</code> и пару фейковых изменённых файлов.</li>
-        <li>Напишите <code>HANDOFF_NOTE.md</code> с полями Goal, Task spec, Changed files, Decisions, Assumptions, Evidence, Tests/checks, Known risks и Next step. Используйте конкретные формулировки, а не «почти готово».</li>
+        <li>Напишите <code>HANDOFF_NOTE.md</code> с полями Goal, Task spec, Changed files, Decisions, Assumptions, Evidence, Tests/checks, Known failures / Risks и Next step. Используйте конкретные формулировки, а не «почти готово».</li>
         <li>Откройте fresh-контекст: новую сессию Claude, <code>/clear</code> или просто прочитайте пакет как посторонний человек. Дайте только <code>TASK_SPEC.md</code>, <code>HANDOFF_NOTE.md</code>, diff и результаты проверок. Не передавайте всю историю чата.</li>
         <li>Попросите reviewer проверить scope, пропущенные edge cases, недоказанные утверждения и соответствие note реальному diff. Файлы не менять.</li>
         <li>Запишите в <code>HANDOFF_REVIEW.md</code> 2–3 замечания с привязкой к evidence и обновите Next step. Если CLI недоступен, проведите review вручную по тем же вопросам.</li>
       </ol>
       <h3>Проверка</h3>
       <ul>
-        <li>В handoff есть все ключевые поля и отдельный Known risks.</li>
+        <li>В handoff есть все ключевые поля и отдельный Known failures / Risks.</li>
         <li>Goal и Next step конкретны; Next step — один следующий шаг.</li>
         <li>Tests/checks содержат команду и результат, а не «тесты зелёные».</li>
         <li>Fresh reviewer получил компактный пакет, а не всю переписку.</li>

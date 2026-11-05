@@ -12,4 +12,4 @@
 
 ## Контрольные вопросы
 
-- [20 вопросов по уровню 6](CONTROL_QUESTIONS.html)
+- [22 вопроса по уровню 6](CONTROL_QUESTIONS.html)

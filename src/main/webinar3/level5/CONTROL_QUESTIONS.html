@@ -50,9 +50,9 @@
 </head>
 <body>
   <main>
-    <a class="back" href="../../index.html">← Все конспекты</a>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level6/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Вопросы другого уровня</a></nav>
     <h1>Уровень 5 — контрольные вопросы</h1>
-<p>Контрольный блок по 5 лекциям уровня 5: 20 вопросов с короткими ответами и ссылками на конспекты.</p>
+<p>Контрольный блок по 5 лекциям уровня 5: 22 вопроса с короткими ответами и ссылками на конспекты.</p>
 <h2>Лекция 1 — Operational model: как устроен контекст Claude</h2>
 <ol start="1">
 <li><strong>Что точнее всего описывает контекст Claude в текущей сессии?</strong><br>
@@ -98,7 +98,7 @@
  → <a href="lecture3/index.html">Лекция 3</a>
 </li>
 <li><strong>Что показывает <code>/context</code> и на какие три вопроса помогает ответить?</strong><br>
- Он показывает вклад слоёв — system prompt, tools, MCP tools, memory files, messages, free space — и помогает понять: не съела ли история слишком много места; не лежат ли в окне ненужные выводы команд и логи; остались ли в фокусе файлы и ограничения. Если занято около 60% окна, стоит усилить контроль за качеством.
+ Он показывает вклад слоёв — system prompt, tools, MCP tools, memory files, messages, free space — и помогает понять: не съела ли история слишком много места; не лежат ли в окне ненужные выводы команд и логи; остались ли в фокусе файлы и ограничения. Если занято около 60% окна, это эвристический сигнал усилить контроль за качеством, а не жёсткий порог.
  → <a href="lecture3/index.html">Лекция 3</a>
 </li>
 <li><strong>Что делает <code>/compact</code> и как уменьшить потерю деталей?</strong><br>
@@ -106,7 +106,7 @@
  → <a href="lecture3/index.html">Лекция 3</a>
 </li>
 <li><strong>Что такое auto-compact и как контекст ведёт себя после сжатия?</strong><br>
- При заполнении окна Claude Code сам запускает auto-compact; в строке состояния виден индикатор «Context left until auto-compact», а порог можно сдвинуть командой <code>/autocompact 500k</code>. После сжатия project-root <code>CLAUDE.md</code>, общие rules и auto memory подгружаются заново; path-scoped rules и вложенные <code>CLAUDE.md</code> — только при чтении файла из нужной области; до пяти файлов, которые Claude недавно менял, он перечитывает сам, остальные остаются строкой в сводке.
+ При заполнении окна Claude Code сам запускает auto-compact; в строке состояния виден индикатор «Context left until auto-compact», а в некоторых версиях порог можно сдвинуть командой вида <code>/autocompact 500k</code> (синтаксис проверяйте через <code>/help</code>). После сжатия project-root <code>CLAUDE.md</code>, общие rules и auto memory подгружаются заново; path-scoped rules и вложенные <code>CLAUDE.md</code> — только при чтении файла из нужной области; до пяти файлов, которые Claude недавно менял, он перечитывает сам, остальные остаются строкой в сводке.
  → <a href="lecture3/index.html">Лекция 3</a>
 </li>
 </ol>
@@ -148,9 +148,20 @@
  → <a href="lecture5/index.html">Лекция 5</a>
 </li>
 </ol>
+<h2>Дополнительные сценарии — выбор recovery action</h2>
+<ol start="21">
+<li><strong>История сессии длинная, но задача та же; ключевые решения уже записаны в task spec и summary. Что выбрать?</strong><br>
+ Сначала <code>/compact</code> с явным списком того, что сохранить: goal, scope, ограничения, отвергнутые гипотезы и следующий шаг. <code>/clear</code> или fresh session здесь преждевременны: задача не сменилась. После сжатия попросите Claude пересказать рамку и проверьте, что ключевые решения остались.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+<li><strong>После третьей попытки гипотезы противоречат друг другу, а diff уже трогает лишние файлы. Какой recovery action выбрать?</strong><br>
+ Остановиться и прочитать <code>git diff</code>, а не добавлять ещё один промпт. Затем открыть fresh session с пересобранным <code>TASK_SPEC.md</code>; файловое состояние вернуть через Git (<code>restore</code>/<code>revert</code>), а не надеяться на <code>/rewind</code>. Третий откат к одной развилке — сигнал менять постановку, а не снова чистить ту же сессию.
+ → <a href="lecture4/index.html">Лекция 4</a>
+</li>
+</ol>
 <h2>Статус</h2>
 <ul>
-<li>20 вопросов покрывают все 5 лекций уровня 5.
+<li>22 вопроса покрывают все 5 лекций уровня 5.
 </li>
 <li>Ответы уже есть в конспектах; блок только собирает и связывает их.
 </li>

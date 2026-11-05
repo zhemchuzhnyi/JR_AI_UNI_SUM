@@ -1,0 +1,90 @@
+[
+  {
+    "code": "en-US",
+    "language": "English",
+    "country": "United States",
+    "currency": "USD",
+    "tld": ".us",
+    "flag": "🇺🇸",
+    "timezone": "America/New_York",
+    "capital": "Washington, D.C.",
+    "region": "Americas"
+  },
+  {
+    "code": "en-GB",
+    "language": "English",
+    "country": "United Kingdom",
+    "currency": "GBP",
+    "tld": ".uk",
+    "flag": "🇬🇧",
+    "timezone": "Europe/London",
+    "capital": "London",
+    "region": "Europe"
+  },
+  {
+    "code": "en-AU",
+    "language": "English",
+    "country": "Australia",
+    "currency": "AUD",
+    "tld": ".au",
+    "flag": "🇦🇺",
+    "timezone": "Australia/Sydney",
+    "capital": "Canberra",
+    "region": "Oceania"
+  },
+  {
+    "code": "de-DE",
+    "language": "German",
+    "country": "Germany",
+    "currency": "EUR",
+    "tld": ".de",
+    "flag": "🇩🇪",
+    "timezone": "Europe/Berlin",
+    "capital": "Berlin",
+    "region": "Europe"
+  },
+  {
+    "code": "fr-FR",
+    "language": "French",
+    "country": "France",
+    "currency": "EUR",
+    "tld": ".fr",
+    "flag": "🇫🇷",
+    "timezone": "Europe/Paris",
+    "capital": "Paris",
+    "region": "Europe"
+  },
+  {
+    "code": "es-ES",
+    "language": "Spanish",
+    "country": "Spain",
+    "currency": "EUR",
+    "tld": ".es",
+    "flag": "🇪🇸",
+    "timezone": "Europe/Madrid",
+    "capital": "Madrid",
+    "region": "Europe"
+  },
+  {
+    "code": "ja-JP",
+    "language": "Japanese",
+    "country": "Japan",
+    "currency": "JPY",
+    "tld": ".jp",
+    "flag": "🇯🇵",
+    "timezone": "Asia/Tokyo",
+    "capital": "Tokyo",
+    "region": "Asia"
+  },
+  {
+    "code": "pt-BR",
+    "language": "Portuguese",
+    "country": "Brazil",
+    "currency": "BRL",
+    "tld": ".br",
+    "flag": "🇧🇷",
+    "timezone": "America/Sao_Paulo",
+    "capital": "Brasília",
+    "region": "Americas"
+  }
+]

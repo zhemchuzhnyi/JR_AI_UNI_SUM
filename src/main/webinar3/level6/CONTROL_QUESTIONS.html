@@ -50,9 +50,9 @@
 </head>
 <body>
   <main>
-    <a class="back" href="../../index.html">← Все конспекты</a>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level5/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Вопросы другого уровня</a></nav>
     <h1>Уровень 6 — контрольные вопросы</h1>
-<p>Контрольный блок по 5 лекциям уровня 6: 20 вопросов с короткими ответами и ссылками на конспекты.</p>
+<p>Контрольный блок по 5 лекциям уровня 6: 22 вопроса с короткими ответами и ссылками на конспекты.</p>
 <h2>Лекция 1 — длинные задачи, milestones и context rot</h2>
 <ol start="1">
 <li><strong>Чем по сути является длинная AI-assisted задача?</strong><br>
@@ -79,7 +79,7 @@
  → <a href="lecture2/index.html">Лекция 2</a>
 </li>
 <li><strong>Что именно откатывает <code>/rewind</code> и как работает checkpoint?</strong><br>
- Только состояние текущей сессии: ветку разговора, гипотезы, решения и часто правки, сделанные инструментами Claude. Checkpoint создаётся автоматически на каждый промпт; меню открывается через <code>/rewind</code> или двойной <code>Esc</code>, где можно вернуть код, разговор или оба, либо выбрать <code>Summarize from here</code> / <code>Summarize up to here</code>. После случайного <code>/clear</code> можно вернуть предыдущую сессию, пока Claude Code не закрыт.
+ Только состояние текущей сессии: ветку разговора, гипотезы, решения и часто правки, сделанные инструментами Claude. В поддерживающих версиях checkpoint создаётся автоматически на каждый промпт; меню открывается через <code>/rewind</code> или двойной <code>Esc</code>, где можно вернуть код, разговор или оба, либо выбрать <code>Summarize from here</code> / <code>Summarize up to here</code>. Детали проверяйте через <code>/help</code>. После случайного <code>/clear</code> можно вернуть предыдущую сессию, пока Claude Code не закрыт.
  → <a href="lecture2/index.html">Лекция 2</a>
 </li>
 <li><strong>Что <code>/rewind</code> точно не откатит?</strong><br>
@@ -132,11 +132,11 @@
 <h2>Лекция 5 — handoff и fresh reviewer</h2>
 <ol start="17">
 <li><strong>Что такое handoff и когда нужен HANDOFF_NOTE.md?</strong><br>
- Компактный пакет смысла для продолжения или проверки задачи: <code>HANDOFF_NOTE.md</code>, <code>TASK_SPEC.md</code>, актуальный diff и результаты проверок. Для маленькой правки хватит пяти пунктов в PR или issue; отдельный файл нужен, когда задача переживает сессию, день работы или передачу другому человеку.
+ Компактный пакет смысла для продолжения или проверки задачи: <code>HANDOFF_NOTE.md</code>, <code>TASK_SPEC.md</code>, актуальный diff и результаты проверок. Для маленькой правки можно использовать сокращённый чек-лист из пяти пунктов в PR или issue; полный <code>HANDOFF_NOTE.md</code> содержит девять полей. Отдельный файл нужен, когда задача переживает сессию, день работы или передачу другому человеку.
  → <a href="lecture5/index.html">Лекция 5</a>
 </li>
 <li><strong>Какие поля должны быть в HANDOFF_NOTE.md?</strong><br>
- Goal, Task spec, Changed files, Decisions, Assumptions, Evidence, Tests/checks, Known failures/Risks и Next step. Формулировки должны быть конкретными: не «тесты зелёные», а команда и результат; не «продолжить работу», а один следующий шаг.
+ Goal, Task spec, Changed files, Decisions, Assumptions, Evidence, Tests/checks, Known failures / Risks и Next step. Формулировки должны быть конкретными: не «тесты зелёные», а команда и результат; не «продолжить работу», а один следующий шаг.
  → <a href="lecture5/index.html">Лекция 5</a>
 </li>
 <li><strong>Что такое fresh reviewer pattern и что он проверяет?</strong><br>
@@ -148,9 +148,20 @@
  → <a href="lecture5/index.html">Лекция 5</a>
 </li>
 </ol>
+<h2>Дополнительные сценарии — выбор recovery action</h2>
+<ol start="21">
+<li><strong>Claude сделал неудачные правки в файлах, коммита ещё нет. Что проверить и когда выбрать <code>/rewind</code>, а когда Git?</strong><br>
+ Сначала <code>git status</code> и <code>git diff</code>: понять, какие файлы изменены и есть ли среди них лишние. Если правки сделаны внутри текущей сессии и ещё не закоммичены, можно вернуться через <code>/rewind</code>; если нужно выборочно убрать файлы, надёжнее Git (<code>restore</code>, <code>stash -u</code>, <code>clean -nd</code> перед удалением). Коммиты, внешние эффекты и ручные правки вне сессии <code>/rewind</code> не отменяет.
+ → <a href="lecture2/index.html">Лекция 2</a>
+</li>
+<li><strong>Плохой коммит уже отправлен в общую ветку. Какой откат выбрать?</strong><br>
+ <code>git revert &lt;hash&gt;</code>: он создаёт новый commit-отмену и не переписывает общую историю. <code>git reset</code> и <code>/rewind</code> здесь не подходят: они не должны менять опубликованную историю или состояние сессии вместо Git. После revert запустите проверки и зафиксируйте результат.
+ → <a href="lecture3/index.html">Лекция 3</a>
+</li>
+</ol>
 <h2>Статус</h2>
 <ul>
-<li>20 вопросов покрывают все 5 лекций уровня 6.
+<li>22 вопроса покрывают все 5 лекций уровня 6.
 </li>
 <li>Ответы собраны из конспектов и дополнены темами вебинара 3: <code>/goal</code>, новый проект, механика checkpoint и <code>claude -w</code>.
 </li>

@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Git-first recovery: откат AI-итераций</div>
       <h1>Claude Code</h1>
@@ -161,8 +162,24 @@ git revert a1b2c3d
 # последний локальный commit убран из ветки
 # все несохранённые изменения тоже потеряны</code></pre>
       <p>И честный сценарий: попытку дешевле бросить, чем спасать. Иногда самый разумный ход — Claude натворил столько, что вы уже сами не понимаете, что в diff полезное, а что мусор.</p>
-      <pre><code>git switch -c refund-refactor-retry main
-# новая чистая ветка от main для повторной аккуратной попытки</code></pre>
+      <p class="warning">Важно: <code>git switch -c refund-refactor-retry main</code> <strong>не очищает рабочее дерево</strong>. Если в нём есть незакоммиченные правки, Git либо откажется переключаться из-за конфликта, либо перенесёт их в новую ветку. Поэтому сначала зафиксируйте или уберите текущее состояние.</p>
+      <pre><code>git status
+
+# Вариант A: сохранить попытку целиком
+git add -A
+git commit -m "WIP: abandoned refund-refactor attempt"
+git switch -c refund-refactor-retry main
+
+# Вариант B: убрать незакоммиченные правки, если они точно не нужны
+git stash push -u -m "refund-refactor attempt"
+git switch -c refund-refactor-retry main
+# вернуть позже: git stash list; git stash pop</code></pre>
+      <p>Если в рабочей папке остались неотслеживаемые файлы, сначала посмотрите, что будет удалено, и только потом удаляйте:</p>
+      <pre><code>git clean -nd    # dry-run: показать, что попадёт под удаление
+git clean -fd    # выполнить только после проверки списка</code></pre>
+      <p><code>git clean -fdx</code> не используйте без понимания: флаг <code>-x</code> удалит и ignored-файлы. Если коммит уже «потерялся» после reset или переключения, его часто можно найти через <code>git reflog</code> и восстановить отдельной веткой:</p>
+      <pre><code>git reflog
+git switch -c rescue &lt;hash&gt;</code></pre>
       <p>Старая ветка остаётся как след попытки. Иногда из неё потом вытащишь пару идей, но спасать всё сразу вы больше не обязаны.</p>
     </section>
 
