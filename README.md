@@ -12,7 +12,7 @@
 - **Вебинар 2** — уровень 3 (5 лекций), уровень 4 (5 лекций), практики «калькулятор» и «симуляции», контрольные вопросы уровней 3 и 4.
 - **Вебинар 3** — уровень 5, лекции 1–5: operational model, context selection, context budget, context pollution, session lifecycle; 20 контрольных вопросов. Уровень 6 — лекции 1–5: длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer; 20 контрольных вопросов. Практика вебинара — справочник локалей.
 - **Вебинар 4** — уровень 7, лекции 1–5: discovery, evidence-based Q&A, `CODEBASE_INVENTORY.md`, dependency map и runtime flow; уровень 8, лекции 1–5: API_MAP, runtime evidence, subagents, AI-assisted documentation и docs-as-code review; отдельная практика «Haiku 50».
-- **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files.
+- **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files; практика `/prompt-improve`.
 
 ## Навигация
 

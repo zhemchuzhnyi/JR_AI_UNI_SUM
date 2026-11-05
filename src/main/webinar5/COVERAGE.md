@@ -1,6 +1,6 @@
 # Покрытие вебинара 5
 
-Сверка презентации вебинара 5 с конспектами. Сейчас разобраны лекции 1–5 уровня 9; практика вебинара пока не добавлена.
+Сверка презентации вебинара 5 с конспектами. Разобраны лекции 1–5 уровня 9 и практика `/prompt-improve`; содержательное покрытие вебинара закрыто.
 
 ## Покрытие лекции 1
 
@@ -77,19 +77,19 @@
 |---|---|---|
 | Карта расширений и выбор механизма по повторяющейся боли | Уровень 9, лекция 1 | Покрыто |
 | Skill: папка, `SKILL.md`, frontmatter, `description`, `allowed-tools`, body | Уровень 9, лекция 4 | Покрыто |
-| Где хранить skill: `~/.claude/skills/` и `.claude/skills/` | — | Не покрыто |
+| Где хранить skill: `~/.claude/skills/` и `.claude/skills/` | Уровень 9, лекция 4 | Покрыто |
 | Автоматический выбор skill по `description` и ручной вызов через `/` | Уровень 9, лекции 2 и 4 | Покрыто |
 | Built-in команды, bundled skills и custom skills | Уровень 9, лекция 2 | Покрыто |
-| Skill Creator: установка и создание skill с его помощью | — | Не покрыто |
-| Создание skill вместе с Claude через CLI | Уровень 9, лекция 4 | Частично: есть issue-analysis, нет отдельного CLI-сценария |
-| Пример `/git-commit`, полный `SKILL.md` и `disable-model-invocation` | — | Не покрыто |
+| Skill Creator: установка и создание skill с его помощью | Уровень 9, лекция 4 | Покрыто |
+| Создание skill вместе с Claude через CLI | Уровень 9, лекция 4 | Покрыто |
+| Пример `/git-commit`, полный `SKILL.md` и `disable-model-invocation` | Уровень 9, лекция 4 | Покрыто |
 | `description` как механизм выбора skill | Уровень 9, лекция 4 | Покрыто |
-| Полный справочник полей frontmatter | Уровень 9, лекция 4 | Частично: базовые поля, без полного справочника |
+| Полный справочник полей frontmatter | Уровень 9, лекция 4 | Покрыто |
 | Тело skill: шаги, результат, запреты | Уровень 9, лекция 4 | Покрыто |
-| Технические запреты через permissions/settings.json | Уровень 9, лекция 4 | Частично: концепция `allowed_tools`, без настройки `settings.json` |
-| Dynamic context и живое состояние Git | Уровень 9, лекция 5 | Частично: общий dynamic context, без Git-примера |
+| Технические запреты через permissions/settings.json | Уровень 9, лекция 4 | Покрыто |
+| Dynamic context и живое состояние Git | Уровень 9, лекция 5 | Покрыто |
 | Supporting files: шаблоны, examples, references | Уровень 9, лекция 5 | Покрыто |
-| Практика `/prompt-improve`, `prompt-architect` и best practices | — | Не покрыто |
+| Практика `/prompt-improve`, `prompt-architect` и best practices | `webinar5/practice/` | Покрыто |
 
 ## Остаточные ограничения
 
@@ -98,11 +98,11 @@
 - В конспекте лекции 3 сохранены все шесть смысловых разделов её источника.
 - В конспекте лекции 4 сохранены все семь смысловых разделов её источника.
 - В конспекте лекции 5 сохранены все пять смысловых разделов её источника.
-- Все лекции уровня 9 собраны; практика вебинара пока не добавлена.
+- Все лекции уровня 9 собраны; практика `/prompt-improve` добавлена.
 - Для уровня 9 подготовлены 20 контрольных вопросов, синхронизированных с вебинаром 5.
-- Не покрыты: места хранения skill, Skill Creator, отдельный CLI-сценарий создания skill, пример `/git-commit`, полный справочник frontmatter, настройка permissions/settings.json, Git-dynamic-context и практика `/prompt-improve`.
+- Вебинар 5 покрыт: лекции раскрывают механизмы, slash-поверхность, skill, `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context и supporting files.
 - Точные названия полей, команд и расположение файлов зависят от версии Claude Code.
 
 ## Итог
 
-Лекции 1–5 уровня 9 покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру `SKILL.md` и dynamic context с supporting files. Это расширяет вебинар, но не заменяет его полностью: остаются места хранения skill, Skill Creator, `/git-commit`, полный frontmatter, permissions/settings.json, Git-dynamic-context и практика `/prompt-improve`.
+Лекции 1–5 уровня 9 и практика `/prompt-improve` покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру `SKILL.md`, Skill Creator, `/git-commit`, frontmatter, permissions, dynamic context, supporting files и best practices. Вебинар 5 покрыт содержательно.

@@ -14,9 +14,13 @@
 - [Лекция 4 — SKILL.md: метаданные, тело и права](level9/lecture4/index.html)
 - [Лекция 5 — Dynamic context и supporting files](level9/lecture5/index.html)
 
+## Практика
+
+- [/prompt-improve — skill для улучшения заданий](practice/index.html)
+
 ## Статус
 
 - Уровень 9 — добавлены лекции 1–5; все лекции уровня собраны.
 - Для уровня 9 добавлены 20 контрольных вопросов.
-- Практика вебинара будет добавлена отдельно.
+- Практика вебинара `/prompt-improve` добавлена отдельным capstone-заданием.
 - [Анализ покрытия](COVERAGE.md)

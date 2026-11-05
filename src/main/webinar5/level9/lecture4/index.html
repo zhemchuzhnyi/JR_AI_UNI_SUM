@@ -248,6 +248,94 @@ support/inbox, логика сортировки списка, связанны�
     </section>
 
     <section>
+      <h2>8. Где хранить skill</h2>
+      <p>Перед выбором папки спросите проще: кому вообще нужна эта процедура?</p>
+      <table>
+        <thead><tr><th>Путь</th><th>Кто использует</th><th>Когда выбирать</th></tr></thead>
+        <tbody>
+          <tr><td><code>~/.claude/skills/</code></td><td>только вы, во всех проектах</td><td>личный эксперимент или привычка</td></tr>
+          <tr><td><code>.claude/skills/</code></td><td>команда этого репозитория</td><td>процедура должна стать общим стандартом</td></tr>
+        </tbody>
+      </table>
+      <p>Скилл, сделанный под себя, может остаться личным. Захотите поделиться — закоммитьте его в <code>.claude/skills/</code> проекта, и процедурой начнёт пользоваться команда.</p>
+      <p>Обратная сторона: чужой <code>.claude/</code> из репозитория — это исполняемый код. Project skill может предодобрить себе команды через <code>allowed-tools</code>, запуститься сам по <code>description</code> и выполнить свои <code>!</code>-команды в момент вызова. Trust-диалог не является фильтром для skills: согласившись, вы включаете всё это разом, а он даже не покажет, что skills себе разрешили. В <code>claude -p</code> диалога нет вовсе. Поэтому просматривайте <code>.claude/</code> чужого репозитория до первого запуска Claude Code в нём.</p>
+    </section>
+
+    <section>
+      <h2>9. Skill Creator и создание /git-commit</h2>
+      <p>Skill можно создать двумя путями: просто описать задачу обычному агенту или вызвать <strong>Skill Creator</strong> — отдельный skill от Anthropic, который знает лучшие практики и проводит через создание шаг за шагом. Это не обязательный инструмент, а помощник, когда хочется сделать аккуратнее.</p>
+      <p>Установка из чата Claude Code:</p>
+      <pre><code>/plugin install skill-creator@claude-plugins-official</code></pre>
+      <p>Если пришло <code>Marketplace "claude-plugins-official" not found</code>, сначала добавьте каталог:</p>
+      <pre><code>/plugin marketplace add anthropics/claude-plugins-official</code></pre>
+      <p>Skill становится доступен сразу, без рестарта. Вызывать можно через <code>/skill-creator:skill-creator</code>, коротко <code>/skill-creator</code> или просто попросив «создай новый skill».</p>
+      <p>Пример проекта — <code>/git-commit</code>. Сначала формулируем задачу простыми словами, затем просим Claude создать project skill в <code>.claude/skills/</code>, сначала показать план файлов. Хороший черновик <code>SKILL.md</code> выглядит примерно так:</p>
+      <pre><code>---
+name: git-commit
+description: >-
+  Делает git commit: разбирает diff, выбирает type и scope
+  по Conventional Commits и пишет сообщение. Используйте,
+  когда нужно сделать commit или вызвать /git-commit.
+disable-model-invocation: true
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git diff *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(git show *)
+---
+
+## Workflow
+1. Проверить status и имена изменённых файлов.
+2. Если изменений нет — остановиться.
+3. Если найден `.env`, `*.pem`, `*.key` или другой
+   чувствительный путь — остановиться до чтения diff и staging.
+4. Прочитать разрешённый diff и выделить один change set.
+5. Если изменения нельзя безопасно разделить — остановиться
+   и попросить пользователя выбрать файлы.
+6. Выбрать type и scope по реальному diff.
+7. Создать Conventional Commit.
+8. Если hook завершился ошибкой — показать её и остановиться.
+
+## Result
+После успешного commit вернуть:
+- commit hash;
+- commit message;
+- committed files;
+- изменения, оставшиеся незакоммиченными.</code></pre>
+      <p><code>disable-model-invocation: true</code> сознательно выключает автоподбор: commit — это side effect, и мы не хотим, чтобы Claude коммитил сам. Запускаем только вручную через <code>/git-commit</code>. Подробный <code>description</code> при этом работает на поиск в <code>/</code>-меню и будущее переиспользование.</p>
+      <p><code>allowed-tools</code> — не deny-list и не sandbox. Это предодобрение ожидаемых команд, чтобы skill не спрашивал подтверждение на каждом <code>git status</code>, <code>diff</code>, <code>add</code>, <code>commit</code> и <code>show</code>. Технические запреты на <code>push</code>, <code>--amend</code>, <code>--no-verify</code> и изменение <code>git config</code> настраиваются отдельно через project permissions, например в <code>settings.json</code>. Точный синтаксис зависит от версии Claude Code; <code>allowed-tools</code> сам по себе не делает запрет техническим.</p>
+    </section>
+
+    <section>
+      <h2>10. Полный справочник frontmatter</h2>
+      <p>Поля не нужно запоминать: сначала решите, какое поведение нужно, затем найдите настройку. Точный набор зависит от версии Claude Code.</p>
+      <table>
+        <thead><tr><th>Поле</th><th>Тип</th><th>Нужно?</th><th>Что настраивает</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>string</td><td>нет</td><td>Display name; команда обычно берётся из имени директории</td></tr>
+          <tr><td><code>description</code></td><td>string</td><td>рекомендуется</td><td>Что делает skill и когда Claude должен его подключать</td></tr>
+          <tr><td><code>when_to_use</code></td><td>string</td><td>нет</td><td>Дополнительные trigger-фразы и примеры запросов</td></tr>
+          <tr><td><code>argument-hint</code></td><td>string</td><td>нет</td><td>Подсказка аргументов в autocomplete</td></tr>
+          <tr><td><code>arguments</code></td><td>string/list</td><td>нет</td><td>Имена позиционных аргументов для substitution</td></tr>
+          <tr><td><code>disable-model-invocation</code></td><td>boolean</td><td>нет</td><td>Запрещает Claude запускать skill автоматически</td></tr>
+          <tr><td><code>user-invocable</code></td><td>boolean</td><td>нет</td><td><code>false</code> скрывает skill из slash-меню</td></tr>
+          <tr><td><code>allowed-tools</code></td><td>string/list</td><td>нет</td><td>Какие tools работают без permission prompt</td></tr>
+          <tr><td><code>disallowed-tools</code></td><td>string/list</td><td>нет</td><td>Какие tools временно убрать из доступного пула</td></tr>
+          <tr><td><code>model</code></td><td>string</td><td>нет</td><td>Какую model использовать</td></tr>
+          <tr><td><code>effort</code></td><td>string</td><td>нет</td><td>Уровень reasoning: от <code>low</code> до <code>max</code></td></tr>
+          <tr><td><code>context</code></td><td>string</td><td>нет</td><td><code>fork</code> запускает skill в отдельном context</td></tr>
+          <tr><td><code>agent</code></td><td>string</td><td>нет</td><td>Тип subagent для <code>context: fork</code></td></tr>
+          <tr><td><code>background</code></td><td>boolean</td><td>нет</td><td>Только с <code>context: fork</code>: ждать результат или работать в фоне</td></tr>
+          <tr><td><code>hooks</code></td><td>object</td><td>нет</td><td>Hooks, которые регистрируются при вызове skill</td></tr>
+          <tr><td><code>paths</code></td><td>string/list</td><td>нет</td><td>Для каких файлов skill может auto-activate</td></tr>
+          <tr><td><code>shell</code></td><td>string</td><td>нет</td><td>Shell для dynamic command blocks</td></tr>
+        </tbody>
+      </table>
+      <p>Эта таблица — справочник, а не приглашение заполнить всё сразу. Первый skill должен оставаться коротким: базовые поля, понятное тело, минимальные права.</p>
+    </section>
+
+    <section>
       <h2>Практика (15–25 минут)</h2>
       <p><strong>Цель:</strong> собрать <code>issue-analysis/SKILL.md</code> с базовыми метаданными, телом и безопасными правами, а затем проверить его как чужой артефакт.</p>
       <h3>Что сделать</h3>
