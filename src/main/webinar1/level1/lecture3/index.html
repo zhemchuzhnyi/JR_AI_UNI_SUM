@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Установка, авторизация, обновления и диагностика</div>
       <h1>Claude Code</h1>
@@ -209,13 +210,13 @@ claude
     "CLAUDE_CODE_AUTO_MODE_SERVER": "0"
   }
 }</code></pre>
-      <p class="muted">Если в <code>settings.json</code> уже есть другие записи, можно заменить их целиком или добавить блок <code>"env"</code> внутрь существующего объекта. Важно сохранить JSON-синтаксис: ключи в кавычках, блоки разделены запятыми.</p>
+      <p class="muted">Если в <code>settings.json</code> уже есть другие записи, не заменяйте файл целиком: сохраните резервную копию, добавьте или обновите только блок <code>"env"</code> и не удаляйте незнакомые ключи вроде <code>model</code>, <code>permissions</code> и <code>hooks</code>. Важно сохранить JSON-синтаксис: ключи в кавычках, блоки разделены запятыми.</p>
       <ul>
         <li><code>ANTHROPIC_BASE_URL</code> — адрес Gateway, куда CLI отправляет запросы.</li>
         <li><code>ANTHROPIC_AUTH_TOKEN</code> — личный ключ доступа и учёта расхода.</li>
         <li><code>CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY</code> — включает обнаружение моделей Gateway в CLI.</li>
       </ul>
-      <p class="muted"><code>ANTHROPIC_MODEL</code> задаёт модель при каждом запуске и перекрывает выбор в <code>/model</code>. Если хочется, чтобы выбор в <code>/model</code> запоминался, есть <code>ANTHROPIC_DEFAULT_MODEL</code>: она задаёт стартовую модель, но при заданной <code>ANTHROPIC_MODEL</code> не срабатывает.</p>
+      <p class="muted"><code>ANTHROPIC_MODEL</code> задаёт модель при каждом запуске и имеет приоритет над сохранённым выбором <code>/model</code>. <code>/model</code> переключает модель в текущей сессии, но следующий запуск снова возьмёт <code>ANTHROPIC_MODEL</code>. <code>ANTHROPIC_DEFAULT_MODEL</code> задаёт стартовую модель, если <code>ANTHROPIC_MODEL</code> не задана.</p>
       <p>Для проверки откройте сессию командой <code>claude</code> и посмотрите <code>/status</code>. Если состояние выглядит нормальным, технический старт собран: базовая среда (Git, Node.js), сам Claude Code, остальной стек проекта и рабочий доступ через Gateway.</p>
     </section>
 

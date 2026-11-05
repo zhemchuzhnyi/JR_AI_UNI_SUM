@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../level1/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a></nav>
     <header>
       <div class="eyebrow">Практика вебинара 1</div>
       <h1>От идеи до первой версии</h1>
@@ -85,6 +86,17 @@
         <li>Код пока не писать.</li>
       </ol>
       <p class="muted">Пример рамки из вебинара: только <code>index.html</code>, <code>styles.css</code> и JavaScript в <code>js/</code>; без npm, сборки, фреймворков и бэкенда; без внешних шрифтов и сетевых запросов; вся анимация — <code>transform</code> в одном animation loop.</p>
+      <div class="callout">
+        <strong>Критерии демо CLAWD Wisdom:</strong>
+        <ul>
+          <li>маскот следует за курсором, а после 2.5 секунд без движения плавает сам;</li>
+          <li>движение сглаженное, без резких скачков; animation loop один;</li>
+          <li>30 подсказок: 15 команд, 10 приёмов и 5 фактов, без повторов, не длиннее 140 символов;</li>
+          <li>подсказка исчезает через 20 секунд, одновременно показывается не больше трёх;</li>
+          <li>появление и уход — CSS-переходом, ссылки и кнопки доступны с клавиатуры, есть <code>aria-live</code>;</li>
+          <li>ширина подсказки адаптируется к экрану, края не обрезаются; при <code>prefers-reduced-motion</code> анимация отключается.</li>
+        </ul>
+      </div>
 
       <div class="grid">
         <article>

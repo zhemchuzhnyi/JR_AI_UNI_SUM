@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture1/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Settings hierarchy и .claude directory</div>
       <h1>Claude Code</h1>
@@ -87,7 +88,7 @@
         </article>
       </div>
       <p class="warning">Точный приоритет может зависеть от версии и среды. В спорном случае сверьтесь с актуальной документацией или <code>/help</code>.</p>
-      <p>В вебинаре практическая модель — три основных уровня: <strong>local → project → user</strong>. Настройки мержатся, и по конкретному ключу побеждает более приоритетный; какие файлы реально загрузились, видно в <code>/status</code> в строке <code>Setting sources</code>. <code>Managed</code> из лекции — организационный уровень: если он есть, переопределять его снизу нельзя.</p>
+      <p>В вебинаре практическая модель — три основных уровня: <strong>local → project → user</strong>. Настройки мержатся: скалярные ключи перекрываются по приоритету (local выше project, project выше user), а списки вроде <code>permissions.allow</code> объединяются. Какие файлы реально загрузились, видно в <code>/status</code> в строке <code>Setting sources</code>. <code>Managed</code> из лекции — организационный уровень: если он есть, переопределять его снизу нельзя.</p>
     </section>
 
     <div class="callout">Различия в поведении Claude между проектами могут быть вызваны их настройками, а не моделью.</div>
@@ -132,7 +133,7 @@ find .claude -maxdepth 2 -type f</code></pre>
 .claude/CLAUDE.local.md
 .claude/settings.local.json</code></pre>
       <p>Имена примерные — важен принцип: личные настройки не должны незаметно становиться правилами для всей команды.</p>
-      <p>Если каталога `.claude/` ещё нет, стартовую структуру можно создать командой <code>claude init</code>.</p>
+      <p>Если каталога <code>.claude/</code> ещё нет, начните с <code>/init</code> внутри сессии Claude Code: он создаст стартовый <code>CLAUDE.md</code> по коду проекта. Это не генератор всей структуры <code>.claude/</code>; rules, skills и hooks добавляйте по мере необходимости.</p>
     </section>
 
     <section>
@@ -172,6 +173,11 @@ find .claude -maxdepth 2 -type f</code></pre>
     </section>
 
     <div class="callout">Сначала найдите источник правила, затем меняйте только принадлежащую ему настройку.</div>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <p>Разное поведение Claude в разных репозиториях может быть вызвано настройками проекта, а не моделью. Сначала осмотрите <code>.claude/</code>, прочитайте <code>CLAUDE.md</code> и определите источник инструкции; не переписывайте и не удаляйте настройки вслепую. А когда источник правил понятен, следующий деловой вопрос — что Claude вообще разрешено делать в этой сессии.</p>
+    </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>

@@ -50,7 +50,7 @@
 </head>
 <body>
   <main>
-    <a class="back" href="../index.html">← Все конспекты</a>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="level1/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a></nav>
     <h1>Вебинар 1 — контрольные вопросы</h1>
 <p>Контрольный блок по 10 лекциям вебинара 1: 30 вопросов с короткими ответами и ссылками на конспекты.</p>
 <h2>Уровень 1</h2>
@@ -167,7 +167,7 @@
  → <a href="level2/lecture3/index.html">Лекция 3</a>
 </li>
 <li><strong>Какие permission modes существуют и как выбрать подходящий?</strong><br>
- Plan — исследует и планирует без правок; Manual (<code>default</code>) — спрашивает перед изменениями; Auto-Accept (<code>acceptEdits</code>) — сам применяет правки файлов; Auto Mode — классификатор проверяет действия; YOLO (<code>bypassPermissions</code>) — только для изолированной среды. Чем непонятнее задача и дороже ошибка, тем строже режим.
+ Plan — исследует и планирует без правок; Manual (<code>default</code>) — спрашивает перед изменениями; Auto-Accept (<code>acceptEdits</code>) — сам применяет правки файлов; Auto Mode — классификатор проверяет действия; YOLO (<code>bypassPermissions</code>) — только для изолированной среды. Текущий режим виден в статус-баре, и его нужно проверять после старта: в новых версиях Auto Mode может быть стартовым, а в курсовом Gateway-режиме доступность зависит от модели и провайдера. <code>dontAsk</code> в некоторых версиях не равен <code>bypassPermissions</code> — проверяйте <code>/permissions</code>. Чем непонятнее задача и дороже ошибка, тем строже режим.
  → <a href="level2/lecture3/index.html">Лекция 3</a>
 </li>
 <li><strong>Почему нельзя менять режим «потому что устал от подтверждений» и как работать с рискованной задачей?</strong><br>

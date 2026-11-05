@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Permission modes и approval model</div>
       <h1>Claude Code</h1>
@@ -112,8 +113,8 @@
         <li><strong>Максимально свободный режим:</strong> только для узкого эксперимента в одноразовой песочнице.</li>
       </ol>
       <p class="muted">Названия режимов (default, plan, acceptEdits и другие) могут меняться между версиями; ориентируйтесь на их поведение и сверяйтесь со справкой.</p>
-      <p class="muted">Актуальные названия из вебинара: <strong>Plan</strong>, <strong>Manual</strong> (<code>default</code>), <strong>Auto-Accept</strong> (<code>acceptEdits</code>), <strong>Auto Mode</strong>, <strong>YOLO</strong> (<code>bypassPermissions</code> / <code>--dangerously-skip-permissions</code>). Переключение — <code>Shift+Tab</code> в CLI/JetBrains или селектор в VS Code/Desktop; текущий режим виден в статус-баре. <code>defaultMode</code> в <code>~/.claude/settings.json</code> задаёт стартовый режим; на Pro/Max/Team новые сессии могут стартовать в auto.</p>
-      <p class="muted">Режим <code>bypassPermissions</code> включается отдельно — его не получишь случайным нажатием. В статус-баре auto выглядит как <code>⏵⏵ auto mode on</code>, Manual — как <code>⏸ manual mode on</code>.</p>
+      <p class="muted">Актуальные названия из вебинара: <strong>Plan</strong>, <strong>Manual</strong> (<code>default</code>), <strong>Auto-Accept</strong> (<code>acceptEdits</code>), <strong>Auto Mode</strong>, <strong>YOLO</strong> (<code>bypassPermissions</code> / <code>--dangerously-skip-permissions</code>). Переключение — <code>Shift+Tab</code> в CLI/JetBrains или селектор в VS Code/Desktop; текущий режим виден в статус-баре. <code>defaultMode</code> в <code>~/.claude/settings.json</code> задаёт стартовый режим. В новых версиях Claude Code Auto Mode может быть стартовым для интерактивных сессий на разных планах; в курсовом Gateway-режиме доступность зависит от модели и провайдера. Поэтому всегда проверяйте статус-бар и при необходимости переключите режим.</p>
+      <p class="muted">В некоторых версиях также доступен <code>dontAsk</code>: он не равен <code>bypassPermissions</code>, поэтому проверяйте фактическое поведение через <code>/permissions</code>. Режим <code>bypassPermissions</code> включается отдельно — его не получишь случайным нажатием. В статус-баре auto выглядит как <code>⏵⏵ auto mode on</code>, Manual — как <code>⏸ manual mode on</code>.</p>
     </section>
 
     <section>
@@ -162,6 +163,18 @@ claude --permission-mode default</code></pre>
     </section>
 
     <div class="callout">Сомневаетесь в режиме, scope или откате — начинайте со строгого режима и только чтения.</div>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Подтверждение — сигнал, что действие рискованнее обычного и выходит за привычные границы.</li>
+        <li>Prompt не может расширить разрешения, заданные permission mode.</li>
+        <li>Не ослабляйте режим только потому, что подтверждения мешают работать.</li>
+        <li>Смену режима посреди сессии оправдывает инженерная причина, а не усталость от подтверждений.</li>
+        <li>Если неизвестны затрагиваемые файлы, scope или способ отката, выбирайте более строгий режим.</li>
+      </ul>
+      <p><strong>Правило по умолчанию: сомневаетесь — выбирайте более строгий режим.</strong></p>
+    </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>

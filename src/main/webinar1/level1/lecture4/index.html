@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Команды запуска и команды в сессии</div>
       <h1>Claude Code</h1>
@@ -91,7 +92,7 @@ claude</code></pre>
       <pre><code>claude -p "Кратко опиши структуру проекта"  # одноразовый запрос
 claude -c                                     # продолжить предыдущую сессию
 claude --permission-mode plan                 # пример режима на старте
-claude --worktree ../commerce-os-exp          # пример отдельного worktree</code></pre>
+claude --worktree commerce-os-exp             # имя worktree, не путь</code></pre>
       <p class="muted">Названия флагов и режимов зависят от версии. Проверяйте их через <code>claude --help</code> и актуальную документацию. Флаг запуска нельзя добавить задним числом к уже открытому разговору.</p>
     </section>
 
@@ -155,6 +156,11 @@ claude --worktree ../commerce-os-exp          # пример отдельног�
       <h2>Запоминайте логику, а не список команд</h2>
       <p>Имена команд и флаги меняются между версиями. Запоминайте назначение: <code>claude --help</code> показывает варианты запуска, <code>/help</code> — команды активной сессии, <code>claude --version</code> — текущую версию, официальная документация — актуальные детали.</p>
       <p class="warning">Контрольный вопрос: «Я меняю способ запуска или управляю уже начатым разговором?»</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <p>Не заучивайте перечень команд: версии могут менять имена и флаги. Запоминайте назначение слоя. Для команд запуска используйте <code>claude --help</code>, для команд текущей сессии — <code>/help</code>, текущую версию смотрите через <code>claude --version</code>, детали сверяйте с актуальной документацией.</p>
     </section>
 
     <section>

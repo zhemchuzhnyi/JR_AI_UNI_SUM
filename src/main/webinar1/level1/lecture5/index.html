@@ -52,6 +52,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../../level2/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Интеграция с IDE: grounding и review</div>
       <h1>Claude Code</h1>
@@ -130,7 +131,7 @@ public class RefundService {
         </article>
       </div>
       <p class="muted">Панели, кнопки и вкладки меняются по версиям. Навык — не запоминать географию интерфейса, а понимать назначение поверхности: передать точный контекст, увидеть изменение, проверить его в файле.</p>
-      <p>Плагин — надстройка над установленным CLI, а не его замена. Установите официальный плагин в нужной IDE; обычно он использует авторизацию CLI. Если интеграция не видит CLI или просит войти снова, проверьте, что IDE, CLI и проект работают в одной среде (особенно Windows и WSL).</p>
+      <p>Плагин — отдельная интеграция, а не просто «кнопка» над CLI. В JetBrains плагин обычно опирается на установленный CLI и его авторизацию. VS Code extension несёт собственную копию CLI для панели и может иметь отдельный вход; standalone CLI всё равно нужен для команды <code>claude</code> в терминале. Поэтому «плагин не работает без CLI» верно не для всех поверхностей: разделяйте JetBrains-плагин и VS Code extension.</p>
       <p><strong>Установка в VS Code.</strong> Два честных пути:</p>
       <ol>
         <li>Автоустановка через CLI: откройте проект в VS Code, откройте встроенный терминал (<code>Ctrl+`</code> или View → Terminal) и запустите <code>claude</code>. CLI обнаружит VS Code и предложит поставить расширение — согласитесь, установится автоматически.</li>
@@ -143,9 +144,9 @@ public class RefundService {
         <li>Через Plugins Marketplace: Settings/Preferences → Plugins (<code>Cmd+,</code> на macOS / <code>Ctrl+Alt+S</code> на Windows и Linux) → вкладка Marketplace → в поиске <code>Claude Code</code> → официальный плагин от Anthropic → Install → перезапуск IDE по приглашению.</li>
       </ol>
       <p>После перезапуска панель Claude — Tool Window, по умолчанию справа; точное место зависит от версии. Не видите — View → Tool Windows → Claude Code или через Find Action (<code>Cmd+Shift+A</code> / <code>Ctrl+Shift+A</code>).</p>
-      <p class="muted">Плагин ставится в каждую IDE отдельно: IntelliJ IDEA и WebStorm — ставьте в обе, платформа общая, но плагины конфигурируются по продукту. Зато авторизация одна — вход в CLI подхватывается.</p>
+      <p class="muted">Плагин ставится в каждую IDE отдельно: IntelliJ IDEA и WebStorm — ставьте в обе, платформа общая, но плагины конфигурируются по продукту. Авторизация зависит от поверхности: в JetBrains плагин обычно подхватывает вход из CLI; VS Code extension может иметь собственный вход для панели. Если VS Code просит войти отдельно — это не обязательно ошибка. Если JetBrains не видит CLI-сессию, проверьте, что IDE, CLI и проект работают в одной среде — особенно при сочетании Windows и WSL.</p>
       <p><strong>Авторизация.</strong> Обычно плагин использует ту же авторизацию, что и CLI: прошли login в терминале через браузер — плагин её увидит и заработает, отдельного входа не нужно. Просит залогиниться отдельно — не видит CLI-сессию: разные окружения, пути, shell. Запустите IDE из той же среды, где живёт CLI; на Linux и macOS обычно решается само, на Windows проверьте, откуда запущена IDE — Windows-native или WSL. Плагин ругается на отсутствие CLI — значит, CLI не установлен или не в PATH той среды, из которой запущена IDE.</p>
-      <p><strong>Горячие клавиши и ссылки на код:</strong> в JetBrains <code>Cmd+Esc</code> / <code>Ctrl+Esc</code> открывает Claude, открытая вкладка и выделение передаются автоматически, а <code>Cmd+Option+K</code> / <code>Alt+Ctrl+K</code> вставляет ссылку вида <code>@src/auth.ts#L1-99</code>. Команда <code>/ide</code> проверяет связь CLI с редактором; файл можно указать через <code>@</code> или через Copy Reference.</p>
+      <p><strong>Горячие клавиши и ссылки на код:</strong> в JetBrains <code>Cmd+Esc</code> / <code>Ctrl+Esc</code> открывает Claude, открытая вкладка и выделение передаются автоматически, а <code>Cmd+Option+K</code> / <code>Alt+Ctrl+K</code> вставляет ссылку вида <code>@src/auth.ts#L1-99</code>. В VS Code проверьте Command Palette: команда вставки ссылки на выделенный код обычно доступна по <code>Option+K</code> / <code>Alt+K</code>; сочетание и название команды зависят от версии расширения. Команда <code>/ide</code> проверяет связь CLI с редактором; файл можно указать через <code>@</code> или через Copy Reference.</p>
       <p><strong>Быстрая проверка:</strong> откройте любой файл проекта, выделите 5–10 строк, откройте панель Claude и попросите коротко: «Объясни выделенный фрагмент». Если ответ ссылается на реальные имена методов или переменных, выделение передалось. Общий ответ («обычно такой код делает X») может означать, что контекст не прокинулся и плагин работает как обычный чат.</p>
       <p class="muted">Названия пунктов меню, расположение панелей и шаги установки меняются между версиями. Ориентируйтесь на назначение интеграции и официальную документацию по интеграции с IDE — это источник правды.</p>
     </section>
@@ -191,6 +192,11 @@ public class RefundService {
     </section>
 
     <div class="callout">Запомните: терминал запускает и контролирует, IDE заземляет контекст и показывает изменение, инженер проверяет и решает.</div>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <p>Терминал запускает и контролирует; IDE заземляет запрос и показывает изменение в контексте; инженер проверяет факты и принимает решение.</p>
+    </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>
