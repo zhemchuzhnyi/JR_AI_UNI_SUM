@@ -99,7 +99,7 @@
     <section>
       <h2>Слои CLAUDE.md</h2>
       <p><code>CLAUDE.md</code> бывает не один: глобальный <code>~/.claude/CLAUDE.md</code> подхватывается всегда; проектный <code>./CLAUDE.md</code> или <code>.claude/CLAUDE.md</code> — при старте работы с проектом; файлы в подпапках (<code>./subfolder/CLAUDE.md</code>) — по необходимости, когда агент доходит до этой области; <code>CLAUDE.local.md</code> — личные заметки.</p>
-      <p>Если в репозитории есть <code>AGENTS.md</code> без <code>CLAUDE.md</code>, Claude прочитает <code>AGENTS.md</code>. Когда появляется <code>CLAUDE.md</code>, читается только он.</p>
+      <p>Если в репозитории есть <code>AGENTS.md</code>, не считайте его автоматически активным: это fallback для проектов без <code>CLAUDE.md</code>. При наличии <code>CLAUDE.md</code> или <code>CLAUDE.local.md</code> фактический источник проверяйте через <code>/status</code> или <code>/memory</code>; не дублируйте правила в двух файлах.</p>
     </section>
 
     <section>
@@ -185,6 +185,7 @@
         <li>Попросите Claude выполнить маленькую правку и отчитаться по формату из <code>CLAUDE.md</code>.</li>
         <li>Выполните <code>/memory</code>, посмотрите память и решите, что стоит перенести в <code>CLAUDE.md</code>, а что оставить локально.</li>
       </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе и терминале; недоступные команды разберите по официальной документации. Критерии проверки те же.</p>
       <h3>Проверка</h3>
       <ul>
         <li><code>CLAUDE.md</code> короткий и содержит только полезные правила.</li>
