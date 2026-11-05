@@ -9,3 +9,7 @@
 - [Лекция 5 — Dynamic context и supporting files](lecture5/index.html)
 
 Все лекции уровня 9 собраны.
+
+## Контрольные вопросы
+
+- [20 вопросов по уровню 9](CONTROL_QUESTIONS.html)

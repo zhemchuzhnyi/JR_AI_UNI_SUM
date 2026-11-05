@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 9 — контрольные вопросы по extension taxonomy, slash-командам, skill, SKILL.md и dynamic context.">
+  <title>Уровень 9 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.75 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(920px, calc(100% - 36px)); margin: 0 auto; padding: 48px 0 80px; }
+    .back { color: var(--accent); text-decoration: none; font-size: .9rem; }
+    .back:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 22px; font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 38px 0 14px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 1.35rem; }
+    h3 { margin: 28px 0 10px; font-size: 1.08rem; color: var(--accent); }
+    p { margin: 12px 0; }
+    ol, ul { margin: 10px 0; padding-left: 1.5rem; }
+    li { margin: 10px 0; }
+    strong { color: #fff; }
+    code { color: var(--green); }
+    a { color: var(--accent); }
+    footer { margin-top: 40px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { padding-top: 30px; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Все конспекты</a>
+    <h1>Уровень 9 — контрольные вопросы</h1>
+    <p>Контрольный блок по 5 лекциям уровня 9: 20 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с вебинаром 5: лекции раскрывают карту расширений, slash-поверхность, переход от prompt к skill и устройство <code>SKILL.md</code>.</p>
+
+    <h2>Лекция 1 — extension taxonomy</h2>
+    <ol start="1">
+      <li><strong>На какие вопросы отвечают prompt, <code>CLAUDE.md</code>, rule и skill?</strong><br>
+        Prompt — что сделать один раз прямо сейчас. <code>CLAUDE.md</code> — какие общие правила и знания действуют во всём проекте. Rule — какое правило действует только в конкретной части проекта. Skill — как повторять одну и ту же процедуру с понятным входом, выходом и проверкой.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Почему механизм расширения выбирают по боли, а не по «продвинутости»?</strong><br>
+        Разные боли требуют разных ответов: разовая задача — prompt, общее правило — <code>CLAUDE.md</code>, локальное ограничение — rule, повторяемая процедура — skill, внешние данные — MCP, реакция на событие — hook, упаковка команде — plugin. Если выбирать «самый мощный» инструмент без повторяемой боли, получится зоопарк лишних слоёв. Часто лучший выбор — вообще ничего не добавлять.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Чем prompt, <code>CLAUDE.md</code> и rule отличаются по scope и времени жизни?</strong><br>
+        Prompt живёт одну сессию или задачу. <code>CLAUDE.md</code> действует на весь проект и живёт, пока живёт репозиторий. Rule действует локально — например, только для <code>payments/**</code> или <code>docs/**</code> — но тоже долго. Поэтому общее правило не прячут в локальный rule, а локальное ограничение не раздувают до <code>CLAUDE.md</code>.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+      <li><strong>Что такое Workflow Kit и почему он отдельный слой?</strong><br>
+        Workflow Kit — мета-проект с <code>.claude/</code>: rules, skills, hooks, MCP-конфигами и README. Это инженерная надстройка над продуктовым кодом, а не секретный чулан внутри Commerce OS. Он помогает переносить, ревьюить и переиспользовать рабочие практики между задачами и репозиториями.
+        → <a href="lecture1/index.html">Лекция 1</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 2 — slash-поверхность</h2>
+    <ol start="5">
+      <li><strong>Какая главная мысль лекции о slash-командах?</strong><br>
+        Slash-команда — это форма вызова, а не тип механизма. За одинаковым <code>/что-то</code> могут стоять встроенная команда, bundled skill, custom skill проекта или вход во внешнюю интеграцию. Поэтому смотреть нужно не на косую черту, а на источник, scope и жизненный цикл.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Чем built-in command отличается от bundled skill?</strong><br>
+        Built-in command управляет сессией и продуктом: <code>/clear</code>, <code>/compact</code>, <code>/context</code>, <code>/status</code>. Bundled skill — готовая процедура работы из коробки: <code>/debug</code>, <code>/review</code>, <code>/simplify</code>. Первая меняет состояние разговора, второй производит содержательный результат: анализ, ревью, план.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Как практически понять, является ли команда базовой?</strong><br>
+        Открыть <code>/help</code> в текущем проекте, а затем проверить команду в пустом или чистом репозитории. Осталась — вероятно, базовая; исчезла — это проектное расширение из <code>.claude/</code>. Если команда явно связана с workflow, стоит заглянуть в <code>.claude/skills/</code> и найти её <code>SKILL.md</code>.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+      <li><strong>Почему <code>/issue-analysis</code> исчезает в другом репозитории и как проверять такие команды безопасно?</strong><br>
+        <code>/issue-analysis</code> — custom skill Workflow Kit, а не встроенная команда Claude Code. В репозитории без этого skill её нет. Новые и подсмотренные команды лучше проверять в песочнице: создать ветку <code>sandbox/commands</code>, убедиться в чистом <code>git status</code>, а затем сравнивать поведение в проекте и пустом репозитории. Конфликт имён тоже возможен, поэтому проектные команды не называют слишком общо.
+        → <a href="lecture2/index.html">Лекция 2</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 3 — от prompt к skill</h2>
+    <ol start="9">
+      <li><strong>Когда повторяемый prompt пора повышать до skill?</strong><br>
+        Когда процедура повторяется по одной схеме, имеет понятный вход, понятный выход и способ проверки результата. Если каждый раз меняется контекст и тип результата или вы переписываете половину запроса, устойчивой процедуры ещё нет — skill только замаскирует неопределённость.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Чем skill принципиально отличается от <code>CLAUDE.md</code> и rule?</strong><br>
+        <code>CLAUDE.md</code> хранит общие правила проекта, rule — локальное ограничение для части проекта. Skill — повторяемая процедура: триггер, вход, шаги, результат, ограничения и проверка. Он отвечает на вопрос «как выполнить workflow?», а не «какое правило действует всегда?».
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Какой минимальный контракт должен описывать skill?</strong><br>
+        Пять вещей: когда использовать, что подать на вход, что считать готовым результатом, что делать нельзя и как проверить результат. Если это нельзя объяснить человеческим языком, красивый <code>SKILL.md</code> не спасёт. Skill должен описывать одну процедуру, а не анализ, реализацию и ревью одновременно.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+      <li><strong>Какой артефакт создаёт <code>issue-analysis</code> и какие уровни жизни бывают у skill?</strong><br>
+        <code>issue-analysis</code> превращает входящий issue в <code>TASK_SPEC.md</code> с целью, scope, non-goals, критериями приёмки и планом проверки, не начиная реализацию. Skill может жить в личном scope, на уровне проекта или в общем командном Workflow Kit. Начинать лучше с личного эксперимента, затем переносить в проект после доказанной пользы и review.
+        → <a href="lecture3/index.html">Лекция 3</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 4 — SKILL.md</h2>
+    <ol start="13">
+      <li><strong>Из каких двух частей состоит <code>SKILL.md</code>?</strong><br>
+        Из frontmatter — YAML-блока метаданных: имя, описание, когда использовать, ограничения и при необходимости инструменты. И body — markdown-тела с целью, порядком действий, ожидаемым результатом и запретами. Frontmatter помогает распознать skill, body объясняет процедуру человеку и модели.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Какие поля skill базовые и чем плохи расплывчатые <code>description</code> и <code>when_to_use</code>?</strong><br>
+        Базовые: <code>name</code>, <code>description</code>, <code>when_to_use</code>, вход, ожидаемый результат и ограничения. <code>name</code> должен быть коротким, <code>description</code> — одной конкретной фразой о ценности, <code>when_to_use</code> — описывать триггер. «Помогает с задачами» и «использовать при анализе» не помогают выбрать skill в нужный момент.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Что должно быть в теле skill и какие запреты особенно важны?</strong><br>
+        Цель, порядок работы, ожидаемый результат и ограничения. Для <code>issue-analysis</code> результат — <code>TASK_SPEC.md</code> плюс открытые вопросы; запрещено менять код, начинать реализацию, выдавать догадки за факты и писать «готово» без структуры спецификации. Конкретные шаги полезнее философии «думай глубоко».
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+      <li><strong>Какой стартовый режим вызова и прав рекомендуется для нового skill?</strong><br>
+        Ручной запуск, пока skill новый и не проверен. Минимальные инструменты под задачу: для <code>issue-analysis</code> достаточно чтения и поиска, без права редактировать проект. Автопредложение и расширение прав подключают позже, когда skill стабилизируется. Чужой <code>SKILL.md</code> читают по вопросам: когда запускать, что на вход, что вернуть, что запрещено, какие права.
+        → <a href="lecture4/index.html">Лекция 4</a>
+      </li>
+    </ol>
+
+    <h2>Лекция 5 — dynamic context и supporting files</h2>
+    <ol start="17">
+      <li><strong>Почему skill не должен оставаться только текстом <code>SKILL.md</code>?</strong><br>
+        Статический текст зависит от того, что вы вручную приложили к запросу. Skill становится системой, когда рядом есть аргументы, шаблоны, примеры, references и dynamic context. Тогда он стабильно выдаёт один и тот же артефакт, а не импровизирует при каждом запуске.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Что такое dynamic context и какой контекст считается лишним?</strong><br>
+        Dynamic context — сигналы текущей задачи и проекта: текст issue, аргументы, 2–5 релевантных файлов, результаты <code>grep</code>, diff, тесты, шаблон. Лишний контекст — вся кодовая база, старые логи и обсуждения «на всякий случай»: они не делают модель мудрее, а создают контекстную кашу.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>Зачем нужны supporting files и почему раздутый <code>SKILL.md</code> — плохой признак?</strong><br>
+        Supporting files отделяют процедуру от материалов: шаблоны задают формат, examples показывают хороший результат, references хранят справку, scripts собирают сигналы. <code>SKILL.md</code> остаётся коротким и ревьюируемым. Если всё свалено в один файл, обновлять и проверять skill становится тяжело; раздутость обычно означает, что материалы не разложены по местам.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+      <li><strong>По каким вопросам проверяют качество skill и как он усиливает <code>issue-analysis</code>?</strong><br>
+        Проверяют: понятен ли триггер, ясен ли вход и выход, есть ли evidence-first поведение, ограничены ли инструменты, не раздут ли <code>SKILL.md</code>, экономен ли контекст и можно ли ревьюить результат. <code>issue-analysis</code> усиливают аргументами, поиском 2–5 релевантных файлов, шаблоном <code>TASK_SPEC</code>, примерами и явным разделением facts и assumptions.
+        → <a href="lecture5/index.html">Лекция 5</a>
+      </li>
+    </ol>
+
+    <h2>Статус</h2>
+    <ul>
+      <li>20 вопросов покрывают все 5 лекций уровня 9.</li>
+      <li>Вопросы синхронизированы с вебинаром 5: карта расширений, slash-поверхность, skill как процедура, <code>SKILL.md</code> и dynamic context.</li>
+      <li>Лекции раскрывают и дополняют вебинар: taxonomy, различение механизмов, контракт skill, supporting files и quality review.</li>
+      <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+    </ul>
+
+    <footer>Уровень 9 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
