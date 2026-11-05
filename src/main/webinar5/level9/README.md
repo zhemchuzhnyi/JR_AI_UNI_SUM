@@ -6,5 +6,6 @@
 - [Лекция 2 — Команды, skills и slash-поверхность](lecture2/index.html)
 - [Лекция 3 — От повторяемого prompt к skill](lecture3/index.html)
 - [Лекция 4 — SKILL.md: метаданные, тело и права](lecture4/index.html)
+- [Лекция 5 — Dynamic context и supporting files](lecture5/index.html)
 
-Остальные лекции уровня 9 будут добавляться по мере разбора.
+Все лекции уровня 9 собраны.
