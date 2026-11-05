@@ -77,11 +77,19 @@
 |---|---|---|
 | Карта расширений и выбор механизма по повторяющейся боли | Уровень 9, лекция 1 | Покрыто |
 | Skill: папка, `SKILL.md`, frontmatter, `description`, `allowed-tools`, body | Уровень 9, лекция 4 | Покрыто |
-| Где хранить skill: `~/.claude/skills/` и `.claude/skills/` | — | Ожидает отдельной лекции |
+| Где хранить skill: `~/.claude/skills/` и `.claude/skills/` | — | Не покрыто |
+| Автоматический выбор skill по `description` и ручной вызов через `/` | Уровень 9, лекции 2 и 4 | Покрыто |
 | Built-in команды, bundled skills и custom skills | Уровень 9, лекция 2 | Покрыто |
-| Skill Creator и создание `/git-commit` вместе с Claude | — | Ожидает отдельной лекции |
-| Dynamic context, supporting files и полный `SKILL.md` | Уровень 9, лекция 5 | Покрыто |
-| Практика `/prompt-improve` | — | Ожидает отдельной практики |
+| Skill Creator: установка и создание skill с его помощью | — | Не покрыто |
+| Создание skill вместе с Claude через CLI | Уровень 9, лекция 4 | Частично: есть issue-analysis, нет отдельного CLI-сценария |
+| Пример `/git-commit`, полный `SKILL.md` и `disable-model-invocation` | — | Не покрыто |
+| `description` как механизм выбора skill | Уровень 9, лекция 4 | Покрыто |
+| Полный справочник полей frontmatter | Уровень 9, лекция 4 | Частично: базовые поля, без полного справочника |
+| Тело skill: шаги, результат, запреты | Уровень 9, лекция 4 | Покрыто |
+| Технические запреты через permissions/settings.json | Уровень 9, лекция 4 | Частично: концепция `allowed_tools`, без настройки `settings.json` |
+| Dynamic context и живое состояние Git | Уровень 9, лекция 5 | Частично: общий dynamic context, без Git-примера |
+| Supporting files: шаблоны, examples, references | Уровень 9, лекция 5 | Покрыто |
+| Практика `/prompt-improve`, `prompt-architect` и best practices | — | Не покрыто |
 
 ## Остаточные ограничения
 
@@ -92,8 +100,9 @@
 - В конспекте лекции 5 сохранены все пять смысловых разделов её источника.
 - Все лекции уровня 9 собраны; практика вебинара пока не добавлена.
 - Для уровня 9 подготовлены 20 контрольных вопросов, синхронизированных с вебинаром 5.
+- Не покрыты: места хранения skill, Skill Creator, отдельный CLI-сценарий создания skill, пример `/git-commit`, полный справочник frontmatter, настройка permissions/settings.json, Git-dynamic-context и практика `/prompt-improve`.
 - Точные названия полей, команд и расположение файлов зависят от версии Claude Code.
 
 ## Итог
 
-Лекции 1–5 уровня 9 покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру SKILL.md и dynamic context с supporting files. Остаётся практика `/prompt-improve` и упаковка/распространение через plugin на следующем уровне.
+Лекции 1–5 уровня 9 покрывают карту механизмов, slash-поверхность, переход от prompt к skill, структуру `SKILL.md` и dynamic context с supporting files. Это расширяет вебинар, но не заменяет его полностью: остаются места хранения skill, Skill Creator, `/git-commit`, полный frontmatter, permissions/settings.json, Git-dynamic-context и практика `/prompt-improve`.
