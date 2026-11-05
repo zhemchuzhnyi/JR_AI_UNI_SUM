@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Haiku 50 — starter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="bento">
+    <section class="card hero">
+      <p class="eyebrow">Haiku 50</p>
+      <h1>Соберите хайку из своих слов</h1>
+      <p class="muted">3–7 ключевых слов через запятую. Острота — от 0 до 6.</p>
+    </section>
+
+    <section class="card form-card">
+      <label for="words">Ключевые слова</label>
+      <input id="words" placeholder="дождь, метро, тишина" autocomplete="off">
+
+      <label for="language">Язык</label>
+      <select id="language">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="pt">Português</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="zh">中文</option>
+        <option value="ar">العربية</option>
+        <option value="hi">हिन्दी</option>
+        <option value="ru">Русский</option>
+      </select>
+
+      <div class="row">
+        <button id="generate">Сгенерировать хайку</button>
+        <button id="clear" class="secondary">Очистить</button>
+      </div>
+
+      <button id="wasabi" class="wasabi" type="button">🌿 50 васаби · острота <span id="wasabi-level">0</span></button>
+      <p id="error" class="error" role="alert"></p>
+      <pre id="haiku" class="haiku">Здесь появится хайку.</pre>
+    </section>
+
+    <section class="card history-card">
+      <h2>История</h2>
+      <p class="muted">Последние 100 генераций хранятся в браузере.</p>
+      <ol id="history"></ol>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

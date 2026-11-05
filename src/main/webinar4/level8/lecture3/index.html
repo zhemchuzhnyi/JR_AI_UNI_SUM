@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Subagents: тихое расследование</div>
       <h1>Claude Code</h1>
@@ -89,7 +90,16 @@
           <tr><td>Свежая сессия</td><td>Вы начинаете новый диалог почти с нуля</td><td>Когда текущая сессия уже загрязнена целиком</td></tr>
         </tbody>
       </table>
-      <p>Очень важно и то, чем subagent сегодня не является. Мы не конфигурируем кастомных агентов, не настраиваем разрешения, не собираем multi-agent pipeline и не строим «армию исследователей». Пока это просто паттерн — вынести тяжёлое расследование из основной сессии.</p>
+      <p>Очень важно и то, чем subagent сегодня не является. В этой лекции мы не настраиваем кастомных агентов, не собираем multi-agent pipeline и не строим «армию исследователей». Пока это просто паттерн — вынести тяжёлое расследование из основной сессии.</p>
+      <h3>Как вызвать subagent</h3>
+      <p>В текущих версиях Claude Code делегирование обычно идёт через механизм Task/subagent, но точные названия, меню и доступность зависят от версии — проверяйте <code>/help</code> и документацию. Практические варианты:</p>
+      <ul>
+        <li><strong>Explore</strong> — встроенный исследовательский агент для широкого поиска по репозиторию; хорош, когда нужно прочитать много файлов и вернуть ссылки, а не менять код.</li>
+        <li><strong>general-purpose</strong> — для многошагового исследования, где нужны команды и более широкий контекст; всё равно требуйте output contract.</li>
+        <li><strong>Plan</strong> — для планирования изменений, если агент доступен в вашей версии; это не заменяет ваш review.</li>
+      </ul>
+      <p>Формулируйте запуск явно: «Use the Explore subagent to find all Stripe integration points; return file:line evidence and open questions. Do not edit files». В интерфейсах с выбором агента можно указать его вручную; если такого выбора нет, обычная отдельная сессия с тем же brief остаётся рабочей моделью.</p>
+      <p>В версиях с фоновыми задачами тяжёлое сканирование можно запустить в фоне и продолжать основную работу, но это не отменяет правила: нужен brief, output contract и проверка 2–3 опорных ссылок. Не запускайте фоновый subagent без границ и не считайте его вывод истиной без evidence.</p>
     </section>
 
     <section>
@@ -215,7 +225,7 @@ Subagent
       <ol>
         <li>Возьмите небольшой учебный репозиторий или создайте фейковый <code>commerce-os-mini</code> с refund flow, <code>StripeClient</code>, конфигом, тестами и baseline-коммитом. Используйте только вымышленные данные.</li>
         <li>Составьте investigation brief по шаблону: цель, область поиска, ожидаемый формат ответа и запрет на правки. Например: найти подтверждённые точки интеграции со Stripe и тесты вокруг refund.</li>
-        <li>Запустите subagent или смоделируйте его отдельной сессией. Потребуйте output contract: summary, <code>file:line</code> evidence, assumptions, open questions, next steps. Не принимайте длинные дампы кода и логи.</li>
+        <li>Запустите встроенный <code>Explore</code>, если он доступен, или смоделируйте subagent отдельной сессией; при поддержке фоновых задач можно запустить сканирование в фоне. Потребуйте output contract: summary, <code>file:line</code> evidence, assumptions, open questions, next steps. Не принимайте длинные дампы кода и логи.</li>
         <li>Выборочно проверьте два-три опорных места из evidence. Неподтверждённое оставьте в open questions и обновите <code>API_MAP.md</code> или <code>EVIDENCE_NOTE.md</code>.</li>
         <li>Проверьте, что основная сессия не получила сырой шум, артефакт обновлён через diff, а код проекта не изменён.</li>
       </ol>

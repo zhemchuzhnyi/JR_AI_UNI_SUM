@@ -22,16 +22,17 @@
 - [Лекция 4 — AI-assisted documentation](level8/lecture4/index.html)
 - [Лекция 5 — Docs-as-code review rubric](level8/lecture5/index.html)
 
-Остальные материалы уровня 8 — runtime evidence, subagents и docs-as-code — будут добавляться после разбора соответствующих лекций.
+Уровень 8 собран полностью: runtime evidence, subagents и docs-as-code разобраны в лекциях 1–5.
 
 ## Практика
 
 - [Haiku 50 — аудит чужого проекта и генератор хайку](practice/index.html)
+- [Стартовый архив Haiku 50](practice/haiku-50-starter.zip)
 
 ## Контрольные вопросы
 
 - [Уровень 7 — 20 вопросов](level7/CONTROL_QUESTIONS.html)
-- [Уровень 8 — 20 вопросов](level8/CONTROL_QUESTIONS.html)
+- [Уровень 8 — 23 вопроса](level8/CONTROL_QUESTIONS.html)
 
 ## Статус
 

@@ -44,9 +44,9 @@
 </head>
 <body>
   <main>
-    <a class="back" href="../../index.html">← Все конспекты</a>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level7/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Вопросы другого уровня</a></nav>
     <h1>Уровень 8 — контрольные вопросы</h1>
-    <p>Контрольный блок по 5 лекциям уровня 8: 20 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с вебинарной частью: уровень 7 даёт discovery и карту проекта, уровень 8 расширяет её интеграциями, runtime evidence, subagents и docs-as-code.</p>
+    <p>Контрольный блок по 5 лекциям уровня 8 и практике Haiku 50: 23 открытых вопроса с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с вебинарной частью: уровень 7 даёт discovery и карту проекта, уровень 8 расширяет её интеграциями, runtime evidence, subagents и docs-as-code.</p>
 
     <h2>Лекция 1 — карта API и интеграций</h2>
     <ol start="1">
@@ -148,9 +148,25 @@
       </li>
     </ol>
 
+    <h2>Практика Haiku 50</h2>
+    <ol start="21">
+      <li><strong>С чего начать практику Haiku 50 и почему нельзя сразу переписывать приложение?</strong><br>
+        Распаковать <a href="../practice/haiku-50-starter.zip">стартовый архив</a> и провести read-only аудит: структура, UI, backend, языки, ключ, модели, история. Собрать <code>HANDOFF_REVIEW.md</code> с evidence по каждому gap'у и только потом решать, чинить точечно или переписывать слой. «Перепишу всё не глядя» запрещён, потому что стирает evidence и риск.
+        → <a href="../practice/index.html">Практика</a>
+      </li>
+      <li><strong>Как безопасно работать с ключом OpenAI в практике?</strong><br>
+        В стартере лежит учебная заглушка <code>sk-test-not-a-real-key</code>; она не работает. Настоящий ключ не коммитить, не вставлять в чат и не отдавать агенту; хранить только в локальном <code>.env</code> с ограниченным бюджетом. В отчёте фиксировать файл и строку, где ключ захардкожен, но не значение.
+        → <a href="../practice/index.html">Практика</a>
+      </li>
+      <li><strong>Какие требования Haiku 50 нужно проверить по evidence, а не на глаз?</strong><br>
+        12 языков, валидация 3–7 слов на сервере, «50 васаби» 0–6, ровно три строки после нормализации, история последних 100 генераций в <code>localStorage</code>, понятные ошибки, модель и промпты в одном месте, отсутствие ключа во фронтенде и репозитории.
+        → <a href="../practice/index.html">Практика</a>
+      </li>
+    </ol>
+
     <h2>Статус</h2>
     <ul>
-      <li>20 вопросов покрывают все 5 лекций уровня 8.</li>
+      <li>23 вопроса покрывают все 5 лекций уровня 8 и практику Haiku 50.</li>
       <li>Вопросы синхронизированы с вебинаром 4: API_MAP и интеграции, runtime evidence, subagents, AI-документация и docs-as-code review.</li>
       <li>Уровень 7 даёт discovery, evidence-based Q&amp;A, inventory, dependency map и runtime flow; уровень 8 расширяет и углубляет эти темы до карты интеграций и проверяемой документации.</li>
       <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>

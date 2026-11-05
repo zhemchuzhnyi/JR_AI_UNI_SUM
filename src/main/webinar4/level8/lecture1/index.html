@@ -54,6 +54,7 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../../level7/lecture5/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Карта API и интеграций проекта</div>
       <h1>Claude Code</h1>
@@ -154,10 +155,11 @@ void create_returns400_forEmptyCart() throws Exception {
           <tr><td>Интеграции</td><td>Зафиксировать базу, очередь, внешние клиенты</td></tr>
           <tr><td>Конфиг</td><td>Понять, от чего маршрут зависит в окружении</td></tr>
           <tr><td>Тесты</td><td>Подтвердить контракт и поведение</td></tr>
+          <tr><td>Evidence / статус</td><td><code>file:line</code>, тест, вывод команды или честное «не проверено»</td></tr>
           <tr><td>Открытые вопросы</td><td>Не выдумывать отсутствующие факты</td></tr>
         </tbody>
       </table>
-      <p>Последняя колонка дисциплинирует лучше любого пафосного лозунга. Если не найден мобильный клиент, который использует маршрут, не нужно писать «используется мобильным приложением» только потому, что так было бы логично. Напишите честно: «не проверено».</p>
+      <p>Колонка <strong>Evidence / статус</strong> дисциплинирует лучше любого пафосного лозунга: в ней должно быть либо конкретное доказательство, либо честное «не проверено». Если не найден мобильный клиент, который использует маршрут, не нужно писать «используется мобильным приложением» только потому, что так было бы логично. Это остаётся открытым вопросом, а не фактом.</p>
       <p>Полезно относиться к <code>API_MAP.md</code> как к живому файлу в репозитории, а не как к красивому ответу в окне чата. Ответ Claude Code может помочь собрать черновик, но рабочим артефактом карта становится только тогда, когда лежит рядом с проектом, проходит через diff и обновляется после изменений.</p>
     </section>
 
@@ -190,9 +192,9 @@ class OrderService { // фрагмент класса
       <p>Запись в <code>API_MAP.md</code>:</p>
       <pre><code>## Customer API
 
-| Метод | Путь | Обработчик | Авторизация | Интеграции | Конфиг | Тесты | Открытые вопросы |
-|---|---|---|---|---|---|---|---|
-| POST | /api/orders | OrderController#create | customer session | PostgreSQL `orders`, `StripeClient`, `order-events` queue | `STRIPE_API_KEY`, `QUEUE_URL` | `OrderControllerTest#create_returns400_forEmptyCart` | использует ли маршрут mobile-клиент напрямую? |</code></pre>
+| Метод | Путь | Обработчик | Авторизация | Интеграции | Конфиг | Тесты | Evidence / статус | Открытые вопросы |
+|---|---|---|---|---|---|---|---|---|
+| POST | /api/orders | OrderController#create | customer session | PostgreSQL `orders`, `StripeClient`, `order-events` queue | `STRIPE_API_KEY`, `QUEUE_URL` | `OrderControllerTest#create_returns400_forEmptyCart` | `OrderController.java:41-67`; `OrderService.java:132-154`; `application.yml:54-61` | mobile-клиент — не проверено |</code></pre>
       <p>Заметьте, как мы пришли к этой строке. Не «Claude красиво резюмировал», а буквально собрали её из наблюдаемых деталей: контроллера, сервиса, конфига и теста. Если научиться делать так хотя бы для трёх-четырёх ключевых маршрутов проекта, дальше работать станет спокойнее. Уже не нужно каждый раз заново вспоминать, где у проекта платежи, где события, а где только HTTP-обёртка.</p>
       <p>И да, это ровно тот момент, когда видно, почему карта API — это не просто список эндпоинтов. Если бы вы зафиксировали только <code>POST /api/orders</code>, вы бы потеряли почти всё интересное.</p>
     </section>

@@ -1,0 +1,7 @@
+{
+  "name": "haiku-50-starter",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}

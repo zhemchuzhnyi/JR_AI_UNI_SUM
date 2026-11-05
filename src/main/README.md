@@ -137,6 +137,11 @@ src/main/
     practice/
       summary.txt
       index.html
+      haiku-50-starter.zip
+      starter/
+        index.html
+        server.js
+        ...
   webinar5/
     README.md
     COVERAGE.md
@@ -218,7 +223,7 @@ HTML-аналог:
 - **Вебинар 1:** уровни 1–2, 10 лекций, практика вебинара, 30 контрольных вопросов. Аудит покрытия: [вебинар 1](webinar1/COVERAGE.md).
 - **Вебинар 2:** уровень 3 — 5 лекций, уровень 4 — 5 лекций, практики `1-calculator` и `2-simulations`, 15 и 26 контрольных вопросов. Аудит покрытия: [вебинар 2](webinar2/COVERAGE.md).
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 22 вопроса; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 22 вопроса; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
-- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–5 (карта API и интеграций; IDE, терминал и логи; subagents; AI-assisted documentation; docs-as-code review), 20 контрольных вопросов; практика — Haiku 50 (аудит чужого проекта и генератор хайку). Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
+- **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–5 (карта API и интеграций; IDE, терминал и логи; subagents; AI-assisted documentation; docs-as-code review), 23 контрольных вопроса; практика — Haiku 50 (аудит чужого проекта и генератор хайку). Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
 - **Вебинар 5:** уровень 9 — лекции 1–5 (extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files), 20 контрольных вопросов; практика — `/prompt-improve`. Аудит покрытия: [вебинар 5](webinar5/COVERAGE.md).
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
