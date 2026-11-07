@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="От skill к plugin: когда workflow пора упаковывать, как устроены plugin, namespace, marketplace, install scopes, manifest и безопасная проверка.">
+  <title>Claude Code — 10 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a></nav>
+    <header>
+      <div class="eyebrow">От skill к plugin</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">10 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      Plugin — не «skill на максималках». Skill отвечает за процедуру, plugin — за её доставку, версионирование и установку. Сначала workflow должен доказать пользу локально, и только потом его стоит упаковывать.
+    </div>
+
+    <section>
+      <h2>1. Plugin стоит в конце лестницы, а не в начале</h2>
+      <p>После skills легко решить, что plugin — следующий обязательный уровень. На практике он появляется позже: когда workflow стал стабильным и его нужно передавать другим.</p>
+      <table>
+        <thead><tr><th>Слой</th><th>На какой вопрос отвечает</th><th>Когда нужен</th></tr></thead>
+        <tbody>
+          <tr><td>Prompt</td><td>Что сделать прямо сейчас?</td><td>Разовая задача</td></tr>
+          <tr><td><code>CLAUDE.md</code> / rules</td><td>Как принято работать в проекте?</td><td>Постоянные правила</td></tr>
+          <tr><td>Skill</td><td>Как повторять процедуру без импровизации?</td><td>Повторяющийся workflow</td></tr>
+          <tr><td>Plugin</td><td>Как доставить workflow другим?</td><td>Команда или несколько репозиториев</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Skill</strong> — единица поведения: одна процедура, <code>SKILL.md</code>, при необходимости scripts и references. <strong>Plugin</strong> — упаковка вокруг умений: манифест, версия, namespace и содержимое.</p>
+      <div class="callout">Plugin не делает skill умнее. Он делает workflow доставляемым, устанавливаемым и версионируемым.</div>
+      <p>Если рецепт ещё меняется каждый день, упаковывать его рано: красивый ящик не исправит хаос внутри.</p>
+    </section>
+
+    <section>
+      <h2>2. Когда <code>.claude/</code> достаточно</h2>
+      <p>Внутри одного репозитория <code>.claude/</code> часто закрывает задачу целиком. Это нормальное решение, пока workflow нужен только вам, завязан на структуру проекта и активно меняется.</p>
+      <p>Например, <code>issue-analysis</code> для Commerce OS может спокойно жить в <code>.claude/skills/</code>: он превращает issue в <code>TASK_SPEC.md</code> и не претендует на универсальность. Если его используете только вы и никто не просит «скинь это по-человечески», plugin добавит только версии, README и namespace.</p>
+      <p class="warning">Преждевременная упаковка выглядит как зрелость, но добавляет вторую задачу — распространение — до того, как решена первая — польза.</p>
+    </section>
+
+    <section>
+      <h2>3. Сигналы, что workflow дорос до plugin</h2>
+      <p>Смотреть нужно не на ощущение продвинутости, а на конкретные признаки:</p>
+      <ul>
+        <li>один и тот же набор нужен в нескольких репозиториях;</li>
+        <li>skill нужен не только автору;</li>
+        <li>важна точная версия workflow;</li>
+        <li>появляются конфликты имён между наборами;</li>
+        <li>изменения нужно документировать и передавать;</li>
+        <li>skills, agents, hooks или MCP нужно поставлять вместе.</li>
+      </ul>
+      <p>Живой сценарий: <code>issue-analysis</code> жил в Commerce OS, потом его захотели в CashFlow Dashboard, потом в третьем репозитории. Сначала каталог копировали руками. Через неделю версии разошлись: в одном месте новая формулировка проверки, в другом старая, в третьем локальная правка.</p>
+      <p>Plugin нужен не потому, что «мы стали взрослыми», а потому, что одну процедуру нужно доставлять в несколько мест без ручного копирования. Ещё один сигнал — вам приходится объяснять коллеге, куда что скопировать. Если установка требует созвона и ручных правок, у workflow уже есть скрытая стоимость распространения.</p>
+    </section>
+
+    <section>
+      <h2>4. Skill, plugin и namespace</h2>
+      <p>Разница короткая: <strong>skill</strong> — единица поведения, <strong>plugin</strong> — единица распространения.</p>
+      <p>Skill из plugin вызывается полным именем:</p>
+      <pre><code>/team-kit:git-commit</code></pre>
+      <p><code>team-kit</code> — имя плагина из манифеста, <code>git-commit</code> — имя skill. Короткое <code>/git-commit</code> может сработать, если его никто не занял, но полное имя надёжнее. Два разных плагина могут принести skill <code>commit</code>, и namespace не даст им столкнуться.</p>
+      <p>Плагин платит длинным именем за то, что его skills не смешиваются с чужими. Это дешёвая профилактика конфликтов.</p>
+    </section>
+
+    <section>
+      <h2>5. Экосистема плагинов</h2>
+      <p>Полезно понимать классы задач, а не запоминать каталог:</p>
+      <ul>
+        <li><strong>code intelligence</strong> — LSP-плагины для навигации и ошибок типов;</li>
+        <li><strong>внешние интеграции</strong> — GitHub, трекеры, дизайн через MCP;</li>
+        <li><strong>code review и testing</strong> — ревью PR, помощники по тестам;</li>
+        <li><strong>security</strong> — проверка изменений на типовые уязвимости;</li>
+        <li><strong>dev workflows</strong> — commit, PR, создание собственных плагинов.</li>
+      </ul>
+      <p>Официальный marketplace <code>claude-plugins-official</code> доступен сразу. Community-каталог добавляют отдельно:</p>
+      <pre><code>/plugin marketplace add anthropics/claude-plugins-community
+/plugin install &lt;plugin&gt;@claude-community</code></pre>
+      <p>Точный состав каталогов меняется. Актуальный список открывается через <code>/plugin</code>, вкладку Discover, или на claude.com/plugins.</p>
+      <p>Marketplace — это каталог, а не установка. Сначала добавляете источник, потом ставите конкретный плагин. Источником может быть GitHub-репозиторий, git-URL, локальный путь или URL на <code>marketplace.json</code>.</p>
+      <p>Сторонние установщики иногда предлагают symlink или копию. Symlink обычно удобнее для нескольких агентов: все смотрят на один файл, обновление каталога подхватывается сразу. Копия даёт независимый снимок, но версии со временем расходятся. На Windows symlink может требовать режим разработчика или права администратора — тогда копия проще.</p>
+    </section>
+
+    <section>
+      <h2>6. Install scopes: кому достанется плагин</h2>
+      <p>У плагина те же уровни, что у настроек проекта:</p>
+      <table>
+        <thead><tr><th>Scope</th><th>Кому доступен</th><th>Где живёт</th></tr></thead>
+        <tbody>
+          <tr><td>User</td><td>Вам во всех проектах</td><td>Пользовательская конфигурация</td></tr>
+          <tr><td>Project</td><td>Всей команде репозитория</td><td><code>.claude/settings.json</code>, едет в Git</td></tr>
+          <tr><td>Local</td><td>Только вам в этом репозитории</td><td>Локальные настройки</td></tr>
+          <tr><td>Managed</td><td>Задаёт администратор</td><td>Управляемая конфигурация</td></tr>
+        </tbody>
+      </table>
+      <p><code>/plugin install name@marketplace</code> открывает карточку и позволяет выбрать scope. В терминале можно указать явно:</p>
+      <pre><code>claude plugin install name@marketplace --scope project</code></pre>
+      <p>Без <code>--scope</code> установка обычно идёт в user scope. Ставьте в самый узкий подходящий scope: меньше прав и меньше неожиданностей для коллег.</p>
+    </section>
+
+    <section>
+      <h2>7. Жизненный цикл и цена контекста</h2>
+      <p>Вся работа с плагинами живёт вокруг <code>/plugin</code>:</p>
+      <ul>
+        <li><strong>Discover</strong> — искать плагины в подключённых marketplace;</li>
+        <li><strong>Installed</strong> — включать, выключать и удалять;</li>
+        <li><strong>Marketplaces</strong> — добавлять и обновлять каталоги;</li>
+        <li><strong>Errors</strong> — смотреть ошибки загрузки;</li>
+        <li><strong>Stats</strong> — цена skills в контексте и частота использования.</li>
+      </ul>
+      <p>Команды: <code>/plugin install</code>, <code>/plugin disable</code>, <code>/plugin enable</code>, <code>/plugin uninstall</code>. Установка активирует плагин без рестарта; изменения из меню применяются после закрытия. Если плагин меняется вне меню, нужен <code>/reload-plugins</code>; при предупреждении о пересчёте контекста — <code>/reload-plugins --force</code>.</p>
+      <p>Плагин стоит не только денег, но и контекста:</p>
+      <ul>
+        <li>каждый включённый плагин с самого старта добавляет объявления компонентов;</li>
+        <li>работа плагина добавляет токены на ответы, тело skill и вывод инструментов;</li>
+        <li>внешние сервисы и команды добавляют время;</li>
+        <li><code>/plugin</code> показывает context cost ещё до установки, а <code>/context</code> — фактическое состояние.</li>
+      </ul>
+      <p>«Поставил всё и не выключаю» — плохая стратегия. Держите активным нужное, остальное выключайте. Плагин, который давно не используется, — это занятое место в окне и лишняя стоимость каждого запроса.</p>
+    </section>
+
+    <section>
+      <h2>8. Безопасность: плагин выполняет код с вашими правами</h2>
+      <p>Плагин — не безобидная тема оформления. Он может содержать skills, agents, hooks, MCP и команды, которые выполняются на вашей машине с вашими правами.</p>
+      <p>Сначала смотрите на источник:</p>
+      <ul>
+        <li><code>claude-plugins-official</code> курирует Anthropic;</li>
+        <li>community-каталог проходит автоматическую проверку, но это не гарантия;</li>
+        <li>произвольный git-URL или локальный marketplace не проверяется: смотрите, кто автор и что внутри.</li>
+      </ul>
+      <p>До установки <code>/plugin</code> показывает, что будет установлено и сколько примерно займёт контекст:</p>
+      <pre><code>Will install:  skills: 12   agents: 2   hooks: 1   MCP servers: 0
+Context cost:  ~1.8k tokens</code></pre>
+      <p>Смотрите не на звёзды, а на состав, источник, контекстную цену и нужность именно вам. Если плагин приносит hooks, MCP, фоновые команды или сетевые действия, проверяйте его внимательнее. Обновление — почти новый install: состав может измениться, поэтому перед важным обновлением стоит снова просмотреть детали.</p>
+      <p class="warning">Практическое правило: узкий scope, проверенный источник и отключение плагина при странном поведении. <code>/plugin disable</code> и вкладка Errors помогают быстро проверить, не новый ли плагин виноват.</p>
+    </section>
+
+    <section>
+      <h2>9. Структура плагина</h2>
+      <p>Плагин — обычная папка с manifest и компонентами. Манифест лежит строго в <code>.claude-plugin/plugin.json</code>, а <code>skills/</code>, <code>agents/</code>, <code>hooks/</code> и другие компоненты — в корне плагина.</p>
+      <pre><code>team-kit/
+  .claude-plugin/
+    plugin.json
+  skills/
+    git-commit/
+      SKILL.md
+    prompt-improve/
+      SKILL.md
+  README.md</code></pre>
+      <p>Типичная ошибка — положить <code>skills/</code> внутрь <code>.claude-plugin/</code>. Плагин может загрузиться, но skills молча не найдутся. Второй источник путаницы — короткое имя: если старый standalone <code>/git-commit</code> остался в <code>.claude/skills/</code>, короткое имя попадёт в него, а не в плагин. Проверяйте полным <code>/team-kit:git-commit</code>.</p>
+    </section>
+
+    <section>
+      <h2>10. Манифест plugin.json</h2>
+      <p>Манифест задаёт личность плагина. Технически Claude может работать и без него, но для командного артефакта manifest обязателен: именно он стабильно задаёт имя, версию и namespace.</p>
+      <pre><code>{
+  "name": "team-kit",
+  "description": "Team git-commit and prompt-improve skills",
+  "version": "1.0.0",
+  "author": { "name": "Platform team" }
+}</code></pre>
+      <ul>
+        <li><code>name</code> — идентификатор плагина и namespace его skills;</li>
+        <li><code>version</code> — состояние артефакта; без версии непонятно, у кого какая копия. При раздаче через git забытая версия означает, что каждый коммит может считаться новой версией;</li>
+        <li><code>description</code> — что увидят в менеджере плагинов;</li>
+        <li><code>author</code> — атрибуция.</li>
+      </ul>
+      <p>Полная схема может включать homepage, repository и license; набор полей зависит от версии Claude Code. Важнее не выучить все поля, а понять: упаковка должна иметь паспорт.</p>
+    </section>
+
+    <section>
+      <h2>11. Локальная проверка и раздача</h2>
+      <p>Публиковать плагин, чтобы попробовать, не нужно. Его можно загрузить прямо из папки:</p>
+      <pre><code>claude --plugin-dir ./team-kit</code></pre>
+      <p>Дальше проверяйте результат, а не факт загрузки: вызовите skill под namespace, посмотрите, что он отработал, и убедитесь, что действие не произошло само.</p>
+      <pre><code>/team-kit:git-commit
+# &gt; created commit a1b2c3d  feat(api): add health endpoint</code></pre>
+      <p>Если меняли <code>SKILL.md</code>, подхватите изменения через <code>/reload-plugins</code>. Перед раздачей полезен разовый чек:</p>
+      <pre><code>claude plugin validate ./team-kit</code></pre>
+      <p>Для команды рядом с плагином заводят собственный marketplace — репозиторий-каталог с <code>.claude-plugin/marketplace.json</code>. Коллега добавляет каталог и ставит плагин:</p>
+      <pre><code>/plugin marketplace add ваш-логин/team-tools
+/plugin install team-kit@team-tools</code></pre>
+      <p>Здесь легко перепутать имена: слева — имя плагина, справа — имя marketplace из его <code>name</code>, а не имя репозитория.</p>
+      <p>Можно вообще не диктовать команды, а прописать каталог и плагин в <code>.claude/settings.json</code> проекта:</p>
+      <pre><code>{
+  "extraKnownMarketplaces": {
+    "team-tools": {
+      "source": { "source": "github", "repo": "ваш-логин/team-tools" }
+    }
+  },
+  "enabledPlugins": {
+    "team-kit@team-tools": true
+  }
+}</code></pre>
+      <p>Эти поля уходят в Git, поэтому команда получает каталог и подсказку, что установить, после доверия репозиторию. Плагины из внешних источников каждый ставит себе сам.</p>
+    </section>
+
+    <section>
+      <h2>12. Сквозной пример team-kit</h2>
+      <p>В Workflow Kit уже есть два полезных skill: <code>/git-commit</code> и <code>/prompt-improve</code>. По отдельности они живут в <code>.claude/</code>, но команде нужны в нескольких репозиториях. Пора упаковать их в <code>team-kit</code>.</p>
+      <ol>
+        <li>Создаём папку <code>team-kit/</code>.</li>
+        <li>Кладём <code>.claude-plugin/plugin.json</code> с именем, версией и описанием.</li>
+        <li>Переносим оба skill в <code>skills/</code> без изменения поведения.</li>
+        <li>Добавляем README: что внутри, как поставить, как вызывать, какие границы.</li>
+        <li>Проверяем локально через <code>--plugin-dir</code>, <code>/reload-plugins</code> и <code>validate</code>.</li>
+        <li>При необходимости заводим marketplace <code>team-tools</code> и прописываем его в настройках проекта.</li>
+      </ol>
+      <p><code>git-commit</code> остаётся action-skill с <code>disable-model-invocation: true</code>: Claude не должен коммитить сам по совпадению описания. Упаковка в plugin это поведение сохраняет. <code>prompt-improve</code> остаётся текстовым skill и не получает лишних прав.</p>
+    </section>
+
+    <section>
+      <h2>13. Когда плагин мешает</h2>
+      <p>Плагин — не обязанность. Если после установки появились конфликты, ошибки загрузки или странное поведение сессии:</p>
+      <ol>
+        <li>Отключите свежий плагин через <code>/plugin disable</code>.</li>
+        <li>Посмотрите Errors в <code>/plugin</code>.</li>
+        <li>Если не нужен — <code>/plugin uninstall</code>.</li>
+        <li>В крайнем случае проверьте кэш <code>~/.claude/plugins/cache</code> и переустановите.</li>
+      </ol>
+      <p>Сломался плагин — это рабочая ситуация. Хуже держать его включённым «на всякий случай», платить контекстом и гадать, откуда странности.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Plugin — упаковка и доставка, а не «skill на максималках».</li>
+        <li>Сначала workflow должен доказать пользу локально; упаковывать хаос рано.</li>
+        <li>Сигналы к plugin: несколько репозиториев, другие люди, версии, конфликты имён, marketplace.</li>
+        <li>Namespace <code>/plugin-name:skill-name</code> защищает от конфликтов; имя плагина задаёт манифест.</li>
+        <li>Install scopes: user, project, local, managed.</li>
+        <li>Плагин выполняет код с вашими правами: проверяйте источник, состав и context cost.</li>
+        <li>Каждый активный плагин занимает контекст и время; лишнее выключайте.</li>
+        <li>Манифест лежит в <code>.claude-plugin/plugin.json</code>, компоненты — в корне плагина.</li>
+        <li>Локальная проверка: <code>--plugin-dir</code>, вызов под namespace, <code>/reload-plugins</code>, <code>claude plugin validate</code>.</li>
+        <li>Для команды — marketplace и <code>extraKnownMarketplaces</code> / <code>enabledPlugins</code> в настройках проекта.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать минимальный plugin-контейнер <code>team-kit</code> из двух учебных skills, проверить структуру и локальный вызов под namespace.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте папку <code>team-kit</code> и два крошечных skill: <code>skills/git-commit/SKILL.md</code> и <code>skills/prompt-improve/SKILL.md</code>. В каждом опишите только цель и один шаг; используйте фейковые данные.</li>
+        <li>Добавьте <code>.claude-plugin/plugin.json</code> с <code>name: team-kit</code>, версией <code>0.1.0</code>, коротким <code>description</code> и автором. Убедитесь, что <code>skills/</code> лежит в корне плагина, а не внутри <code>.claude-plugin/</code>.</li>
+        <li>Добавьте <code>README.md</code>: что внутри, как поставить локально, как вызвать оба skill и какие у них границы.</li>
+        <li>Если Claude Code доступен, выполните <code>claude plugin validate ./team-kit</code>, затем <code>claude --plugin-dir ./team-kit</code> и вызовите <code>/team-kit:git-commit</code>. Если CLI недоступен, проверьте JSON, дерево папок и полное имя вызова вручную.</li>
+        <li>Зафиксируйте в <code>PLUGIN_REVIEW.md</code> одну строку: что упаковано, каким scope вы бы поделились с командой и почему. Не добавляйте реальные ключи, секреты и боевые команды.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте JSON и структуру папок; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li><code>plugin.json</code> лежит в <code>.claude-plugin/</code>, а skills — в корне плагина.</li>
+        <li>В манифесте есть имя, версия и описание.</li>
+        <li>Оба skill вызываются под namespace <code>/team-kit:...</code>.</li>
+        <li>README объясняет установку и границы без устной экскурсии.</li>
+        <li>Полный вызов не путается со старым standalone skill.</li>
+        <li>В практике только фейковые данные и нет реальных секретов.</li>
+        <li>Вы можете объяснить, почему этот набор пока не обязан быть публичным плагином.</li>
+      </ul>
+    </section>
+
+    <footer>10 уровень · лекция 1. Plugin — это упаковка workflow для команды, а не замена skill. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level10.lecture01" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
