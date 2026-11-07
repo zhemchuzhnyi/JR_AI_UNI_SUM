@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Установка plugin: scope и lifecycle. User, local, project и managed scopes, namespace, install → use → update → disable → uninstall и цена контекста.">
+  <title>Claude Code — 10 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Установка plugin</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">10 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Установка plugin — не кнопка, а выбор радиуса действия. Permissions отвечают за то, что plugin может делать; scope — за то, где и для кого он существует.
+    </div>
+
+    <section>
+      <h2>1. Установка — выбор радиуса действия</h2>
+      <p>На словах установка почти невинна: нажали команду — получили инструмент. В workflow это решение: где plugin будет жить, кто его почувствует и как его потом выключить.</p>
+      <div class="callout">Permissions — что plugin может делать. Scope — где и для кого он существует.</div>
+      <p>Умение поставить plugin не оправдывает установку первого попавшегося пакета. Сначала категория и capability surface, потом решение о scope.</p>
+      <p class="warning">«Установлен» и «уже участвует в текущей сессии» — не всегда одно и то же. Пакет может лежать в системе, но подхватиться только после обновления списка, перезапуска сессии или повторного открытия проекта.</p>
+    </section>
+
+    <section>
+      <h2>2. Scope: где plugin живёт и кого касается</h2>
+      <p>Один и тот же <code>team-review-kit</code> в разных scope означает разный круг влияния.</p>
+      <table>
+        <thead><tr><th>Scope</th><th>На кого влияет</th><th>Когда уместен</th><th>Что помнить</th></tr></thead>
+        <tbody>
+          <tr><td>user</td><td>Только на вас, во всех проектах</td><td>Личный workflow нужен регулярно в разных репозиториях</td><td>Plugin будет всплывать везде</td></tr>
+          <tr><td>local</td><td>Только на вас и только в одном repo</td><td>Эксперимент или временная настройка</td><td>Хорошо для проб, но не общий стандарт</td></tr>
+          <tr><td>project</td><td>На конкретный repo и работающих по его workflow</td><td>Plugin — часть общего workflow команды</td><td>Привязка к repo; механизм хранения зависит от версии</td></tr>
+          <tr><td>managed</td><td>На организацию или её часть</td><td>Централизованная политика</td><td>Обычно вы не выбираете его сами</td></tr>
+        </tbody>
+      </table>
+      <p>Имена scope между версиями могут отличаться — <code>user</code> где-то называется <code>personal</code>, — но логика та же.</p>
+      <p>Самая частая путаница — <code>user</code> и <code>local</code>. Оба означают «только я», но:</p>
+      <ul>
+        <li><code>user</code> — инструмент в рюкзаке: носите по всем проектам;</li>
+        <li><code>local</code> — инструмент на одном верстаке: в соседнем репозитории его нет.</li>
+      </ul>
+      <p>Тестируете review-plugin только для Commerce OS — <code>local</code> разумнее <code>user</code>.</p>
+    </section>
+
+    <section>
+      <h2>3. Project scope — уже не личная настройка</h2>
+      <p>С <code>project</code> начинается взрослая жизнь. Пока plugin стоял только у вас, это было личное удобство. Как только он привязан к repo, это решение о проектном workflow и кусок общей инфраструктуры.</p>
+      <p>Команда Commerce OS решила пользоваться единым review workflow. <code>project</code> говорит: plugin относится к этому repo, а не ко всем вашим проектам. Где именно живёт привязка — в конфиге проекта или в состоянии менеджера plugins — зависит от реализации. Перед раскаткой проверьте справку и договоритесь, как команда будет его распространять и отключать.</p>
+      <p>Полезно зафиксировать решение:</p>
+      <pre><code>## Plugin baseline
+
+Плагин: team-review-kit
+Scope: project
+Зачем: единый review workflow для Commerce OS
+Кого касается: тех, кто работает по общему plugin baseline этого repo
+Как отключить: временно disable; полностью убрать project-level привязку способом, который поддерживает текущая установка</code></pre>
+      <p>Это не бюрократия, а способ не забыть, зачем у проекта появился plugin. Иначе через месяц половина команды считает его обязательным стандартом, вторая — чьим-то экспериментом, а автор уже не помнит, с чего всё началось.</p>
+      <p class="warning">Если plugin сырой, живёт один день и нужен только вам — не спешите с <code>project</code>. Сначала докажите, что он нужен команде.</p>
+    </section>
+
+    <section>
+      <h2>4. Namespace: зачем плагину «фамилия»</h2>
+      <p>Пока в группе один Дима, можно просто «Дима». Появляется второй — и фамилия перестаёт быть бюрократией. С plugin так же: один review-плагин — имя <code>review</code> удобно; появляется второй с похожим смыслом — начинается организационный хаос.</p>
+      <p>Без namespace:</p>
+      <pre><code>review
+review</code></pre>
+      <p>Непонятно, какой именно review вызвался, откуда он пришёл и почему вместо проверки PR вы получили советы по README.</p>
+      <p>С namespace:</p>
+      <pre><code>review-kit:pr-review
+docs-kit:review</code></pre>
+      <p>Точный формат зависит от реализации, но идея одна: namespace добавляет skill или команде «фамилию». Конфликт имён становится заметен не тогда, когда вы пишете plugin, а когда в одном окружении живут несколько plugins.</p>
+      <p>Новичку namespace кажется избыточным: «у нас пока один plugin». Это логика «я пока один Дима, фамилия мне не нужна». Среда растёт, коллеги приносят свои инструменты, и без namespace приходится устраивать болезненную миграцию имён.</p>
+      <p>Хороший namespace не обязан звучать как название стартапа. <code>team-review-kit</code>, <code>commerce-tools</code>, <code>docs-kit</code> работают лучше, чем абстрактное <code>super-ai-pro</code>.</p>
+    </section>
+
+    <section>
+      <h2>5. Жизненный цикл: install → use → update → uninstall</h2>
+      <p>Люди часто думают только про установку, а с неё всё только начинается. Без жизненного цикла в голове копится кладбище полумёртвых расширений: что-то ставили, что-то выключали, что-то обновляли, а что активно сейчас — непонятно.</p>
+      <pre><code>install → activate → use → update → disable → uninstall</code></pre>
+      <table>
+        <thead><tr><th>Шаг</th><th>Что значит на практике</th></tr></thead>
+        <tbody>
+          <tr><td>install</td><td>package появился в окружении</td></tr>
+          <tr><td>activate</td><td>plugin подхватился проектом или сессией</td></tr>
+          <tr><td>use</td><td>вы убедились, что он работает там, где ожидали</td></tr>
+          <tr><td>update</td><td>перешли на новую версию и заново проверили изменения</td></tr>
+          <tr><td>disable</td><td>временно выключили без удаления</td></tr>
+          <tr><td>uninstall</td><td>убрали полностью</td></tr>
+        </tbody>
+      </table>
+      <p><code>disable</code> и <code>uninstall</code> путают постоянно. <code>disable</code> нужен, когда вы отлаживаете конфликт, сравниваете поведение «с plugin и без» или временно выключаете эксперимент. Это как вынуть батарейки из пульта, но не выбрасывать пульт. <code>uninstall</code> — уже «нам это больше не нужно».</p>
+      <p>Самый недооценённый шаг — <code>update</code>. Обновление plugin — почти новый install: может измениться состав, поведение, подсказки и нагрузка на контекст. Обновлять «автоматом, потому что цифра версии стала больше» — плохая привычка. Здоровее относиться к update как к новой версии договора: ещё раз проверить, что именно вы принимаете в workflow.</p>
+    </section>
+
+    <section>
+      <h2>6. Practical walkthrough: реальный plugin из claude-plugins-official</h2>
+      <p>Синтетический <code>team-review-kit</code> удобен для объяснения, но полезно пройти цикл на реальном плагине.</p>
+      <p><code>claude-plugins-official</code> — поддерживаемый Anthropic каталог, доступный в Claude Code по умолчанию. Если вы ничего не настраивали, источник уже подключён.</p>
+      <p>Сначала полезно посмотреть, какие marketplace активны и что в них есть:</p>
+      <pre><code># Концептуально: точные команды и вывод зависят от версии Claude Code
+/plugin marketplace list
+/plugin marketplace add anthropics/claude-plugins-official</code></pre>
+      <p>В большинстве случаев официальный marketplace уже в списке. Второй шаг нужен только в нестандартном setup.</p>
+      <p>Дальше — установка конкретного плагина. Возьмём <code>code-review</code>: категория узнаваемая, capability surface проверяемый.</p>
+      <pre><code># Концептуально: имена и флаги могут отличаться
+/plugin install code-review --scope user
+/plugin list
+/plugin details code-review</code></pre>
+      <p><code>details</code> особенно ценен до запуска: видно, какие slash-команды, агенты, hooks и требования к окружению принёс пакет. Это и есть capability surface: пакет, его состав, его права.</p>
+      <p>После установки проверяем на реальной задаче. У <code>code-review</code> сценарий простой: переключиться на ветку с готовым PR и запустить команду.</p>
+      <pre><code># На ветке с готовым PR, концептуально
+/code-review
+/code-review --comment</code></pre>
+      <p>Первая команда — чтение и анализ, ничего не пишется наружу. Вторая — внешнее действие, публикация комментария в PR, и требует осознанного решения. Начинать стоит с «спокойного» режима, где результат остаётся локальным.</p>
+      <p>И самое важное для дисциплины — уметь так же спокойно откатывать:</p>
+      <pre><code># Концептуально, последовательность отката
+/plugin disable code-review
+/plugin enable code-review
+/plugin uninstall code-review</code></pre>
+      <p>Это полный цикл <code>install → activate → use → disable → uninstall</code>. Когда вы прошли его на реальном плагине, следующий пакет перестаёт быть загадочным жителем системы.</p>
+      <p>Полезно записать короткий trial log:</p>
+      <pre><code>## Plugin trial log
+
+Плагин: code-review (claude-plugins-official)
+Зачем пробовал: self-review перед PR
+Scope: user (только мой workflow)
+Результат: помог поймать пропущенную проверку null; шум на простых diff
+Решение: оставляю в user scope, переводить в project пока не буду
+Как откатить: /plugin disable, далее /plugin uninstall</code></pre>
+      <p>Через две недели вы не вспомните, почему plugin установлен, в каком scope и что вы тогда решили. Маленький log избавляет от амнезии.</p>
+      <p>Команды, флаги и формат вывода могут меняться. Не запоминайте форму команды как заклинание. Запоминайте логику: marketplace → каталог → категория и capability surface → узкий scope → безопасный режим → disable/uninstall при необходимости.</p>
+    </section>
+
+    <section>
+      <h2>7. Невидимая цена: context overhead и лишние plugins</h2>
+      <p>Самое коварное в plugins то, что вред редко выглядит драматично. Компьютер не падает, экран не мигает. Чаще plugins просто понемногу засоряют среду.</p>
+      <p>Один лишний plugin — мелочь. Когда их пять, появляются странные подсказки, конфликтующие названия, более шумный контекст и ощущение, что среда стала тяжелее.</p>
+      <p>Установленный plugin — не просто файл на диске. Его описание, названия компонентов, а иногда инструкции и метаданные становятся частью рабочей среды Claude Code. У Claude нет пыльной полки «когда-нибудь пригодится»: активный plugin увеличивает сложность общей картины.</p>
+      <p>Аналогия с рюкзаком: один предмет почти не чувствуется, но если бросать туда «вдруг пригодится» и не разбирать, рюкзак становится тяжелее, а нужную вещь искать дольше.</p>
+      <p>Гигиена простая:</p>
+      <ul>
+        <li>plugin больше не помогает — убирайте;</li>
+        <li>эксперимент закончился — не оставляйте его выключенным навсегда «на память»;</li>
+        <li>несколько похожих инструментов одной категории — спросите, дополняют ли они друг друга или вы коллекционируете инструменты из инженерной жадности.</li>
+      </ul>
+      <p>Настройка набора инструментов иногда увлекает больше, чем сама работа. Plugins этим прекрасно пользуются.</p>
+    </section>
+
+    <section>
+      <h2>8. Сквозной пример: team-review-kit в Commerce OS</h2>
+      <p>У Workflow Kit есть <code>issue-analysis</code> и <code>pr-review</code>. Вы упаковали их в <code>team-review-kit</code>. Теперь нужно подключить plugin к Commerce OS так, чтобы он помогал, а не создавал путаницу.</p>
+      <table>
+        <thead><tr><th>Ситуация</th><th>Разумный scope</th><th>Почему</th></tr></thead>
+        <tbody>
+          <tr><td>Вы один тестируете plugin</td><td>local</td><td>Не засоряете другие проекты и не трогаете команду</td></tr>
+          <tr><td>Plugin нужен почти во всех ваших репозиториях</td><td>user</td><td>Личный стабильный набор везде под рукой</td></tr>
+          <tr><td>Команда договорилась о едином review workflow</td><td>project</td><td>Plugin привязан к repo; раскатка зависит от версии</td></tr>
+          <tr><td>Компания централизованно раскатывает approved tooling</td><td>managed</td><td>Решение на уровне организации</td></tr>
+        </tbody>
+      </table>
+      <p>Типичная история: сначала <code>team-review-kit</code> идёт в <code>local</code> Commerce OS — пару дней проверяете, помогает ли <code>pr-review</code> перед PR. Потом подключается второй разработчик, workflow повторяется — теперь решение можно переводить в <code>project</code>, фиксировать в plugin baseline и отдельно проверять, как текущая версия Claude Code хранит такой уровень и делится им.</p>
+      <p>На install-команду вы смотрите уже не как на волшебную строчку, а как на инженерное решение с тремя вопросами:</p>
+      <ol>
+        <li>Где будет жить plugin?</li>
+        <li>Кто его почувствует?</li>
+        <li>Как я его выключу или удалю, если эксперимент не удастся?</li>
+      </ol>
+      <p>Если умеете честно ответить на них до запуска команды — вы перестали «просто ставить плагины» и начали работать с ними как с артефактами команды.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Permissions отвечают за «что можно», scope — за «где и для кого».</li>
+        <li><code>user</code> — во всех ваших проектах; <code>local</code> — только в одном repo; <code>project</code> — командный workflow repo; <code>managed</code> — политика организации.</li>
+        <li><code>project</code> — уже не личная настройка, а кусок инфраструктуры команды.</li>
+        <li>Namespace защищает от конфликтов имён; называйте plugin понятно и стабильно.</li>
+        <li>Жизненный цикл: install → activate → use → update → disable → uninstall.</li>
+        <li><code>update</code> — почти новый install: состав и поведение могут измениться.</li>
+        <li>Начинайте с безопасного режима без внешних действий; публикация PR-комментария — отдельное решение.</li>
+        <li>Каждый активный plugin занимает контекст и увеличивает сложность среды.</li>
+        <li><code>disable</code> — временно выключить, <code>uninstall</code> — убрать полностью.</li>
+        <li>Команды и флаги меняются; логика выбора scope и lifecycle остаётся.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> выбрать scope для четырёх сценариев и провести учебный plugin через полный жизненный цикл без влияния на реальный проект.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Для вымышленного <code>team-review-kit</code> в Commerce OS разберите четыре ситуации: (а) вы тестируете plugin один, (б) он нужен во всех ваших репозиториях, (в) команда договорилась о едином review workflow, (г) компания централизованно раскатывает approved tooling. Запишите scope и одну причину для каждого.</li>
+        <li>Создайте <code>PLUGIN_LIFECYCLE_PLAN.md</code>: plugin, выбранный scope, кто ощутит установку, как проверить активацию, какой безопасный режим использовать первым, как обновлять и как откатить.</li>
+        <li>Если Claude Code доступен, выполните <code>/plugin marketplace list</code>, <code>/plugin details code-review</code> и установите <code>code-review</code> в <code>local</code> или <code>user</code> scope на учебной машине. Если нет — разберите README и manifest кандидата вручную.</li>
+        <li>Пройдите или опишите цепочку <code>install → use → disable → uninstall</code>. Для use возьмите только безопасный режим без публикации комментария; <code>--comment</code> не запускайте.</li>
+        <li>Добавьте <code>Plugin trial log</code>: зачем пробовали, scope, результат, решение и команду отката. Не используйте реальные PR, ключи и секреты.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте README и manifest кандидата; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Для каждого из четырёх сценариев scope выбран осознанно.</li>
+        <li>В плане разделены «установлен» и «активирован».</li>
+        <li>Первый запуск не выполняет внешних действий.</li>
+        <li>Есть понятный путь <code>disable</code> и <code>uninstall</code>.</li>
+        <li>Trial log фиксирует решение и причину, а не только факт установки.</li>
+        <li>В практике нет реальных ключей, PR и секретов.</li>
+      </ul>
+    </section>
+
+    <footer>10 уровень · лекция 3. Scope задаёт радиус действия, lifecycle — дисциплину установки и отката. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level10.lecture03" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
