@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">От skill к plugin</div>
       <h1>Claude Code</h1>
@@ -198,6 +198,7 @@ Context cost:  ~1.8k tokens</code></pre>
       SKILL.md
   README.md</code></pre>
       <p>Типичная ошибка — положить <code>skills/</code> внутрь <code>.claude-plugin/</code>. Плагин может загрузиться, но skills молча не найдутся. Второй источник путаницы — короткое имя: если старый standalone <code>/git-commit</code> остался в <code>.claude/skills/</code>, короткое имя попадёт в него, а не в плагин. Проверяйте полным <code>/team-kit:git-commit</code>.</p>
+      <p>Каркас папки можно создать командой <code>claude plugin init team-kit</code>, если она доступна в вашей версии; точное поведение и расположение файлов проверяйте по справке. Автоматический каркас не отменяет проверку структуры: manifest должен оказаться в <code>.claude-plugin/</code>, а skills — в корне плагина.</p>
     </section>
 
     <section>
@@ -206,7 +207,7 @@ Context cost:  ~1.8k tokens</code></pre>
       <pre><code>{
   "name": "team-kit",
   "description": "Team git-commit and prompt-improve skills",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": { "name": "Platform team" }
 }</code></pre>
       <ul>

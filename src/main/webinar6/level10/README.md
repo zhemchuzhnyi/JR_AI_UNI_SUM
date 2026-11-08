@@ -8,4 +8,12 @@
 - [Лекция 4 — Проверка plugin: что ставить и почему](lecture4/index.html)
 - [Лекция 5 — Custom plugin: team-ready prototype](lecture5/index.html)
 
+## Контрольные вопросы
+
+- [25 вопросов по уровню 10](CONTROL_QUESTIONS.html)
+
+## Практика
+
+- [Практика вебинара 6](../practice/index.html)
+
 Все 5 лекций уровня 10 собраны.

@@ -13,7 +13,7 @@
 - **Вебинар 3** — уровень 5, лекции 1–5: operational model, context selection, context budget, context pollution, session lifecycle; 22 контрольных вопроса. Уровень 6 — лекции 1–5: длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer; 22 контрольных вопроса. Практика вебинара — справочник локалей.
 - **Вебинар 4** — уровень 7, лекции 1–5: discovery, evidence-based Q&A, `CODEBASE_INVENTORY.md`, dependency map и runtime flow; уровень 8, лекции 1–5: API_MAP, runtime evidence, subagents, AI-assisted documentation и docs-as-code review; отдельная практика «Haiku 50».
 - **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files; практика `/prompt-improve`.
-- **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype.
+- **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype; практика team-kit и 25 контрольных вопросов.
 
 ## Навигация
 
@@ -40,3 +40,4 @@
 - [Вебинар 4, уровень 7 — 20 вопросов](src/main/webinar4/level7/CONTROL_QUESTIONS.md)
 - [Вебинар 4, уровень 8 — 23 вопроса](src/main/webinar4/level8/CONTROL_QUESTIONS.md)
 - [Вебинар 5, уровень 9 — 25 вопросов](src/main/webinar5/level9/CONTROL_QUESTIONS.md)
+- [Вебинар 6, уровень 10 — 25 вопросов](src/main/webinar6/level10/CONTROL_QUESTIONS.md)

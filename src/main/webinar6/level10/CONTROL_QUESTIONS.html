@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 10 — контрольные вопросы по plugin: упаковка, ecosystem, scope, lifecycle, review и team-ready prototype.">
+  <title>Уровень 10 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111318; --panel:#1a1e26; --text:#f1f2f4; --muted:#a5adba; --accent:#f5a66b; --line:#303642; --green:#a8d8a0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 85% 0,#33261f 0,transparent 34rem),var(--bg); color:var(--text); font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:0 auto; padding:48px 0 80px; }
+    h1 { margin:18px 0 22px; font-size:clamp(2rem,6vw,3.4rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:38px 0 14px; padding-top:18px; border-top:1px solid var(--line); font-size:1.35rem; }
+    p { margin:12px 0; }
+    ol, ul { margin:10px 0; padding-left:1.5rem; }
+    li { margin:10px 0; }
+    strong { color:#fff; }
+    code { color:var(--green); }
+    a { color:var(--accent); }
+    footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+    @media (max-width:620px) { main { padding-top:30px; } h1 { font-size:2rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <h1>Уровень 10 — контрольные вопросы</h1>
+    <p>Контрольный блок по 5 лекциям уровня 10 и практике вебинара 6: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с презентацией: plugin как упаковка, экосистема, scope и lifecycle, проверка перед установкой и team-ready prototype.</p>
+<h2>Лекция 1 — от skill к plugin</h2>
+<ol start="1">
+  <li><strong>Чем skill принципиально отличается от plugin?</strong><br>
+    Skill — единица процедуры: одна повторяемая инструкция с входом, действиями и результатом. Plugin — единица распространения: упаковка, которая делает набор skills устанавливаемым, версионируемым и понятным другим. Plugin не добавляет поведение сам по себе.
+<br>    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Как выглядит лестница зрелости prompt → CLAUDE.md → skill → plugin?</strong><br>
+    Prompt отвечает «что сделать сейчас», <code>CLAUDE.md</code>/rules — «как принято в проекте», skill — «как повторять процедуру», plugin — «как доставить workflow другим людям и в другие репозитории».
+<br>    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Когда <code>.claude/</code> достаточно и не нужно упаковывать skill в plugin?</strong><br>
+    Когда workflow нужен только вам, живёт в одном проекте, завязан на его структуру и ещё активно меняется. Если нет задачи делиться, версионировать и поддерживать пакет для других, plugin добавляет лишнюю работу.
+<br>    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Какие сигналы говорят, что workflow дорос до plugin?</strong><br>
+    Набор нужен в нескольких репозиториях; skill нужен не только автору; важна версия; появляются конфликты имён; изменения нужно документировать; skills, agents, hooks или MCP нужно поставлять вместе.
+<br>    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Зачем plugin нужен namespace и откуда берётся его префикс?</strong><br>
+    Namespace разводит skills из разных plugins по именам и показывает происхождение компонента. Префикс берётся из <code>name</code> в manifest: <code>team-kit</code> даёт <code>/team-kit:git-commit</code>. Короткое имя может сработать, если свободно, но полное надёжнее.
+<br>    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+</ol>
+<h2>Лекция 2 — экосистема и выбор</h2>
+<ol start="6">
+  <li><strong>Чем отличаются категория, plugin и capability surface?</strong><br>
+    Категория — класс инженерной боли, plugin — конкретный installable package, capability surface — реальные действия, на которые plugin способен: чтение, запись, shell, hooks, сеть, credentials.
+<br>    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>С чего лекция советует начинать выбор plugin?</strong><br>
+    С workflow-боли, а не с названия, топа или звёзд. Сначала понять, какую работу нужно сократить, затем определить категорию, потом смотреть capability surface конкретных кандидатов.
+<br>    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Какие категории plugins существуют, кроме «написания кода»?</strong><br>
+    Документация и справка, навигация по коду, память проекта и первичная настройка, развитие артефактов Workflow Kit; среди AI-инструментов — review, testing/browser, frontend/UI, refactoring, security; отдельно Git/PR, infra/delivery и командный workflow.
+<br>    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Какие официальные plugins лекция приводит как примеры и для каких категорий?</strong><br>
+    Code Review — review кода; Code Simplifier — рефакторинг; frontend-design — frontend/UI; Skill Creator — мета-инструменты для skills; Superpowers — упакованная методология. Это снимок marketplace, а не обязательный набор.
+<br>    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему популярность — плохой первый фильтр при выборе plugin?</strong><br>
+    Популярность — социальный сигнал, а не инженерный. Она не знает вашу задачу, стек, команду и ограничения, может подтолкнуть к лишнему контексту и дублированию. Популярность — довесок при равенстве, а не стартовая эвристика.
+<br>    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
+<h2>Лекция 3 — scope и lifecycle</h2>
+<ol start="11">
+  <li><strong>За что отвечают permissions и scope?</strong><br>
+    Permissions — что plugin может делать. Scope — где и для кого он существует: только у вас, в одном repo, у команды проекта или на уровне организации.
+<br>    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Чем отличаются user, local, project и managed scopes?</strong><br>
+    <code>user</code> — только вы, во всех проектах; <code>local</code> — только вы в одном repo; <code>project</code> — командный workflow конкретного repo; <code>managed</code> — централизованная политика организации. Имена могут меняться между версиями.
+<br>    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Почему project scope — уже не личная настройка?</strong><br>
+    Plugin привязан к repo и влияет на всех, кто работает по его workflow. Это кусок инфраструктуры команды, поэтому нужны понятный baseline, владелец, способ раскатки и отключения. Для сырого эксперимента лучше <code>local</code> или <code>user</code>.
+<br>    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какие шаги входят в жизненный цикл plugin и почему update — почти новый install?</strong><br>
+    <code>install → activate → use → update → disable → uninstall</code>. Update может изменить состав, поведение, права и нагрузку на контекст, поэтому перед обновлением нужно снова прочитать release notes и проверить изменения.
+<br>    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Чем disable отличается от uninstall и какую цену создаёт активный plugin?</strong><br>
+    <code>disable</code> временно выключает plugin, но оставляет его установленным; <code>uninstall</code> убирает полностью. Активный plugin занимает контекст и увеличивает сложность среды, поэтому неиспользуемые пакеты лучше отключать или удалять.
+<br>    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+</ol>
+<h2>Лекция 4 — проверка перед установкой</h2>
+<ol start="16">
+  <li><strong>Какие три блока входят в review plugin перед установкой?</strong><br>
+    Авторство и поддержка; capability surface; поддерживаемость — версия, changelog, owner, update и путь отката.
+<br>    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Почему известный автор не отменяет проверку plugin и почему внутренний plugin не безопасен по умолчанию?</strong><br>
+    Даже у известного автора внутри могут быть hooks, shell, сеть, credentials и write-действия. Внутренние plugins часто документированы хуже внешних: README откладывают, changelog не ведут, автор может уйти. Проверять нужно сам пакет.
+<br>    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Что такое capability surface и какие признаки для review-плагина тревожны?</strong><br>
+    Capability surface — реальные действия plugin, а не обещания README. Для review-workflow тревожны shell, сеть, credentials, write-действия и hooks без необходимости; обычно достаточно skills с read-only доступом к diff.
+<br>    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Что проверять в совместимости plugin с проектом, кроме технической установки?</strong><br>
+    Scope, namespace и конфликты имён, оболочку и окружение, структуру repo и команды, а также дублирование с существующими skills/workflow. Хороший plugin может просто не подойти вашей команде.
+<br>    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Что делает plugin поддерживаемым и зачем фиксировать решение?</strong><br>
+    Версия и changelog, понятный owner, update и disable/uninstall. Решение «ставим / не ставим», причина, ограничения и путь отката фиксируются в заметке, чтобы через месяц оно не стало легендой.
+<br>    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+</ol>
+<h2>Лекция 5 — team-ready prototype</h2>
+<ol start="21">
+  <li><strong>Из чего состоит минимальный team-ready plugin?</strong><br>
+    Metadata/manifest, <code>skills/</code>, README, examples, CHANGELOG, compatibility notes и install instructions. В первой версии не нужны agents, hooks, MCP и shell-скрипты.
+<br>    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Какие три skills входят в учебный team-review-kit и какой workflow они образуют?</strong><br>
+    <code>issue-analysis</code>, <code>pr-review</code> и <code>project-setup</code>: принять issue, проверить базовое состояние проекта и сделать локальный review diff перед PR.
+<br>    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Почему первый прототип начинают с версии 0.1.0 и зачем нужен CHANGELOG.md?</strong><br>
+    <code>0.1.0</code> честно говорит, что пакет уже можно ставить, но он ещё растёт. CHANGELOG фиксирует, что вошло в версию, и делает разговор об обновлении конкретным.
+<br>    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Почему README — часть архитектуры и что в него входит?</strong><br>
+    Для коллеги plugin начинается с ответов: что это, как поставить, как вызвать и где границы. README описывает состав, установку, namespaced skills, безопасность/capability surface и ограничения. Без него пакет не готов для команды.
+<br>    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как проверить, что plugin действительно team-ready, и что сознательно не кладут в первый прототип?</strong><br>
+    Другой разработчик должен без личной экскурсии понять пакет, поставить его и использовать. В первый прототип не кладут hooks, agents, MCP и shell-скрипты: они расширяют риск и требуют отдельного разговора о правах и lifecycle.
+<br>    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+</ol>
+<h2>Статус</h2>
+<ul>
+  <li>25 вопросов покрывают все 5 лекций уровня 10.</li>
+  <li>Вопросы синхронизированы с презентацией вебинара 6: plugin vs skill, ecosystem, scope/lifecycle, review и team-ready prototype.</li>
+  <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">team-kit и проверка plugin</a>.</li>
+  <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+</ul>
+    <footer>Уровень 10 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
