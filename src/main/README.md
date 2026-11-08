@@ -188,6 +188,9 @@ src/main/
       lecture4/
         summary.txt
         index.html
+      lecture5/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -246,7 +249,7 @@ HTML-аналог:
 - **Вебинар 3:** уровень 5 — 5 лекций (operational model, context selection, context budget, context pollution, session lifecycle) и 22 вопроса; уровень 6 — 5 лекций (длинные задачи, checkpoints/rewind, Git-first recovery, worktree, handoff и fresh reviewer) и 22 вопроса; практика — справочник локалей. Аудит покрытия: [вебинар 3](webinar3/COVERAGE.md).
 - **Вебинар 4:** уровень 7 — лекции 1–5 (discovery, evidence-based Q&amp;A, `CODEBASE_INVENTORY.md`, dependency map, runtime flow и точки входа), 20 контрольных вопросов; уровень 8 — лекции 1–5 (карта API и интеграций; IDE, терминал и логи; subagents; AI-assisted documentation; docs-as-code review), 23 контрольных вопроса; практика — Haiku 50 (аудит чужого проекта и генератор хайку). Аудит покрытия: [вебинар 4](webinar4/COVERAGE.md).
 - **Вебинар 5:** уровень 9 — лекции 1–5 (extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files), 25 контрольных вопросов; практика — `/prompt-improve`. Аудит покрытия: [вебинар 5](webinar5/COVERAGE.md).
-- **Вебинар 6:** уровень 10 — лекции 1–4 (plugin как упаковка workflow; выбор по категориям; scope, namespace и lifecycle; проверка авторства, capability surface и поддерживаемости); материалы дополняются.
+- **Вебинар 6:** уровень 10 — лекции 1–5 (plugin как упаковка workflow; выбор по категориям; scope, namespace и lifecycle; проверка plugin; team-ready prototype); все лекции уровня собраны.
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

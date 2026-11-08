@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Custom plugin: team-ready prototype. Минимальный plugin manifest, skills, README, examples, CHANGELOG, совместимость и проверка пакета глазами коллеги.">
+  <title>Claude Code — 10 уровень, лекция 5</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Custom plugin</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">10 уровень · лекция 5</div>
+    </header>
+
+    <div class="lead">
+      Пока plugin живёт у автора, многое держится на памяти. Командный пакет должен объяснять себя сам: состав, установка, границы, версия и история изменений.
+    </div>
+
+    <section>
+      <h2>1. Момент, когда папка становится пакетом</h2>
+      <p>Пока plugin живёт только у автора, многое держится на памяти и привычке. Отдаёте его команде — этого мало: другой разработчик должен без созвона понять, что внутри, как поставить, где границы и что делать после обновления.</p>
+      <p><strong>Skill</strong> — одна повторяемая процедура. <strong>Plugin</strong> — пакет, который делает набор таких процедур переносимым и понятным другим. Сегодня вопрос не «как написать skill», а «что должно появиться, когда workflow выходит из личной папки и становится командным артефактом».</p>
+      <div class="callout">Если коллега открывает репозиторий и не понимает, что перед ним, у вас не plugin, а аккуратно названная папка, которую все боятся трогать.</div>
+      <p>Для Workflow Kit это особенно важно: мы собираем инженерный набор для подключения к проектам, а не прячем фичу внутри Commerce OS. Пакету нужны паспорт, структура и минимальный состав, проверяемый глазами.</p>
+    </section>
+
+    <section>
+      <h2>2. Из чего собран минимальный team-ready plugin</h2>
+      <p>После лекций про расширяемость легко переусердствовать: пять слоёв абстракции, загадочная папка core и «на будущее» ещё десять компонентов. Не надо. Минимальный plugin — небольшой читаемый пакет.</p>
+      <table>
+        <thead><tr><th>Компонент</th><th>Простыми словами</th><th>Зачем в первой версии</th></tr></thead>
+        <tbody>
+          <tr><td>Plugin metadata</td><td>Паспорт: имя, версия, описание, совместимость</td><td>Опознать, обновить и не перепутать с соседом</td></tr>
+          <tr><td><code>skills/</code></td><td>Основная полезная начинка</td><td>Ради них plugin и существует</td></tr>
+          <tr><td><code>README.md</code></td><td>Инструкция для людей</td><td>Что внутри, как поставить и использовать</td></tr>
+          <tr><td><code>examples/</code></td><td>Маленькие примеры</td><td>Понять, в каком контексте skill уместен</td></tr>
+          <tr><td><code>CHANGELOG.md</code></td><td>Журнал изменений</td><td>Версия — история, а не число для красоты</td></tr>
+          <tr><td>Compatibility notes</td><td>Заметки о совместимости</td><td>Не ловить сюрпризы после обновления</td></tr>
+          <tr><td>Install instructions</td><td>Короткий путь запуска</td><td>Чтобы не спрашивали: «А это куда класть?»</td></tr>
+        </tbody>
+      </table>
+      <p>В первой версии нет agents, hooks, MCP и shell-скриптов. Не потому, что они плохие, а потому, что мы собираем минимальный пакет на понятном наборе знаний, который можно проверить глазами. Первый plugin должен помогать команде, а не впечатлять соседний отдел.</p>
+      <p>Типовая структура:</p>
+      <pre><code>team-review-kit/
+├── plugin.json
+├── README.md
+├── CHANGELOG.md
+├── skills/
+│   ├── issue-analysis/
+│   │   └── SKILL.md
+│   ├── pr-review/
+│   │   └── SKILL.md
+│   └── project-setup/
+│       └── SKILL.md
+└── examples/
+    ├── issue-analysis-example.md
+    └── pr-review-example.md</code></pre>
+      <p>Структуру нужно уметь открыть и понять за минуту, а не за вечер. Если plugin выглядит как шкаф из мебельного магазина без инструкции — это ещё не пакет для команды.</p>
+    </section>
+
+    <section>
+      <h2>3. Собираем team-review-kit из трёх знакомых skills</h2>
+      <p><code>team-review-kit</code> покрывает участок «от входящего issue до аккуратной подготовки PR»:</p>
+      <ul>
+        <li><code>issue-analysis</code> — превращает сырое issue в структурированный task spec;</li>
+        <li><code>pr-review</code> — проверяет diff перед PR и возвращает риски с evidence;</li>
+        <li><code>project-setup</code> — проверяет базовое состояние Git, наличие <code>CLAUDE.md</code> и соглашения проекта.</li>
+      </ul>
+      <p>Набор логически замкнут: не случайные skills из трёх миров, а один workflow. Manifest может выглядеть так:</p>
+      <pre><code>{
+  "name": "team-review-kit",
+  "version": "0.1.0",
+  "description": "Командный набор skills для анализа issue и подготовки PR.",
+  "namespace": "review-kit",
+  "components": [
+    "skills/issue-analysis",
+    "skills/pr-review",
+    "skills/project-setup"
+  ]
+}</code></pre>
+      <p>Точное имя и набор полей зависят от версии Claude Code; это ориентир, а не священная табличка. Важны два поля: <code>name</code> и <code>namespace</code>. Имя <code>team-review-kit</code> сразу отсылает к командному review workflow, а namespace не даёт skills столкнуться с чужими.</p>
+      <p>Skill внутри plugin не меняет природу: у него те же назначение, ограничения и результат. Просто теперь он живёт в распространяемом наборе, поэтому описание должно быть особенно ясным.</p>
+      <pre><code>---
+name: pr-review
+description: Проверяет diff перед PR и возвращает риски с evidence.
+when_to_use: Когда изменения уже сделаны и нужен локальный self-review.
+allowed-tools: Read
+---
+
+Верни список рисков, спорные места в diff, недостающие проверки
+и короткий итог, который можно использовать в описании PR.</code></pre>
+      <p>Хороший plugin не изобретает новую физику. Он собирает рабочие куски в пакет, который легко поставить и поддерживать.</p>
+    </section>
+
+    <section>
+      <h2>4. Версия, совместимость и CHANGELOG.md</h2>
+      <p>Как только plugin живёт за пределами вашего ноутбука, появляется версионирование. Скучное до момента, когда один говорит «у меня работает», второй — «у меня нет», и выясняется, что у вас разные версии.</p>
+      <p>Не нужно сразу писать <code>1.0.0</code>. Молодой прототип честнее начинать с <code>0.1.0</code>: ставить уже можно, но пакет ещё растёт. Это инженерная скромность, а не слабость.</p>
+      <p><code>CHANGELOG.md</code> — не хроника со времён динозавров, а короткая запись изменений:</p>
+      <pre><code>## 0.1.0
+
+- упакованы skills issue-analysis, pr-review и project-setup
+- добавлены примеры использования
+- зафиксированы namespace и базовая совместимость</code></pre>
+      <p>Совместимость лучше описывать честно: на каком наборе команд и менеджере plugins проверяли, что входит, чего не обещаем.</p>
+      <table>
+        <thead><tr><th>Что фиксируем</th><th>Как записываем</th></tr></thead>
+        <tbody>
+          <tr><td>Версия plugin</td><td><code>0.1.0</code></td></tr>
+          <tr><td>Что входит</td><td>Только skills, без agents, hooks и MCP</td></tr>
+          <tr><td>Совместимость</td><td>Проверяйте по текущей справке Claude Code</td></tr>
+          <tr><td>Ограничения</td><td>Пакет рассчитан на review workflow команды</td></tr>
+        </tbody>
+      </table>
+      <p>Заметка о совместимости — не тщеславие, а снижение удивления. Коллега видит, что plugin не обещает лишнего, и реже ждёт чудес.</p>
+    </section>
+
+    <section>
+      <h2>5. README — часть архитектуры</h2>
+      <p>README — не декоративный салатик сверху. Без него plugin не готов для команды даже с отличными skills: для коллеги пакет начинается не с JSON, а с ответов на три вопроса — что это, как поставить и чем оно мне грозит.</p>
+      <p>Фрагмент для первой версии:</p>
+      <pre><code># team-review-kit
+
+Набор skills для командного workflow: анализ issue, проверка проекта
+перед началом работы и локальный review diff перед PR.
+
+## Что входит
+review-kit:issue-analysis
+review-kit:pr-review
+review-kit:project-setup
+
+## Безопасность
+В этой версии нет hooks, agents, MCP и shell-скриптов.
+Пакет ограничен skills и рассчитан на project/user scope.</code></pre>
+      <p>Здесь уже есть всё основное: что пакет делает, из чего состоит и каков capability surface. Нет hooks, внешних подключений и скриптов — хорошая новость, напишите её прямо.</p>
+      <p>Блок установки должен быть практичным, без ложной вечности: «устанавливается через текущий менеджер plugins в user или project scope; после установки доступны такие-то namespaced skills». Точные команды меняются, логика остаётся.</p>
+      <p class="warning">Простой тест: если коллега не может поставить и использовать plugin без личного сообщения в мессенджер, README ещё не готов. Не драма — повод дописать два абзаца и пример.</p>
+    </section>
+
+    <section>
+      <h2>6. Что сознательно не входит в первый прототип</h2>
+      <p>После лекций про расширяемость трудно удержаться и не положить в plugin «ещё чуть-чуть полезного». Потом ещё. И ещё. В прототипе появляется hook, полуготовый агент, внешний сервис и скрипт, который автор «потом почистит». Спойлер: не почистит.</p>
+      <table>
+        <thead><tr><th>Здоровый первый plugin</th><th>Переусердствовавший вариант</th></tr></thead>
+        <tbody>
+          <tr><td>2–3 понятных skills</td><td>9 разнородных компонентов «на будущее»</td></tr>
+          <tr><td>Ясный README</td><td>«Ну там по коду всё понятно»</td></tr>
+          <tr><td>Честная версия <code>0.1.0</code></td><td>Сразу гордое <code>1.0.0</code></td></tr>
+          <tr><td>Нет скрытых automation-слоёв</td><td>Внезапные hooks и shell-скрипты</td></tr>
+          <tr><td>Один понятный workflow</td><td>Попытка решить полжизни команды сразу</td></tr>
+        </tbody>
+      </table>
+      <p>Agents, hooks и внешние инструменты расширяют поверхность риска и требуют отдельного разговора о правах, событиях, изоляции контекста и lifecycle. Включите их раньше, чем команда готова, — и аккуратный пакет станет тревожным. Тревожный plugin ставят один раз, а потом тихо обходят.</p>
+      <p>Готовый для команды не значит готовый для всех. Первый пакет не обязан решать проблемы всех команд и репозиториев. Хороший старт — узкий понятный пакет под один workflow; здесь это review и подготовка issue-to-PR.</p>
+    </section>
+
+    <section>
+      <h2>7. Секунда, когда plugin становится командным</h2>
+      <p>Самый честный тест прототипа — встреча с другим разработчиком, который не сидел рядом и не слышал пояснений.</p>
+      <p>Сценарий: коллега открывает Workflow Kit, видит <code>team-review-kit</code>, читает README и за пару минут понимает три вещи:</p>
+      <ol>
+        <li>пакет анализирует issue, проверяет базовое состояние проекта и делает локальный review diff;</li>
+        <li>в первой версии он безопасен и ограничен skills;</li>
+        <li>у него внятная версия и короткая история изменений.</li>
+      </ol>
+      <p>Дальше коллега ставит plugin в подходящий scope, вызывает namespaced skill, получает результат — и не спрашивает, что означает половина файлов. В эту секунду plugin перестаёт быть личной магией и становится командным инструментом.</p>
+      <p>Но до раскатки он проходит тот же взрослый фильтр, что внешний кандидат: владелец, capability surface, README, версия, путь отключения и осознанный scope. То, что вы собрали plugin сами, не делает его автоматически безопасным или подходящим для <code>project</code>.</p>
+      <p>Архитектура здесь не для доклада на конференции, а для того, чтобы другой человек взял артефакт и работал без лишнего трения. Минимальный прототип удался не потому, что в нём много всего, а потому, что в нём ровно столько, сколько нужно.</p>
+    </section>
+
+    <section>
+      <h2>8. Чеклист team-ready прототипа</h2>
+      <ul>
+        <li>имя и namespace понятны без расшифровки;</li>
+        <li>в manifest есть версия, описание и состав;</li>
+        <li>skills лежат в <code>skills/</code>, а не внутри <code>.claude-plugin/</code>;</li>
+        <li>README отвечает: что это, как поставить, как вызвать, где границы;</li>
+        <li>есть 2–3 примера использования;</li>
+        <li>CHANGELOG объясняет, что вошло в версию;</li>
+        <li>compatibility notes честно говорят, что проверено;</li>
+        <li>в первой версии нет лишних hooks, agents, MCP и shell-скриптов;</li>
+        <li>есть владелец и путь disable/uninstall;</li>
+        <li>коллега может пройти путь без личной переписки с автором.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Plugin — пакет для передачи workflow, а не личная папка с красивым именем.</li>
+        <li>Минимальный team-ready набор: metadata, skills, README, examples, CHANGELOG, compatibility notes, install instructions.</li>
+        <li><code>team-review-kit</code> собирает три знакомых skill в один workflow: issue → setup → PR review.</li>
+        <li>Manifest задаёт имя, версию, описание, namespace и состав.</li>
+        <li>Начинайте с <code>0.1.0</code>: версия — история, а не украшение.</li>
+        <li>README — часть архитектуры; без него пакет не готов для команды.</li>
+        <li>Не кладите в первый прототип hooks, agents, MCP и shell-скрипты без отдельной причины.</li>
+        <li>Узкий пакет под один workflow лучше «plugin обо всём».</li>
+        <li>Проверка team-ready — другой разработчик понял, поставил и использовал без личной экскурсии.</li>
+        <li>Свой plugin тоже проходит проверку capability surface, scope и пути отката.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать минимальный team-ready manifest и документацию для <code>team-review-kit</code>, не добавляя лишних компонентов.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>team-review-kit/</code> с тремя учебными skill: <code>issue-analysis</code>, <code>pr-review</code>, <code>project-setup</code>. В каждом <code>SKILL.md</code> опишите только цель, вход и результат; используйте фейковые данные.</li>
+        <li>Добавьте <code>plugin.json</code> с именем, версией <code>0.1.0</code>, описанием, namespace <code>review-kit</code> и списком трёх components.</li>
+        <li>Добавьте <code>README.md</code> с блоками «что входит», «как поставить», «безопасность» и «границы». Укажите, что hooks, agents, MCP и shell-скриптов нет.</li>
+        <li>Добавьте <code>CHANGELOG.md</code> на одну запись и <code>examples/</code> с двумя короткими примерами использования namespaced skills.</li>
+        <li>Проверьте пакет глазами коллеги: структура, manifest, README, примеры, версия и отсутствие лишних компонентов. Если Claude Code доступен, проверьте JSON и структуру командой валидации; если нет — вручную.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте JSON и структуру пакета; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В manifest есть имя, версия, описание, namespace и components.</li>
+        <li>Skills лежат в <code>skills/</code>, а не внутри <code>.claude-plugin/</code>.</li>
+        <li>README объясняет установку, использование, границы и отсутствие опасных компонентов.</li>
+        <li>Есть CHANGELOG и минимум два примера.</li>
+        <li>В первой версии нет hooks, agents, MCP и shell-скриптов.</li>
+        <li>Коллега может понять пакет без личной экскурсии.</li>
+        <li>В практике нет реальных ключей, секретов и боевых репозиториев.</li>
+      </ul>
+    </section>
+
+    <footer>10 уровень · лекция 5. Team-ready prototype — это паспорт, структура, документация и ровно столько возможностей, сколько нужно. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level10.lecture05" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>

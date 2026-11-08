@@ -6,5 +6,6 @@
 - [Лекция 2 — Plugin ecosystem: категории и выбор](lecture2/index.html)
 - [Лекция 3 — Установка plugin: scope и lifecycle](lecture3/index.html)
 - [Лекция 4 — Проверка plugin: что ставить и почему](lecture4/index.html)
+- [Лекция 5 — Custom plugin: team-ready prototype](lecture5/index.html)
 
-Все материалы уровня 10 будут дополняться по мере разбора вебинара 6.
+Все 5 лекций уровня 10 собраны.
