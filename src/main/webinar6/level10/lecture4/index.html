@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Проверка plugin перед установкой: авторство, capability surface, scope, namespace, совместимость, поддерживаемость и запись решения.">
+  <title>Claude Code — 10 уровень, лекция 4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Проверка plugin</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">10 уровень · лекция 4</div>
+    </header>
+
+    <div class="lead">
+      Plugin — чемодан возможностей, а не безобидная заметка. Перед установкой проверяем три блока: кто автор, что plugin реально может и что будет с ним через месяц.
+    </div>
+
+    <section>
+      <h2>1. Plugin — это чемодан, а не заметка</h2>
+      <p>После первого plugin легко расслабиться: «Это же просто подсказки для Claude, что тут может пойти не так?» Много чего. Plugin почти никогда не бывает просто текстом: снаружи красиво подписан, внутри может лежать аккуратная отвёртка — или бензопила.</p>
+      <p>Установка — не жест симпатии, а решение пустить в рабочий процесс новый пакет возможностей. В прошлой лекции была механика: install, update, scope, lifecycle. Она не отвечает на главный вопрос: нужно ли ставить этот пакет вообще.</p>
+      <table>
+        <thead><tr><th>Блок</th><th>Главный вопрос</th><th>Что проверяем</th></tr></thead>
+        <tbody>
+          <tr><td>Авторство</td><td>Кто это сделал?</td><td>Доверие к источнику и поддержке</td></tr>
+          <tr><td>Возможности</td><td>Что plugin реально умеет?</td><td>Capability surface и необходимые права</td></tr>
+          <tr><td>Поддерживаемость</td><td>Что будет потом?</td><td>Обновление, отключение, откат, судьба после ухода автора</td></tr>
+        </tbody>
+      </table>
+      <p>Схема не зависит от версии Claude Code. Команды, имена полей и метаданные могут меняться, а логика остаётся: сначала источник, потом границы возможностей, потом жизнь после установки.</p>
+      <pre><code>Нужен новый plugin
+  → проверить источник и автора
+  → проверить возможности и права
+  → проверить совместимость с проектом
+  → проверить обновление и путь отката
+  → риск оправдан? да → установить в нужный scope
+                      нет → не устанавливать</code></pre>
+    </section>
+
+    <section>
+      <h2>2. Кто отвечает за plugin завтра утром</h2>
+      <p>На этом шаге легко удариться в одну из крайностей: доверять всему, что лежит в marketplace, или подозревать каждый plugin в краже ноутбука. Нужна не наивность и не страх, а спокойная проверка происхождения.</p>
+      <p>Первый вопрос: если plugin сломается завтра утром, вы понимаете, кто за него отвечает? Для внутреннего plugin ответ конкретен: репозиторий, владелец из tooling-команды, канал поддержки. Для внешнего хочется видеть репозиторий, автора, лицензию, историю релизов и признаки живого проекта.</p>
+      <p>Минимум метаданных выглядит примерно так:</p>
+      <pre><code>{
+  "name": "team-review-kit",
+  "version": "0.1.0",
+  "author": "internal-tooling-team",
+  "license": "MIT",
+  "namespace": "review-kit"
+}</code></pre>
+      <p>Имя, версия, автор, лицензия, namespace — уже признаки оформленного артефакта, а не «папки с чем-то полезным на моей машине». Качество это не доказывает, но даёт опору для проверки.</p>
+      <p>Известный автор снижает риск происхождения, но не отменяет проверку самого plugin. Даже у уважаемого автора внутри могут быть hooks, shell-скрипты, сетевые вызовы и широкие права. Имя на обложке — повод читать внимательнее, а не переставать читать.</p>
+      <p class="warning">Внутренние plugins не безопасны по умолчанию. Внутреннее часто документировано хуже внешнего: README отложили, changelog не завели, автор ушёл в отпуск или на другой проект. Получается полезная, но загадочная коробка без инструкции.</p>
+    </section>
+
+    <section>
+      <h2>3. Capability surface: не что обещает, а что может</h2>
+      <p>Самая важная часть review. <strong>Capability surface</strong> — суммарный набор действий, на которые plugin способен в вашем проекте. Не то, что он обещает, а то, что реально может сделать после установки.</p>
+      <p>Два skill-компонента как структурированные подсказки без автодействий — один риск. Hooks, shell-скрипты, доступ к внешним данным, сетевые запросы, credentials и write-действия — совсем другой разговор.</p>
+      <table>
+        <thead><tr><th>Что внутри plugin</th><th>Что это означает для риска</th></tr></thead>
+        <tbody>
+          <tr><td>Только skills</td><td>Обычно низкий риск, если они не тянут лишние инструменты</td></tr>
+          <tr><td>Shell-скрипты</td><td>Нужно понимать, что запускается и в какой оболочке</td></tr>
+          <tr><td>Hooks</td><td>Plugin может реагировать автоматически, а не только по команде</td></tr>
+          <tr><td>Доступ к сети</td><td>Вопрос: куда он ходит и зачем</td></tr>
+          <tr><td>Credentials / токены</td><td>Нужно проверить объём прав и место хранения</td></tr>
+          <tr><td>Write-capable действия</td><td>Plugin может менять состояние проекта</td></tr>
+        </tbody>
+      </table>
+      <p>Хороший безопасный README не прячет capability surface, а делает его коротким и понятным:</p>
+      <pre><code>## Сводка capability
+
+Плагин добавляет два skills: issue-analysis и pr-review.
+Автоматических hooks нет.
+Сетевых запросов нет.
+Токены и внешние credentials не требуются.
+Shell-скрипты не используются.</code></pre>
+      <p>После такого фрагмента границы понятны: два skill — и всё. Скрытого второго этажа нет.</p>
+      <p>Тревожный пример выглядит иначе:</p>
+      <pre><code>{
+  "name": "generic-automation-suite",
+  "permissions": ["shell", "network", "write"],
+  "requiresCredentials": true,
+  "hooks": 4
+}</code></pre>
+      <p>Даже если пример условный, он заставляет задать правильные вопросы. Зачем review-workflow нужен shell? Почему network? Какие write-операции? Почему четыре hooks? «Наверное, для удобства» — человеческая ошибка. Инженерный ответ другой: если задаче нужен review diff, а plugin просит половину кухни, это не удобство, а нарушение least privilege.</p>
+      <p>Даже skill-only plugin грузит контекст описанием, namespace и командами. Поэтому «нужен ли он вообще» — часть capability surface, а не отдельная придирка.</p>
+    </section>
+
+    <section>
+      <h2>4. Хороший plugin — и всё равно не ваш</h2>
+      <p>Можно найти аккуратный plugin: автор понятен, возможности безопасны, README написан не кровью. И всё равно его можно не ставить: он должен подойти проекту, команде и среде.</p>
+      <p>Сначала scope:</p>
+      <ul>
+        <li><code>user</code> рискует личным набором инструментов во всех проектах;</li>
+        <li><code>local</code> держит эксперимент в одном repo;</li>
+        <li><code>project</code> связывает plugin с командным workflow, и цена ошибки выше;</li>
+        <li><code>managed</code> — централизованное решение организации.</li>
+      </ul>
+      <p>Для экспериментов почти всегда разумнее начинать с <code>user</code> или <code>local</code>. К <code>project</code> переходите, когда ясно, что workflow нужен команде и понятно, как его раскатывать.</p>
+      <p>Вторая часть — namespace и пересечения имён. Если у вас уже есть review plugin, а новый тоже приносит skill <code>pr-review</code>, без namespace начинается лотерея: кто сработает, как отобразится, что увидит команда. Здоровее так:</p>
+      <pre><code>review-kit:issue-analysis
+review-kit:pr-review</code></pre>
+      <p>Сразу видно, откуда пришёл компонент, и меньше риск конфликтов.</p>
+      <p>Совместимость — не только имена. На какую оболочку и среду рассчитан plugin? Bash-скрипты при команде на PowerShell — уже проблема, хотя сам plugin «хороший». То же со структурой репозитория, ожидаемыми командами и соглашениями по каталогам. Plugin, идеальный в одном mono-repo, в другом может быть бесполезен.</p>
+      <p>И дублирование: plugin может ничего не ломать, но дублировать существующий skill, workflow или вторую команду для той же задачи. Это организационная несовместимость. Слишком много почти одинаковых инструментов ведёт к вопросу «какой правильный?», после которого не пользуются никаким.</p>
+    </section>
+
+    <section>
+      <h2>5. Где дверь, если что-то пойдёт не так</h2>
+      <p>Установка — начало отношений. Полезно заранее знать, где дверь, если что-то пойдёт не так. Поддерживаемость отвечает на вопрос: что будет с расширением через месяц, после обновления, с новым участником команды и в день, когда оно начнёт мешать.</p>
+      <p>Первое, что хочется видеть, — версия и changelog. Даже <code>0.1.0</code> лучше, чем «актуальная папка на сегодня»: можно конкретно сказать, что у команды <code>0.2.0</code>, а в <code>0.3.0</code> появились hooks, поэтому обновление отложено. Версия — язык разговора об обновлении и откате.</p>
+      <p>Второе — понятный путь update и отката. Обновление нельзя считать нейтральной мелочью: новая версия может добавить возможности, изменить поведение, расширить права и начать конфликтовать с workflow. Поэтому update — почти новый install. Changelog «many improvements» — повод читать внимательнее.</p>
+      <p>Хороший README объясняет жизнь после установки:</p>
+      <pre><code>## Обновление
+
+Перед update проверьте release notes.
+Если новая версия меняет hooks, permissions или список credentials,
+обновляйте только после повторного review.
+
+## Отключение
+
+Плагин можно отключить через менеджер plugins
+или убрать project-level привязку способом, который поддерживает ваша версия Claude Code.</code></pre>
+      <p>Третье — владелец. У plugin должен быть человек или команда, кому можно задать вопрос. Иначе получается артефакт-сирота: все пользуются, никто не отвечает, обновлять страшно, удалять ещё страшнее. Внутри команды это особенно заметно: полезный plugin стоит, а автор «кажется, Паша, который теперь на другом проекте».</p>
+    </section>
+
+    <section>
+      <h2>6. Ставим или отказываемся</h2>
+      <p>Сравним два воображаемых, но жизненных варианта. <code>team-review-kit</code> команда хочет для issue analysis и PR review. <code>generic-automation-suite</code> выглядит эффектно, но вызывает вопросы.</p>
+      <table>
+        <thead><tr><th>Критерий</th><th>team-review-kit</th><th>generic-automation-suite</th></tr></thead>
+        <tbody>
+          <tr><td>Автор</td><td>Внутренняя tooling-команда</td><td>Неочевидный внешний источник</td></tr>
+          <tr><td>Компоненты</td><td>2 skills для review</td><td>Skills, hooks, shell, сеть</td></tr>
+          <tr><td>Credentials</td><td>Не нужны</td><td>Нужен токен с широкими правами</td></tr>
+          <tr><td>Namespace</td><td>Понятный, не конфликтует</td><td>Неясный или общий</td></tr>
+          <tr><td>README / changelog</td><td>Есть и читается быстро</td><td>Неполный, capabilities описаны расплывчато</td></tr>
+          <tr><td>Путь отключения</td><td>Понятен</td><td>Почти не описан</td></tr>
+        </tbody>
+      </table>
+      <p>Для первого решение спокойное: возможности ограничены задачей, поддержка понятна, project scope оправдан.</p>
+      <pre><code>Решение: устанавливаем в project scope.
+
+Причина: plugin закрывает командный workflow issue-analysis и pr-review.
+Capability surface ограничен двумя skills, токены не нужны, namespace не конфликтует.
+Есть понятный owner, версия и путь отключения.</code></pre>
+      <p>Для второго отказ — не перестраховка, а нормальный инженерный вердикт. Не обязаны давать слабо документированному plugin с hooks, shell, сетью и широкими credentials шанс «просто посмотреть на практике».</p>
+      <pre><code>Решение: не устанавливаем.
+
+Причина: plugin требует больше возможностей, чем нужно для нашего review workflow.
+Есть hooks, shell-скрипты и сетевой доступ без достаточной документации.
+Путь отключения и последствия update не описаны.</code></pre>
+      <p>В обоих случаях язык спокойный. Без «ужасный» и «идеальный». Только соответствие задаче, границы возможностей и качество сопровождения.</p>
+    </section>
+
+    <section>
+      <h2>7. Запишите решение, пока оно не стало легендой</h2>
+      <p>Если решение не зафиксировано, оно быстро превращается в легенду: через месяц никто не помнит, почему plugin стоит, кто одобрил и на каких условиях. Поэтому полезно сделать маленькую заметку в README команды, tooling-документе или описании PR.</p>
+      <pre><code>Plugin: team-review-kit v0.2.0
+Scope: project
+Решение: устанавливаем
+
+Зачем:
+единый workflow для issue-analysis и pr-review
+
+Что умеет:
+только skills, без hooks, сети и credentials
+
+Ограничения:
+используем только для review-задач
+
+Путь отката:
+отключить через менеджер plugins или убрать project-level привязку
+способом, который поддерживает текущая установка</code></pre>
+      <p>Отрицательное решение записывают почти так же коротко. Важен не бюрократический ритуал, а умение объяснить выбор инженерным языком. Когда заметка за минуту отвечает, зачем plugin нужен, что умеет, где границы и как от него отказаться, вы мыслите не как коллекционер расширений, а как человек, отвечающий за рабочую среду команды.</p>
+    </section>
+
+    <section>
+      <h2>8. Мини-чеклист перед установкой</h2>
+      <ol>
+        <li><strong>Источник:</strong> кто автор, есть ли репозиторий, лицензия, поддержка.</li>
+        <li><strong>Capability surface:</strong> только skills или ещё hooks, shell, сеть, credentials, write.</li>
+        <li><strong>Совместимость:</strong> scope, namespace, оболочка, структура проекта, дублирование.</li>
+        <li><strong>Поддерживаемость:</strong> версия, changelog, owner, update, disable/uninstall.</li>
+        <li><strong>Решение:</strong> записать причину «ставим» или «не ставим» и путь отката.</li>
+      </ol>
+      <p>Этот чеклист полезен и для чужого plugin, и для своего. Внутренний автор — не индульгенция: у собственного пакета тоже должны быть владелец, версия, описание прав и понятное удаление.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Plugin — чемодан возможностей, а не безобидная заметка.</li>
+        <li>Проверяйте три блока: авторство, capability surface, поддерживаемость.</li>
+        <li>Известный автор не отменяет проверку hooks, shell, сети и credentials.</li>
+        <li>Capability surface — что plugin может, а не что обещает README.</li>
+        <li>Даже skill-only plugin занимает контекст; нужность — часть оценки.</li>
+        <li>Хороший plugin может не подойти проекту: scope, namespace, среда, дублирование.</li>
+        <li>Update — почти новый install; версия и changelog нужны для разговора об изменениях.</li>
+        <li>У plugin должен быть владелец и понятный путь disable/uninstall.</li>
+        <li>Решение «не ставить» так же нормально, как «ставить».</li>
+        <li>Фиксируйте решение и причину, пока оно не стало легендой.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> провести структурированный review двух plugin-кандидатов и записать решение по каждому.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>Возьмите два вымышленных кандидата: <code>team-review-kit</code> (два skill для review) и <code>generic-automation-suite</code> (skills, hooks, shell, сеть, credentials). Для каждого придумайте автора, версию, namespace и краткое описание.</li>
+        <li>Заполните <code>PLUGIN_REVIEW.md</code> по трём блокам: авторство и поддержка; capability surface; совместимость и поддерживаемость. Для capability перечислите skills, hooks, shell, сеть, credentials и write-действия.</li>
+        <li>Проверьте совместимость: какой scope нужен, конфликтует ли namespace с существующим <code>pr-review</code>, рассчитан ли plugin на вашу оболочку и не дублирует ли он текущий workflow.</li>
+        <li>Примите решение по каждому кандидату и запишите его в <code>PLUGIN_DECISION.md</code>: «ставим / не ставим», причина, ограничения и путь отката. Для безопасного кандидата укажите проверку в режиме без внешних действий.</li>
+        <li>Если Claude Code и marketplace доступны, проверьте метаданные и README реального кандидата; если нет — работайте с вымышленными карточками. Не устанавливайте plugin с hooks, shell и credentials и не используйте реальные токены.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте README и метаданные кандидата; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Для каждого кандидата заполнены авторство, capability surface и поддерживаемость.</li>
+        <li>Capability перечислены конкретно, а не «полезные функции».</li>
+        <li>Проверены scope, namespace, среда и дублирование.</li>
+        <li>Решение записано спокойным инженерным языком.</li>
+        <li>Для «ставим» есть безопасный первый запуск и путь отката.</li>
+        <li>Для «не ставим» причина конкретна, а не «не понравилось».</li>
+        <li>В практике нет реальных ключей, секретов и установок опасных plugins.</li>
+      </ul>
+    </section>
+
+    <footer>10 уровень · лекция 4. Проверка plugin — это авторство, capability surface и поддерживаемость, а не симпатия к обложке. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level10.lecture04" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
