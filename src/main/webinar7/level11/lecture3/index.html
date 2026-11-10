@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Кастомный subagent: scope, четыре поля, description как маршрутизация, минимальные tools, создание agents/reviewer.md через /agents и жизнь файла в Git.">
+  <title>Claude Code — 11 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Кастомный subagent</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">11 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Когда узкая подзадача повторяется по правилам команды, одноразовое делегирование становится файлом репозитория: scope, четыре поля, минимальные tools и проверка через Git.
+    </div>
+
+    <section>
+      <h2>1. Свой агент команды vs встроенные</h2>
+      <p>Изолированное расследование решило одну проблему: основная сессия перестаёт тонуть в промежуточном шуме. Но когда одна и та же узкая подзадача повторяется по правилам команды, встроенного поведения быстро становится мало. Тот же subagent-паттерн меняет форму: из одноразового делегирования становится версионируемым артефактом репозитория.</p>
+      <p>Встроенные агенты хороши для общих задач: поиск по коду, исследование файлов, планирование, сбор сведений. Но если команде нужен предсказуемый ритуал — смотреть готовый diff, не трогать файлы, возвращать замечания в одном формате и не превращать ревью в ремонт всего проекта — нужен custom subagent.</p>
+      <p>В Workflow Kit это выглядит приземлённо:</p>
+      <pre><code>workflow-kit/
+  .claude/
+    skills/
+      issue-analysis/
+    agents/
+      reviewer.md</code></pre>
+      <p>Кастомный агент — не «ещё один Claude внутри Claude», а аккуратно оформленный переиспользуемый файл с понятной задачей. Чем меньше магии, тем легче поддерживать.</p>
+    </section>
+
+    <section>
+      <h2>2. Область видимости агента</h2>
+      <p>Перед созданием важно понять не только «что он делает», но и «где живёт». Иначе reviewer готов, всё работает, а коллега открывает репозиторий и ничего не видит: агент остался в личной папке.</p>
+      <table>
+        <thead><tr><th>Область</th><th>Где обычно лежит</th><th>Кто видит</th><th>Когда использовать</th></tr></thead>
+        <tbody>
+          <tr><td>personal</td><td><code>~/.claude/agents/</code></td><td>только вы</td><td>личные эксперименты</td></tr>
+          <tr><td>project</td><td><code>.claude/agents/</code> в корне repo</td><td>вся команда репозитория</td><td>общие проектные агенты</td></tr>
+          <tr><td>plugin-provided</td><td>приходит с plugin</td><td>все, кто поставил plugin</td><td>агент как часть пакета</td></tr>
+          <tr><td>managed</td><td>управляется организацией</td><td>команда или компания</td><td>централизованная политика</td></tr>
+        </tbody>
+      </table>
+      <p><code>~</code> означает домашнюю папку. Personal — личный ящик стола, project — шкафчик на кухне команды. Для Workflow Kit ключевой вариант — <code>project</code>: <code>agents/reviewer.md</code> должен одинаково работать у всех, кто ведёт изменения в Commerce OS. В personal он заработает только у вас.</p>
+    </section>
+
+    <section>
+      <h2>3. Четыре поля стартового агента</h2>
+      <p>Для первого рабочего агента достаточно четырёх вещей: имени, описания, списка инструментов и тела инструкции. Остальное — тюнинг.</p>
+      <table>
+        <thead><tr><th>Поле</th><th>Что означает</th><th>Зачем нужно</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>имя агента</td><td>ссылаться и отличать от других</td></tr>
+          <tr><td><code>description</code></td><td>когда и зачем использовать</td><td>чтобы Claude правильно делегировал задачу</td></tr>
+          <tr><td><code>tools</code></td><td>разрешённые инструменты</td><td>чтобы агент не выходил за роль</td></tr>
+          <tr><td>instruction body</td><td>текст инструкции</td><td>чтобы агент понимал, что делать после вызова</td></tr>
+        </tbody>
+      </table>
+      <p>Минимальный каркас:</p>
+      <pre><code>---
+name: reviewer
+description: Проверяет готовый diff и возвращает замечания без правки кода.
+tools:
+  - Read
+  - Grep
+---
+
+Проверь изменённые файлы и верни краткие замечания по найденным проблемам.</code></pre>
+      <p>Точные идентификаторы инструментов и формат интерфейса зависят от версии Claude Code; заполняя tools через <code>/agents</code>, ориентируйтесь на актуальные варианты. Тело — обычный markdown под frontmatter, его можно открыть в IDE и закоммитить.</p>
+    </section>
+
+    <section>
+      <h2>4. description: решающее поле</h2>
+      <p>Многие думают, что главное — «умная» инструкция внизу. На практике первое критическое поле — <code>description</code>: это правило выбора. Решая, делегировать ли задачу custom subagent, Claude смотрит на описанную область применения. Расплывчатое описание даёт плохую маршрутизацию.</p>
+      <pre><code>description: Reviewer для всего.</code></pre>
+      <pre><code>description: Read-only reviewer для готового diff. Использовать после того,
+как изменения собраны и нужен второй взгляд перед merge.</code></pre>
+      <p>Второй вариант отвечает на скрытые вопросы: кто это, когда использовать, в каком режиме. У Claude появляется не имя роли, а понятный триггер.</p>
+      <p>Хорошее description даёт три опоры:</p>
+      <ul>
+        <li>что агент делает;</li>
+        <li>в какой момент workflow он нужен;</li>
+        <li>где проходит его граница.</li>
+      </ul>
+      <p>Для reviewer в Workflow Kit укажите: проверяет готовый diff, не редактирует код, нужен перед merge или локальным принятием изменений.</p>
+    </section>
+
+    <section>
+      <h2>5. tools: граница полномочий</h2>
+      <p>Начинающие любят мысль «дам всё, а там он сам разберётся». Агент с лишними tools не становится умнее — он получает больше способов сделать что-то неожиданное.</p>
+      <p>Для reviewer логика простая: читать изменения и возвращать замечания. Права на редактирование, широкий доступ к командам и режим «вдруг сам поправит» не нужны.</p>
+      <pre><code>tools:
+  - Read
+  - Grep</code></pre>
+      <p>Вместо:</p>
+      <pre><code>tools:
+  - Read
+  - Grep
+  - Edit
+  - Bash</code></pre>
+      <p>Во втором варианте агент может начать редактировать код только потому, что «уже здесь». Смешивать review и реализацию — плохая привычка даже у людей, а у AI она возникает быстрее.</p>
+      <p>Агент живёт внутри рамки разрешений сессии и не вырастет в сверхсущество. Но tools всё равно важны: сужают его сильнее и делают поведение понятным. Сначала минимум; расширяйте осознанно, если реально не хватает read-only способа собрать evidence.</p>
+    </section>
+
+    <section>
+      <h2>6. Создание agents/reviewer.md через /agents</h2>
+      <p>Агент создаётся через интерфейс управления агентами — обычно <code>/agents</code> или близкую панель. Название может отличаться; сверьтесь с <code>/help</code>, важен workflow.</p>
+      <pre><code>/agents
+  → выбор scope
+  → 4 поля: name, description, tools, body
+  → сохранение
+  → файл в .claude/agents/
+  → проверка через Git diff</code></pre>
+      <table>
+        <thead><tr><th>Шаг</th><th>Что делаете</th><th>На что смотрите</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Открываете <code>/agents</code></td><td>Есть ли режим создания агента</td></tr>
+          <tr><td>2</td><td>Выбираете scope</td><td>Для командного артефакта — project</td></tr>
+          <tr><td>3</td><td>Заполняете 4 поля</td><td>Имя, описание, инструменты, инструкция</td></tr>
+          <tr><td>4</td><td>Сохраняете</td><td>Где именно появился файл</td></tr>
+          <tr><td>5</td><td>Проверяете diff</td><td>Агент должен быть виден в Git</td></tr>
+        </tbody>
+      </table>
+      <p>После сохранения в project файл обычно оказывается здесь:</p>
+      <pre><code>.claude/
+  agents/
+    reviewer.md</code></pre>
+      <p>Если файл в проекте, вы видите его в IDE и Git diff: можно прочитать, поправить, обсудить в PR. Создали в personal — Git промолчит, и команда не узнает про помощника.</p>
+    </section>
+
+    <section>
+      <h2>7. Агент как файл репозитория</h2>
+      <p>Последняя привычка связана не с созданием, а с отношением к результату. Легко настроить агента и забыть про него как про бытовую магию IDE. Но если reviewer полезен проекту, он должен читаться, обсуждаться, меняться и проходить через Git наравне с инженерными файлами.</p>
+      <p>Через пару недель в Commerce OS меняются правила, появляются новые каталоги, иначе называются зоны риска, уточняется стиль review. Агент в репозитории — меняете description или инструкцию, смотрите diff, коммитите. Агент «где-то локально» — команда живёт со старой версией, вы с новой, и поведение одного инструмента различается у разных людей.</p>
+      <p>Хороший финальный жест прозаичен: сделайте <code>git status</code> после сохранения. Файл <code>agents/reviewer.md</code> виден в diff, лежит в project-области, поедет к команде вместе с кодом — значит scope выбран верно. Git промолчал — reviewer застрял в <code>~/.claude/</code>, и коллеги про него не узнают.</p>
+    </section>
+
+    <section>
+      <h2>8. Чеклист первого reviewer-агента</h2>
+      <ul>
+        <li>scope — <code>project</code>, если агент нужен команде;</li>
+        <li><code>name</code> короткий и понятный;</li>
+        <li><code>description</code> объясняет, что делает, когда запускать и где граница;</li>
+        <li><code>tools</code> минимальны: для review достаточно <code>Read</code> и <code>Grep</code>;</li>
+        <li>тело инструкции короткое: роль, порядок, формат findings, запрет на правки;</li>
+        <li>файл лежит в <code>.claude/agents/</code>, виден в Git;</li>
+        <li>после сохранения проверен <code>git diff</code>;</li>
+        <li>агент не пытается чинить код вместо review;</li>
+        <li>при изменении правил команды файл обновляется через обычный PR.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Custom subagent нужен, когда узкая подзадача повторяется по правилам команды.</li>
+        <li>Scope определяет, кто увидит агента: personal, project, plugin-provided, managed.</li>
+        <li>Для командного артефакта обычно нужен <code>project</code>, а не personal.</li>
+        <li>Стартовые поля: <code>name</code>, <code>description</code>, <code>tools</code>, instruction body.</li>
+        <li><code>description</code> — правило выбора и маршрутизации, а не подпись.</li>
+        <li><code>tools</code> — граница полномочий; для reviewer достаточно read-only.</li>
+        <li><code>/agents</code> создаёт файл в <code>.claude/agents/</code>; проверяйте его в Git.</li>
+        <li>Агент — файл репозитория, который меняется через diff и review.</li>
+        <li>Git промолчал — агент остался личным и не стал командным.</li>
+        <li>Сначала минимальные права; расширяйте только по реальной необходимости.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> создать project-scope reviewer-агента с четырьмя полями, минимальными tools и проверкой файла в Git.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>.claude/agents/reviewer.md</code>. Используйте только фейковые данные.</li>
+        <li>Заполните frontmatter: <code>name: reviewer</code>, <code>description</code> с триггером «готовый diff, read-only, перед merge», <code>tools: [Read, Grep]</code>.</li>
+        <li>Добавьте тело: проверить только изменённые файлы, вернуть findings по рискам, пропущенным тестам и scope, не менять код, перечислить open questions.</li>
+        <li>Если Claude Code доступен, создайте агента через <code>/agents</code> в project scope и сравните файл с ручным вариантом; если нет — проверьте структуру вручную.</li>
+        <li>Выполните <code>git status</code> и <code>git diff</code>: файл должен быть виден как проектный артефакт. Запишите в <code>AGENT_REVIEW.md</code>, почему выбран project scope и какие tools сознательно не выданы.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте frontmatter и структуру; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Файл лежит в <code>.claude/agents/reviewer.md</code>.</li>
+        <li>Есть <code>name</code>, <code>description</code>, <code>tools</code> и тело инструкции.</li>
+        <li><code>description</code> объясняет, когда запускать и где граница.</li>
+        <li>В tools только <code>Read</code> и <code>Grep</code>, без Edit/Bash.</li>
+        <li>Тело запрещает менять код и требует findings/open questions.</li>
+        <li><code>git status</code>/<code>git diff</code> показывают файл.</li>
+        <li>В практике только фейковые данные и нет реальных секретов.</li>
+      </ul>
+    </section>
+
+    <footer>11 уровень · лекция 3. Кастомный subagent — это файл с scope, описанием, минимальными tools и понятной инструкцией, а не «ещё один Claude». <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level11.lecture03" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
