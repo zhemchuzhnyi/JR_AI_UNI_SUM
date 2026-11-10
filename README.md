@@ -14,6 +14,7 @@
 - **Вебинар 4** — уровень 7, лекции 1–5: discovery, evidence-based Q&A, `CODEBASE_INVENTORY.md`, dependency map и runtime flow; уровень 8, лекции 1–5: API_MAP, runtime evidence, subagents, AI-assisted documentation и docs-as-code review; отдельная практика «Haiku 50».
 - **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files; практика `/prompt-improve`.
 - **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype; практика team-kit и 25 контрольных вопросов.
+- **Вебинар 7** — уровень 11, лекция 1: терминология агентов, subagent, отдельные сессии, фоновые задачи, worktree и agent team.
 
 ## Навигация
 
@@ -23,6 +24,7 @@
 - [Вебинар 4](src/main/webinar4/README.md)
 - [Вебинар 5](src/main/webinar5/README.md)
 - [Вебинар 6](src/main/webinar6/README.md)
+- [Вебинар 7](src/main/webinar7/README.md)
 
 ## Практики
 
