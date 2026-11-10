@@ -8,6 +8,7 @@
 - [Лекция 2 — Built-in subagents и delegation model](level11/lecture2/index.html)
 - [Лекция 3 — Кастомный subagent: устройство](level11/lecture3/index.html)
 - [Лекция 4 — Engineering contract в инструкции агента](level11/lecture4/index.html)
+- [Лекция 5 — Роли агентов и 3-слойная модель review](level11/lecture5/index.html)
 
 ## Статус
 
@@ -15,4 +16,5 @@
 - Добавлена лекция 2 уровня 11: built-in delegation, isolated context и returned summary как evidence.
 - Добавлена лекция 3 уровня 11: scope, четыре поля custom subagent, description, tools и файл reviewer.md в Git.
 - Добавлена лекция 4 уровня 11: engineering contract, роль, триггер запуска, формат результата и условия остановки reviewer-агента.
-- Материалы вебинара будут дополняться по мере разбора следующих лекций.
+- Добавлена лекция 5 уровня 11: роли reviewer, tester, debugger и documenter, оси read/run/write/stop, трёхслойная модель review и различие review и verification.
+- Уровень 11 собран: 5 лекций; материалы вебинара будут дополняться по мере разбора следующих уровней.

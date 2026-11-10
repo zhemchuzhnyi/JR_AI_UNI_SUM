@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Роли агентов и 3-слойная модель review: оси read/run/write/stop, базовые роли reviewer, tester, debugger, documenter, Layer 1–3 и различие review и verification.">
+  <title>Claude Code — 11 уровень, лекция 5</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Роли агентов и review</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">11 уровень · лекция 5</div>
+    </header>
+
+    <div class="lead">
+      Роль агента определяется не списком возможностей, а границей: что читает, что запускает, что пишет и где обязан остановиться. Reviewer живёт на Layer 1 — локальном и дешёвом слое review, а не заменяет тесты и team approval.
+    </div>
+
+    <section>
+      <h2>1. Граница роли важнее списка возможностей</h2>
+      <p>Когда роль, триггер запуска, формат результата и stop conditions уже собраны, самое время проверить их на первой по-настоящему рабочей специализации. Ею почти всегда оказывается reviewer: узкий, чтобы не расползтись в «агента на всё», и полезный, чтобы сразу встроиться в review-процесс.</p>
+      <p>Когда вы впервые настраиваете агента, очень хочется думать в духе «давайте дадим ему побольше инструментов, чтобы был полезнее». Мысль естественная, но именно с неё начинается хаос: роль расползается, ответственность размывается. На выходе не reviewer, не tester и не debugger, а очень инициативный знакомый, который обещал посмотреть diff, а к вечеру уже переписал полпроекта.</p>
+      <p>У роли агента есть четыре простые опоры: что он читает, что запускает, что пишет и где обязан остановиться. Не определена хоть одна — у вас не роль, а расплывчатое пожелание. «Это reviewer-агент» — недостаточно, пока эти четыре оси не заданы явно.</p>
+      <div class="callout">Граница роли начинается не со слов «умеет делать review», а со слов «не имеет права править код». Сначала периметр, потом таланты.</div>
+      <p>Иначе агент решит, что он не просто ревьюер, а ревьюер, разработчик, архитектор и, если дать ещё пять минут, немного психотерапевт вашего репозитория.</p>
+      <p>В контексте Workflow Kit это особенно важно. Файл <code>agents/reviewer.md</code> нужен не ради красивой папки <code>.claude/agents/</code>, а как предсказуемый артефакт: человек открывает его и сразу видит — агент не внедряет изменения, не спорит со scope, не «чинит заодно» стиль и соседние модули. Одна работа: проверить diff и вернуть findings.</p>
+    </section>
+
+    <section>
+      <h2>2. Четыре базовые роли агентов</h2>
+      <p>Чтобы не собирать каждого нового агента с нуля, полезно иметь базовые шаблоны ролей. В курсе их четыре: <code>reviewer</code>, <code>tester</code>, <code>debugger</code> и <code>documenter</code> — не «все возможные агенты мира», а четыре понятных каркаса, из которых потом удобно собирать почти всё остальное. Смотреть на них полезнее не через красивые названия, а через оси read, run, write, stop.</p>
+      <table>
+        <thead><tr><th>Роль</th><th>Что читает</th><th>Что запускает</th><th>Что пишет</th><th>Где останавливается</th></tr></thead>
+        <tbody>
+          <tr><td>reviewer</td><td>diff, затронутые файлы, тесты</td><td>безопасные проверки, статический анализ в read-only режиме</td><td>ничего</td><td>когда findings собраны или diff слишком широк</td></tr>
+          <tr><td>tester</td><td>код, тесты, логи падений</td><td>тестовые команды, воспроизведение сценариев</td><td>только тестовые файлы, если это разрешено</td><td>когда нужен production-код или меняется бизнес-логика</td></tr>
+          <tr><td>debugger</td><td>код, логи, stack trace, конфиги</td><td>команды воспроизведения, локальные проверки</td><td>обычно ничего</td><td>когда root cause найден или данных недостаточно</td></tr>
+          <tr><td>documenter</td><td>код, README, конфиги, команды запуска</td><td>обычно ничего или только безопасные проверки команд</td><td>только документацию</td><td>когда утверждение нельзя подтвердить кодом</td></tr>
+        </tbody>
+      </table>
+      <p>Переведём таблицу на человеческий язык.</p>
+      <p><strong>Reviewer</strong> проверяет: соответствует ли diff задаче, не вылез ли за scope, есть ли evidence, не потеряны ли edge cases. Дайте право редактировать код — и он смешает автора и проверяющего.</p>
+      <p><strong>Tester</strong> выглядит похоже, но фокус другой — сценарии проверки: какие тесты есть, чего не хватает, что воспроизвести. Разрешите менять production-код — станет тестировщиком, который чуть-чуть поправил логику, чтобы всё прошло. Так проблему прячут под ковёр.</p>
+      <p><strong>Debugger</strong> нужен, когда вы ещё не уверены, в чём причина ошибки. Начал «заодно рефакторить модуль, раз уж разбирался» — вышел из роли. Его результат: root cause, evidence и минимальный план исправления, а не архитектурное обновление века.</p>
+      <p><strong>Documenter</strong> многим кажется самой безобидной ролью — и в этом ловушка. Без опоры на код документация становится красивым вымыслом. Он пишет только то, что подтверждается командами, файлами и реальным поведением системы.</p>
+      <p>Пример findings от reviewer-агента для PR в Commerce OS:</p>
+      <pre><code>severity: medium
+file: payments/RefundService.java:48
+evidence: есть проверка статуса заказа, но нет проверки роли оператора
+suggested_action: добавить guard и целевой тест на доступ</code></pre>
+      <p>Хороший результат роли всегда выглядит именно так: коротко, проверяемо, без драмы и без внезапного «я уже всё починил».</p>
+    </section>
+
+    <section>
+      <h2>3. Схема роли: read, run, write, stop</h2>
+      <p>На предыдущей лекции вы разбирали тело инструкции как контракт. Теперь полезно посмотреть на то же самое чуть более технологично: четыре опоры описывают любую роль и ложатся на reviewer, tester и любую будущую специализацию без магии и литературных талантов.</p>
+      <p>Откройте <code>agents/reviewer.md</code> из Workflow Kit не как frontmatter, а как схему обязанностей:</p>
+      <pre><code>read: diff, related files, tests
+run: only safe local checks, если они разрешены текущей конфигурацией
+write: nothing
+stop: if diff is too broad or touches a sensitive area</code></pre>
+      <p>Точные названия tools и capability IDs зависят от текущего интерфейса <code>/agents</code> — держите в голове не список букв, а границу роли.</p>
+      <p>Здесь особенно важны две вещи. Ось write пуста — у reviewer нет права писать. И последняя строка инструкции не декоративная: «Остановись, если diff слишком широк» — не вежливая просьба, а инженерное правило. Не пропишете — агент будет «полезным» до конца и начнёт комментировать всё подряд, включая то, что пора отправить на декомпозицию.</p>
+      <p>Новички часто совершают одно и то же доброе, но вредное действие: выдают reviewer write-доступ «на случай мелких правок». Сегодня опечатка, завтра форматирование, послезавтра «слегка улучшил» условие в бизнес-логике — и это уже не reviewer, а тихий соавтор diff. Маленькое неудобство честнее удобного агента. С другими ролями так же: tester пишет только в тестовые файлы, documenter только в docs. Теряете ось write — роль течёт; теряете stop conditions — течёт долго.</p>
+      <p>Но этой схемы мало, чтобы понять место reviewer в процессе: она описывает только саму роль. Дальше нужна ещё одна координата — кто смотрит на доказательства и на каком gate решает, идти ли дальше. Тесты, сборка, lint, логи остаются осью доказательств.</p>
+    </section>
+
+    <section>
+      <h2>4. Трёхслойная модель review</h2>
+      <p>До этого момента мы говорили о ролях так, будто они существуют сами по себе. Но в реальной разработке агент не висит в вакууме — он встраивается в review-процесс команды. Здесь работает простая 3-слойная модель, и отвечает она не «чем проверяем», а «кто и когда вправе сказать: идём дальше».</p>
+      <table>
+        <thead><tr><th>Слой review</th><th>Где происходит</th><th>Кто участвует</th><th>Что решает</th></tr></thead>
+        <tbody>
+          <tr><td>Layer 1</td><td>локально, до push или перед PR</td><td>автор, reviewer-агент, fresh-context review</td><td>читаем diff, ловим явные риски, проверяем scope</td></tr>
+          <tr><td>Layer 2</td><td>на gate-уровне, обычно через автоматические проверки</td><td>CI, детерминированные сенсоры, иногда AI-assisted review</td><td>прошло ли изменение технический барьер</td></tr>
+          <tr><td>Layer 3</td><td>на уровне команды и чувствительных решений</td><td>человек, владелец зоны, team approval</td><td>можно ли вообще пропускать изменение дальше, если ставка высокая</td></tr>
+        </tbody>
+      </table>
+      <p>Сегодня нас интересует прежде всего Layer 1 — именно здесь живёт reviewer-агент текущего уровня. Пока diff перед глазами, контекст свежий, откат дешёвый, он ловит грубые проблемы до того, как изменение уедет в дорогие слои. Полезно представить это как лестницу:</p>
+      <pre><code>Локальный diff
+  → Layer 1: локальный review
+  → Layer 2: gate и автоматические проверки
+  → Layer 3: team approval</code></pre>
+      <p>Модель из трёх слоёв полезна даже новичку. Нет Layer 1 — сырые изменения уходят сразу в дорогую часть процесса. Нет Layer 2 — технический барьер на совести людей. Нет Layer 3 — чувствительные решения проходят потому, что «вроде всё зелёное».</p>
+      <p>Локальный reviewer — не весь review, а первый, самый быстрый и дешёвый слой. Он не притворяется Layer 2 и Layer 3: не утверждает релиз, не заменяет командное решение, не ставит финальную печать. Скромнее — и потому надёжнее.</p>
+    </section>
+
+    <section>
+      <h2>5. Review и verification: различия</h2>
+      <p>Здесь действительно легко всё смешать: рядом оказываются review-слои и уже знакомая verification-ось. Но задачи у них разные: review-слои показывают место reviewer в процессе, verification отвечает за сами доказательства.</p>
+      <table>
+        <thead><tr><th>Модель</th><th>На какой вопрос отвечает</th><th>Что даёт на выходе</th></tr></thead>
+        <tbody>
+          <tr><td>Verification</td><td>что проверяем и как это доказываем</td><td>тесты, build, lint, smoke, логи, скриншоты, evidence</td></tr>
+          <tr><td>Review</td><td>кто и когда решает, что можно идти дальше</td><td>локальный review, gate, team approval</td></tr>
+        </tbody>
+      </table>
+      <p>Мнемоника короткая:</p>
+      <pre><code>L + число — это verification.
+Layer + число — это review.</code></pre>
+      <p>На примере Commerce OS это выглядит так. Допустим, вы чините возврат средств. Verification говорит: запусти регрессионный тест, проверь целевой сценарий, убедись, что сборка цела. Review говорит другое: сначала локально прочитай diff, потом пропусти через технический gate, а если задета чувствительная финансовая логика, финальное решение за человеком.</p>
+      <p>То есть verification — доказательства, review — ворота. Reviewer-агент Layer 1 не подменяет тесты: он проверяет, что доказательства есть, подходят к задаче и что diff не делает вид, будто всё проверено, когда на деле проверено полтора сценария и два молитвенных жеста над терминалом. Это различие освобождает: перестаёте требовать от него «и найди баги, и сам всё проверь, и реши, можно ли в prod» — и честная роль оказывается лучше универсального комбайна, который умеет всё, но не отвечает ни за что.</p>
+    </section>
+
+    <section>
+      <h2>6. Layer 1: специализации одного reviewer</h2>
+      <p>Когда базовая reviewer-роль стала понятной, возникает следующий соблазн: создать отдельного агента на каждый случай жизни. <code>reviewer-security</code>, <code>reviewer-performance</code>, <code>reviewer-tests</code>, <code>reviewer-architecture</code>, <code>reviewer-db</code>, <code>reviewer-frontend</code> и парочку на тяжёлый понедельник. Технически возможно, методически — не всегда. Гораздо полезнее думать о них как о специализациях одной reviewer-роли.</p>
+      <table>
+        <thead><tr><th>Специализация</th><th>На что смотрит</th><th>Где обычно останавливается</th></tr></thead>
+        <tbody>
+          <tr><td>Security reviewer</td><td>доступы, secrets, input validation, auth-path</td><td>когда нужны product/security решения, а не локальный diff-анализ</td></tr>
+          <tr><td>Performance reviewer</td><td>горячие пути, тяжёлые запросы, лишние вычисления</td><td>когда без профилирования нельзя утверждать вывод</td></tr>
+          <tr><td>Test quality reviewer</td><td>пробелы в тестах, хрупкие проверки, пропущенные edge cases</td><td>когда без новых сценариев доказательства недостаточны</td></tr>
+          <tr><td>Architecture reviewer</td><td>границы модулей, связанность, неуместные зависимости</td><td>когда разговор уходит в redesign, а не review</td></tr>
+          <tr><td>DB / query reviewer</td><td>запросы, индексы, schema-риски, N+1</td><td>когда нужны реальные метрики или решение уровня DBA</td></tr>
+          <tr><td>Frontend / UI reviewer</td><td>состояние компонентов, accessibility, поведение интерфейса</td><td>когда без браузерной проверки гипотеза остаётся гипотезой</td></tr>
+        </tbody>
+      </table>
+      <p>Смысл практичный: один базовый шаблон reviewer, а фокус задаётся инструкцией, вариацией description или дополнительным контекстом. Иначе <code>.claude/agents/</code> превращается в маленький зоопарк, где половина агентов отличается на одну фразу, а вторая забыла, зачем её создавали.</p>
+      <p>В Commerce OS это хорошо видно на одном и том же diff. Security reviewer посмотрит, не обошли ли проверку прав при возврате средств. Performance reviewer заметит лишний запрос в цикле. Test quality reviewer спросит, почему нет теста на повторный запрос возврата. Не три механики — три пары очков у одного локального reviewer-слоя.</p>
+      <p>Хотите оформить специализацию файлом — она компактна:</p>
+      <pre><code>---
+name: reviewer-security
+description: Read-only reviewer focused on auth, secrets and input validation
+tools: [read, grep, run_static_analysis]
+---</code></pre>
+      <p>Но это всё ещё Layer 1 reviewer. Он не превращается в службу безопасности компании — смотрит на тот же diff под более узким углом.</p>
+    </section>
+
+    <section>
+      <h2>7. agents/reviewer.md как живой артефакт</h2>
+      <p>Самая полезная мысль финала: агент — не «настройка в продукте», а живой артефакт команды. Его читают, ревьюят, обновляют и иногда честно упрощают. <code>agents/reviewer.md</code> хорош ровно настолько, насколько помогает пройти Layer 1 review быстрее и аккуратнее, без ложного чувства безопасности.</p>
+      <p>Когда кодовая база меняется, должен меняться и агент. Появились в Commerce OS новые чувствительные зоны — reviewer должен знать, где они. Устали от ложных срабатываний на мелком стиле — ужмите инструкцию. Diff постоянно слишком широкие — проблема не в reviewer, а в размере задач. Хороший агент не лечит организационные болезни магией — он делает их виднее.</p>
+      <p>Поэтому относитесь к <code>agents/reviewer.md</code> как к шаблону PR, чек-листу релиза или <code>CLAUDE.md</code>: часть рабочего процесса, а не священный текст. И держите его на своём месте в модели: это Layer 1, самый быстрый и дешёвый слой, а не gate и не team approval. Reviewer-агент ловит грубые риски по свежему diff и передаёт материал дальше — он не заменяет ни автоматические проверки, ни решение владельца зоны.</p>
+      <div class="callout">Знает свою границу — экономит команде дорогие слои review. Притворяется всем сразу — даёт ложное чувство безопасности. Ясная роль на понятном слое: ровно этого мы от него и хотим.</div>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Граница роли важнее списка возможностей: сначала периметр, потом таланты.</li>
+        <li>Четыре оси роли: read, run, write, stop.</li>
+        <li>Базовые роли: reviewer, tester, debugger, documenter.</li>
+        <li>Reviewer ничего не пишет; tester — только тесты; documenter — только документацию.</li>
+        <li>Не давайте reviewer write-доступ «на случай мелких правок» — он станет тихим соавтором diff.</li>
+        <li>Трёхслойная модель review: локальный Layer 1, технический gate Layer 2, team approval Layer 3.</li>
+        <li>Reviewer-агент живёт на Layer 1 и не заменяет остальные слои.</li>
+        <li>Verification отвечает за доказательства; review — за ворота и решение «идём дальше».</li>
+        <li>Мнемоника: <code>L + число</code> — verification, <code>Layer + число</code> — review.</li>
+        <li>Специализации reviewer — это разные фокусы одной роли, а не отдельный зоопарк агентов.</li>
+        <li><code>agents/reviewer.md</code> — живой артефакт, который обновляется вместе с кодом и процессом.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> разложить роли агентов по осям read/run/write/stop и встроить reviewer-агента в трёхслойную модель review для учебного PR.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>AGENT_ROLES.md</code> с матрицей четырёх ролей: <code>reviewer</code>, <code>tester</code>, <code>debugger</code>, <code>documenter</code>. Для каждой заполните read, run, write и stop. Используйте только фейковые данные.</li>
+        <li>Выберите для reviewer одну специализацию — например, security или test quality. Опишите её фокус и условие остановки в <code>AGENT_ROLES.md</code>; при желании добавьте компактный frontmatter <code>reviewer-security.md</code>, но оставьте его read-only.</li>
+        <li>Придумайте учебный PR в Commerce OS: исправление дублей заказов в <code>/api/orders</code> или сортировки refund-запросов. В <code>REVIEW_LAYERS.md</code> распишите Layer 1 (что делает автор и reviewer-агент), Layer 2 (тесты, build, lint, статический анализ) и Layer 3 (кто из владельцев зоны принимает решение).</li>
+        <li>Отдельно выпишите <code>VERIFICATION EVIDENCE</code> и <code>REVIEW GATES</code>: что доказывает корректность и кто решает пропускать дальше. Если Claude Code доступен, вызовите reviewer-агента на учебном diff; если нет — вручную сымитируйте три findings формата <code>severity / file:line / evidence / suggested_action</code>, один пометьте <code>[hypothesis]</code>.</li>
+        <li>Проверьте, что reviewer ничего не записал и при слишком широком diff вернул просьбу сузить scope. Зафиксируйте в <code>REVIEW_LAYERS.md</code>, какие stop conditions сработали и какой слой получил материал дальше. Не меняйте реальный код проекта.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните матрицу ролей, карту слоёв и симуляцию findings вручную в редакторе, используя только фейковые файлы; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В матрице четыре роли и для каждой заполнены read, run, write, stop.</li>
+        <li>У reviewer в write стоит «ничего» или явный read-only.</li>
+        <li>Layer 1, Layer 2 и Layer 3 различаются по месту, участникам и решению.</li>
+        <li>Verification evidence отделены от review gates.</li>
+        <li>Есть три finding с severity, <code>file:line</code>, evidence и suggested action.</li>
+        <li>Одна гипотеза помечена <code>[hypothesis]</code> и не выдана за факт.</li>
+        <li>Stop conditions включают широкий diff и чувствительную зону.</li>
+        <li>В практике только фейковые данные, без секретов и реальных репозиториев.</li>
+        <li>Если Claude Code недоступен, матрица, слои и симуляция findings выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>11 уровень · лекция 5. Роль задаётся границей, а review — слоем: Layer 1 готовит материал, но не заменяет gate и team approval. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level11.lecture05" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
