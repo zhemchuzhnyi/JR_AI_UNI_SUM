@@ -14,7 +14,7 @@
 - **Вебинар 4** — уровень 7, лекции 1–5: discovery, evidence-based Q&A, `CODEBASE_INVENTORY.md`, dependency map и runtime flow; уровень 8, лекции 1–5: API_MAP, runtime evidence, subagents, AI-assisted documentation и docs-as-code review; отдельная практика «Haiku 50».
 - **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files; практика `/prompt-improve`.
 - **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype; практика team-kit и 25 контрольных вопросов.
-- **Вебинар 7** — уровень 11, лекции 1–5: терминология агентов, built-in delegation, кастомный subagent, engineering contract и роли агентов с 3-слойной моделью review.
+- **Вебинар 7** — уровень 11, лекции 1–5: терминология агентов, built-in delegation, кастомный subagent, engineering contract, роли агентов и 3-слойная модель review; практика md2html и 25 контрольных вопросов.
 
 ## Навигация
 
@@ -43,3 +43,4 @@
 - [Вебинар 4, уровень 8 — 23 вопроса](src/main/webinar4/level8/CONTROL_QUESTIONS.md)
 - [Вебинар 5, уровень 9 — 25 вопросов](src/main/webinar5/level9/CONTROL_QUESTIONS.md)
 - [Вебинар 6, уровень 10 — 25 вопросов](src/main/webinar6/level10/CONTROL_QUESTIONS.md)
+- [Вебинар 7, уровень 11 — 25 вопросов](src/main/webinar7/level11/CONTROL_QUESTIONS.md)

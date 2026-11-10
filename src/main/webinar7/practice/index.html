@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Практика вебинара 7: собрать агента md2html, который читает resume.md и верстает self-contained resume.html, спрашивает контакты и соблюдает engineering contract.">
+  <title>Claude Code — вебинар 7, практика md2html</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../level11/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level11/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a></nav>
+    <header>
+      <div class="eyebrow">Практика вебинара 7</div>
+      <h1>Агент-инструмент md2html</h1>
+      <div class="subtitle">Контракт · параметры · обязательный вопрос · self-contained HTML</div>
+    </header>
+
+    <div class="lead">
+      Вы собираете не reviewer для чужого diff, а агента-инструмент: он читает один <code>resume.md</code> и верстает один self-contained <code>resume.html</code>. Главный навык — engineering contract с узким write, параметрами и обязательным решением, которое агент добывает вопросом.
+    </div>
+
+    <section>
+      <h2>Что получится</h2>
+      <ul>
+        <li><code>.claude/agents/md2html.md</code> — project-scope агент в Git;</li>
+        <li><code>resume.html</code>, который открывается в браузере без внешних CSS, JS и шрифтов;</li>
+        <li><code>README.md</code> с таблицей параметров и логом вопроса про контакты;</li>
+        <li>четыре демо-прогона <code>log/run-a.md</code>, <code>log/run-b.md</code>, <code>log/run-c.md</code>, <code>log/run-d.md</code>;</li>
+        <li>подтверждение, что исходный <code>resume.md</code> не изменился.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Вход</h2>
+      <p>Возьмите вымышленный <code>resume.md</code> с разделами:</p>
+      <pre><code># Jane Doe
+## Опыт
+## Образование
+## Навыки
+## Проекты</code></pre>
+      <p class="warning">Используйте только фейковые данные. Не вставляйте реальные телефоны, адреса, email, ссылки на приватные профили, токены и секреты. Для демо достаточно заглушек вида <code>jane@example.com</code> и <code>@jane_fake</code>.</p>
+      <p>Агент читает только один <code>.md</code> и пишет только один <code>.html</code>. Исходник он не редактирует.</p>
+    </section>
+
+    <section>
+      <h2>Контракт агента</h2>
+      <p>Создайте <code>.claude/agents/md2html.md</code> в вымышленном Workflow Kit. Минимальный frontmatter:</p>
+      <pre><code>---
+name: md2html
+description: Read resume.md and render a self-contained resume.html. Read-only for the source; write only resume.html. Ask about contacts before rendering.
+tools: Read, Write
+model: inherit
+---</code></pre>
+      <p>Тело инструкции должно описывать:</p>
+      <ol>
+        <li><strong>Роль:</strong> конвертер одного <code>resume.md</code> в один <code>resume.html</code>.</li>
+        <li><strong>Когда использовать:</strong> есть входной markdown-файл резюме и нужен локальный self-contained HTML.</li>
+        <li><strong>Действия:</strong> прочитать один <code>.md</code>, собрать HTML с inline CSS, записать только <code>resume.html</code>.</li>
+        <li><strong>Формат результата:</strong> готовый HTML, короткий отчёт о теме, выбранных секциях, контактах и предупреждениях.</li>
+        <li><strong>Условия остановки:</strong> нет файла — спросить; неизвестная тема — откат на <code>light</code> с предупреждением; после записи одного <code>.html</code> — стоп; исходник не трогать.</li>
+      </ol>
+      <p>Явно запретите:</p>
+      <ul>
+        <li>менять <code>resume.md</code>;</li>
+        <li>создавать копии <code>resume-1.html</code>, <code>resume-final.html</code> и подобные;</li>
+        <li>подключать внешние CSS, JS, шрифты и картинки;</li>
+        <li>придумывать контакты, если пользователь их не передал.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Параметры</h2>
+      <p>В теле агента должна быть таблица параметров — это его сигнатура.</p>
+      <table>
+        <thead><tr><th>Вид</th><th>Параметр</th><th>Поведение</th></tr></thead>
+        <tbody>
+          <tr><td>опциональный</td><td><code>theme = light | dark</code>, дефолт <code>light</code></td><td>не указали — молча берёт <code>light</code></td></tr>
+          <tr><td>опциональный</td><td><code>sections</code>, дефолт — все блоки</td><td>не указали — верстает все; указали — только перечисленные</td></tr>
+          <tr><td>обязательное решение</td><td>контакты в футере</td><td>дефолта нет: не передали — агент сначала спрашивает, а не решает за вас</td></tr>
+        </tbody>
+      </table>
+      <p>Пресеты <code>light</code> и <code>dark</code> — короткие CSS-блоки прямо в инструкции агента. Не нужно тянуть внешнюю тему.</p>
+      <p>Правила поведения:</p>
+      <ul>
+        <li><code>theme=dark</code> — тёмная тема; <code>theme=light</code> или отсутствие — светлая;</li>
+        <li><code>theme=neon</code> или другое неизвестное значение — откат на <code>light</code> и явная строка-предупреждение в отчёте;</li>
+        <li><code>sections=experience,skills</code> — только эти разделы; неизвестный раздел — предупредить и пропустить;</li>
+        <li>контакты переданы сразу — используй их и не переспрашивай;</li>
+        <li>контактов нет — <strong>СНАЧАЛА спроси</strong>, что добавить в футер: телефон, email, ссылки. <strong>ТОЛЬКО ПОТОМ верстай</strong>;</li>
+        <li>пользователь ответил «нет, не надо» — пропусти футер целиком, не оставляй пустой блок и не пиши «контакты не указаны»;</li>
+        <li>нет входного файла — спроси, какой файл верстать, не выдумывай данные;</li>
+        <li>повторный прогон перезаписывает <code>resume.html</code>, а не плодит копии.</li>
+      </ul>
+      <div class="callout">Главная ловушка — агент молча верстает, не спросив. Лечится дословной строкой в инструкции: «контакты не переданы — СНАЧАЛА спроси, ТОЛЬКО ПОТОМ верстай».</div>
+    </section>
+
+    <section>
+      <h2>Четыре демо-прогона</h2>
+      <p>Запускайте агента через <code>@agent-md2html</code> или через явное делегирование, если ваша версия Claude Code это поддерживает. Каждый прогон записывайте в отдельный файл в <code>log/</code>: запрос, вопрос агента, ваш ответ, итоговые параметры, результат и предупреждения.</p>
+
+      <h3>Прогон A — без параметров</h3>
+      <pre><code>@agent-md2html свёрстай resume.md</code></pre>
+      <p>Ожидаемое поведение: агент <strong>до вёрстки</strong> спрашивает про контакты. Вы отвечаете: «только email, jane@example.com». После этого он верстает <code>resume.html</code> в теме <code>light</code>, со всеми секциями и email в футере.</p>
+      <p>В логе должно быть видно: вопрос был задан до записи HTML, ответ пользователя и итоговый результат.</p>
+
+      <h3>Прогон B — тёмная тема и фильтр секций</h3>
+      <pre><code>@agent-md2html свёрстай resume.md, theme=dark, sections=experience,skills,
+contacts: email jane@example.com</code></pre>
+      <p>Ожидаемое поведение: тёмная тема, только разделы «Опыт» и «Навыки», email в футере. Агент не переспрашивает про контакты, потому что они переданы сразу.</p>
+
+      <h3>Прогон C — контакты переданы явно</h3>
+      <pre><code>@agent-md2html свёрстай resume.md, theme=light, contacts: telegram @jane_fake</code></pre>
+      <p>Ожидаемое поведение: светлая тема, все секции, контакт в футере, вопроса про контакты нет. В отчёте видно, что контакт взят из запроса.</p>
+
+      <h3>Прогон D — негативный сценарий</h3>
+      <p>Сначала попросите агента сверстать несуществующий файл:</p>
+      <pre><code>@agent-md2html свёрстай missing.md</code></pre>
+      <p>Ожидаемое поведение: агент спрашивает, какой файл верстать, и не выдумывает содержимое.</p>
+      <p>Затем запустите:</p>
+      <pre><code>@agent-md2html свёрстай resume.md, theme=neon, contacts: no</code></pre>
+      <p>Ожидаемое поведение: тема откатывается на <code>light</code>, в отчёте есть явное предупреждение про <code>neon</code>, футер отсутствует целиком. Исходник не изменён, лишних файлов нет.</p>
+    </section>
+
+    <section>
+      <h2>README</h2>
+      <p>В <code>README.md</code> практики должны быть:</p>
+      <ul>
+        <li>таблица параметров <code>theme</code>, <code>sections</code>, <code>contacts</code>;</li>
+        <li>описание дефолтов и отличия «опциональный» от «обязательное решение»;</li>
+        <li>лог вопроса про контакты: точная формулировка и ответ пользователя;</li>
+        <li>команды или запросы для четырёх прогонов;</li>
+        <li>ограничения: только <code>resume.md</code> на входе, только <code>resume.html</code> на выходе, без внешних ресурсов.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Проверка</h2>
+      <ul>
+        <li><code>.claude/agents/md2html.md</code> лежит в project-scope и виден в Git.</li>
+        <li><code>tools</code> — только <code>Read</code> и <code>Write</code>; нет <code>Edit</code> и <code>Bash</code>; <code>model</code> выбран осознанно.</li>
+        <li>В инструкции есть роль, триггер, действия, формат результата и stop conditions.</li>
+        <li><code>theme</code> по умолчанию <code>light</code>; <code>dark</code> работает.</li>
+        <li><code>sections</code> без значения верстает все блоки, с значением — только перечисленные.</li>
+        <li>Без контактов агент спрашивает <strong>до</strong> вёрстки; в логе это видно.</li>
+        <li>Ответ «нет» приводит к отсутствию футера, а не к пустому блоку.</li>
+        <li>Контакты, переданные в запросе, не вызывают повторного вопроса.</li>
+        <li>Неизвестная тема откатывается на <code>light</code> с предупреждением.</li>
+        <li>Отсутствующий файл приводит к вопросу, а не к выдуманному резюме.</li>
+        <li>Повторный прогон перезаписывает <code>resume.html</code>, а не создаёт копии.</li>
+        <li><code>resume.html</code> открывается без внешних CSS, JS, шрифтов и картинок.</li>
+        <li><code>git diff -- resume.md</code> пуст: исходник не изменён.</li>
+        <li>В <code>log/</code> четыре прогона A–D; README содержит таблицу параметров и лог вопроса.</li>
+        <li>Нет реальных персональных данных, секретов и приватных ссылок.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Безопасность</h2>
+      <ul>
+        <li>Только вымышленное резюме и фейковые контакты.</li>
+        <li>Не используйте реальные имена, телефоны, адреса и email.</li>
+        <li>Не подключайте внешние ресурсы: self-contained HTML не должен делать сетевых запросов.</li>
+        <li>Не давайте агенту <code>Bash</code>, <code>Edit</code> или доступ к другим файлам: его задача — один вход и один выход.</li>
+        <li>Не публикуйте результат в открытый доступ без отдельного решения.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Если Claude Code недоступен</h2>
+      <p>Создайте <code>.claude/agents/md2html.md</code> вручную и проверьте контракт по этому же чек-листу. Четыре прогона можно симулировать в редакторе: записать запрос, вопрос агента и ожидаемое поведение в <code>log/</code>, а <code>resume.html</code> собрать вручную по тем же правилам. Критерии проверки не меняются: контакты добываются вопросом, тема и секции работают, негативные ветки отработаны, исходник не изменён.</p>
+    </section>
+
+    <footer>Вебинар 7 · практика. Агент-инструмент с узким write: один вход, один выход и обязательный вопрос про контакты. <a href="https://ru-claude-code-07-2f4c.javarush-university.workers.dev" style="color:#f5a66b;">Источник вебинара</a></footer>
+  </main>
+</body>
+</html>

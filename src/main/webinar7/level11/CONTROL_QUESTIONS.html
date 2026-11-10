@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 11 — контрольные вопросы по субагентам, конфигурации агента, engineering contract и ролям reviewer в review-процессе.">
+  <title>Уровень 11 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111318; --panel:#1a1e26; --text:#f1f2f4; --muted:#a5adba; --accent:#f5a66b; --line:#303642; --green:#a8d8a0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 85% 0,#33261f 0,transparent 34rem),var(--bg); color:var(--text); font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:0 auto; padding:48px 0 80px; }
+    h1 { margin:18px 0 22px; font-size:clamp(2rem,6vw,3.4rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:38px 0 14px; padding-top:18px; border-top:1px solid var(--line); font-size:1.35rem; }
+    p { margin:12px 0; }
+    ol, ul { margin:10px 0; padding-left:1.5rem; }
+    li { margin:10px 0; }
+    strong { color:#fff; }
+    code { color:var(--green); }
+    a { color:var(--accent); }
+    footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+    @media (max-width:620px) { main { padding-top:30px; } h1 { font-size:2rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <h1>Уровень 11 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 11 и практике вебинара 7: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с презентацией: субагенты и пять механизмов, встроенные роли, конфигурация агента, engineering contract, роли reviewer/tester/debugger/documenter и трёхслойная модель review.</p>
+<h2>Лекция 1 — терминология агентов</h2>
+<ol start="1">
+  <li><strong>Что такое subagent и из чего состоит его рабочая формула?</strong><br>
+    Subagent — специализированный помощник внутри текущего workflow: работает в собственном окне контекста и возвращает в основную сессию короткую сводку. Формула: <code>role + isolated context + tools + output contract</code>. Его сила — в специализации и изоляции, а не в автономности; это не «второй Claude рядом».<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Какие пять механизмов прячутся за словом «agent» и по каким трём осям их различать?</strong><br>
+    <code>subagent</code>, <code>separate session</code>, <code>background agent</code>, <code>worktree-backed session</code> и <code>agent team</code>. Оси: где живёт контекст, возвращается ли результат автоматически и нужна ли отдельная файловая поверхность — ветка или worktree.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Чем worktree-backed session отличается от обычного subagent и когда она уместна?</strong><br>
+    Subagent изолирует контекст и обычно не даёт файловой изоляции; worktree-backed session даёт отдельную рабочую директорию, branch и собственный diff. Она нужна для рискованных реальных правок, параллельной работы без конфликтов и сравнения вариантов. Для исследования «где лежит код» достаточно subagent.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Чем background agent отличается от subagent?</strong><br>
+    Background agent — отдельная фоновая сессия: задача выполняется асинхронно, результат возвращается позже, а перед правками у неё есть свой worktree. Subagent обычно быстро возвращает summary в текущий разговор. Фон нужен для долгой работы без постоянного диалога; для плотного интерактива он мешает.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Что такое fork (/subtask) и почему его нельзя путать с «чистым» subagent?</strong><br>
+    Fork — subagent, который получает весь текущий разговор. Ему не нужно переобъяснять контекст, но у него нет «чистого взгляда»: он наследует гипотезы и тупики основной сессии. Это вариант subagent с унаследованным контекстом, а не шестая сущность из таблицы пяти механизмов.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+</ol>
+<h2>Лекция 2 — встроенные subagents и делегирование</h2>
+<ol start="6">
+  <li><strong>Каких встроенных subagents приводит лекция и для чего они нужны?</strong><br>
+    <code>Explore</code> — read-only разведка по коду: файлы, точки входа, цепочки вызовов. <code>Plan</code> — research в plan mode, собирает материал для плана до правок. <code>general-purpose</code> — многошаговые подзадачи, где нужно и искать, и действовать. Имена меняются от версии к версии; важнее тип поведения.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему изолированный контекст полезен и что возвращается в основную сессию?</strong><br>
+    Он не заваливает основную сессию десятками прочитанных файлов, поисками и ложными гипотезами; исследование становится дешевле для контекста. В основную сессию возвращается короткая сводка, а не весь транскрипт. Посмотреть транскрипт работающего агента можно через <code>/tasks</code>, но проверять нужно именно сводку.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Какой признак отличает сильную returned summary от слабой?</strong><br>
+    Сильная сводка проверяема: в ней есть файлы и, желательно, строки, связанные тесты, evidence и честный блок «не проверено». Слабая — общий вывод вроде «похоже, проблема в support-модуле», который нечем проверить. Сводка — папка со следами, а не приговор.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Когда делегирование subagent оправдано, а когда лучше справиться самому?</strong><br>
+    Если задача маленькая, вы знаете точный файл и хотите понять короткую функцию — читайте сами. Если исследование расползается на слои, тесты, конфиги и точки входа и может захламить основной разговор — делегируйте. Критерий один: насколько расследование загрязнит основную сессию.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>В каких двух случаях subagent скорее навредит?</strong><br>
+    В конвейере <code>reproduce → debug → fix</code>, где шаги зависят от находок друг друга и на стыках теряется информация, и при прогоне тестов ради результата: агент вернёт «tests failed» без полного вывода, нужного для дебага. Такие задачи держите в основной сессии.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
+<h2>Лекция 3 — кастомный subagent</h2>
+<ol start="11">
+  <li><strong>Где живёт project-scope агент и кто его видит?</strong><br>
+    В <code>.claude/agents/</code> внутри репозитория. Он виден всей команде, попадает в Git и проходит через diff и review как обычный артефакт. Personal-агент лежит в <code>~/.claude/agents/</code> и доступен только вам.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Как создать агента в свежих версиях Claude Code и что случилось с командой <code>/agents</code>?</strong><br>
+    Есть два пути: попросить Claude сгенерировать черновик по описанию или вручную добавить markdown-файл в <code>.claude/agents/</code>. В свежих версиях <code>/agents</code> удалена: при вводе Claude Code подсказывает замену — попросить Claude создать агента или отредактировать папку агентов.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какие четыре поля минимальны для стартового агента и какое пятое поле полезно добавить?</strong><br>
+    <code>name</code>, <code>description</code>, <code>tools</code> и тело инструкции. Пятое полезное поле — <code>model</code>: <code>inherit</code> (как в основной сессии), быстрая Haiku для лёгкого поиска или Opus для сложного анализа.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Почему <code>description</code> называют решающим полем?</strong><br>
+    По нему Claude выбирает, когда делегировать задачу, и по нему же главная сессия составляет задание агенту. Конкретное описание даёт конкретный промпт; <code>use proactively</code> подталкивает звать агента чаще, а примеры сценариев чинят «не подхватывается, когда должен». Без <code>name</code> или <code>description</code> файл молча пропускается.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какие tools нужны reviewer и что произойдёт, если не указать <code>tools</code> вообще?</strong><br>
+    Для reviewer достаточно <code>Read</code>, <code>Glob</code>, <code>Grep</code> и <code>Bash</code> — читать diff, искать evidence и запускать безопасные read-only проверки. <code>Edit</code> и <code>Write</code> ему не нужны. Если <code>tools</code> не указаны, агент наследует почти все инструменты сессии, включая <code>Edit</code>, <code>Write</code> и MCP, — это не безопасный минимум.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+</ol>
+<h2>Лекция 4 — engineering contract</h2>
+<ol start="16">
+  <li><strong>Из каких четырёх элементов состоит engineering contract в инструкции агента?</strong><br>
+    Роль; когда использовать; разрешённые действия и формат результата; условия остановки. Формула: инструкция = роль + триггер + действия/формат + стоп-условия.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Какая инструкция считается плохой и почему?</strong><br>
+    «Ты очень опытный code reviewer. Думай как senior engineer, проверяй код глубоко и внимательно, находи всё важное». Она описывает характер, а не контракт: непонятно, когда запускать, что вернуть, где остановиться и что запрещено. Агент-«эксперт» тоже не добавляет способностей — ценность в границах и формате.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Чем <code>description</code> отличается от раздела «Когда использовать»?</strong><br>
+    <code>description</code> — короткая вывеска для выбора агента снаружи. Раздел «Когда использовать» — рабочая дисциплина изнутри: конкретные триггеры, контекст и условия «не использовать». Полезно указывать не только «когда да», но и «когда нет».<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Что обязательно включить в формат результата reviewer?</strong><br>
+    Краткое summary; findings с severity, <code>file:line</code>, evidence и suggested action; отдельно open questions. Гипотезы без доказательств помечаются <code>[hypothesis]</code> и не выдаются за факт. Формат одновременно служит встроенным стопом: заполнил секции — работа готова.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Какие условия остановки нужны reviewer?</strong><br>
+    Большой diff — попросить сузить scope; чувствительные зоны (<code>auth</code>, <code>payments</code>, <code>migrations</code>) — не делать сильных выводов без evidence; нехватка данных — вернуть open questions; после findings передать решение человеку. Reviewer готовит материал, а не выносит финальный приговор.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+</ol>
+<h2>Лекция 5 — роли и review</h2>
+<ol start="21">
+  <li><strong>Какие четыре базовые роли агентов и что каждая пишет?</strong><br>
+    <code>reviewer</code> — ничего; <code>tester</code> — только тестовые файлы, если разрешено; <code>debugger</code> — обычно ничего; <code>documenter</code> — только документацию. Оси роли: read, run, write, stop. Пустая ось write у reviewer принципиальна: иначе он становится тихим соавтором diff.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Что делает каждый из трёх слоёв review?</strong><br>
+    Layer 1 — локальный review до push/PR: автор и reviewer-агент читают diff, ловят явные риски и проверяют scope. Layer 2 — технический gate: CI и автоматические проверки. Layer 3 — team approval и решение владельца зоны на чувствительных изменениях. Это учебная карта, а не термин Claude Code.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Чем review отличается от verification?</strong><br>
+    Verification отвечает, что проверяем и как доказываем: тесты, build, lint, smoke, логи, скриншоты. Review отвечает, кто и когда решает, что можно идти дальше: локальный review, gate, team approval. Мнемоника: <code>L + число</code> — verification, <code>Layer + число</code> — review.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Почему reviewer должен оставаться read-only и чем опасен write-доступ?</strong><br>
+    С write-доступом он начинает не проверять, а исправлять: сегодня опечатка, завтра форматирование, послезавтра «слегка улучшил» бизнес-логику. Review смешивается с реализацией, а findings подменяются тихим соавторством в diff. Поэтому reviewer пишет nothing, а tester — только тесты.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Почему специализации reviewer — не зоопарк агентов и что делает <code>/code-review</code>?</strong><br>
+    Security, performance, test quality, architecture, DB и frontend — фокусы одного шаблона reviewer; разница в <code>description</code> и инструкции. Заводят их по реальной боли, а не «шесть ревьюеров на старте». Встроенный <code>/code-review</code> проверяет diff в фоновом контексте, <code>/code-review ultra</code> запускает глубокое облачное ревью; свой reviewer нужен ради правил и формата команды.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+</ol>
+<h2>Статус</h2>
+<ul>
+  <li>25 вопросов покрывают все 5 лекций уровня 11.</li>
+  <li>Вопросы синхронизированы с презентацией вебинара 7: субагенты, пять механизмов, встроенные роли, конфигурация, contract, роли и review-слои.</li>
+  <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">md2html-агент</a>.</li>
+  <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+</ul>
+    <footer>Уровень 11 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>

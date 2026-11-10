@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Engineering contract</div>
       <h1>Claude Code</h1>
@@ -111,6 +111,7 @@
       <p>Сильная роль:</p>
       <pre><code>Ты reviewer для готового PR/diff в проекте.</code></pre>
       <p>Во втором варианте агент уже не притворяется всемогущим. И это хорошо: полезность в одной конкретной работе важнее универсальности на словах.</p>
+      <p>Отдельный анти-паттерн — агент-«эксперт»: «ты Python-эксперт» не добавляет способностей, эти знания у Claude уже есть. Ценность агента — в границах и формате, а не в звании.</p>
     </section>
 
     <section>
@@ -168,12 +169,13 @@
     <section>
       <h2>7. Сборка agents/reviewer.md для Workflow Kit</h2>
       <p>Теперь соберём всё в артефакт, который действительно мог бы лежать в Workflow Kit и помогать команде при работе с Commerce OS. Представьте PR с исправлением дублирующихся заказов в списке <code>/api/orders</code> или с корректировкой сортировки refund-запросов. Изменение уже сделано, diff готов, тесты хотя бы частично прогнаны. Самое время для reviewer-агента.</p>
-      <p>Точные названия tool IDs и capability names зависят от текущего интерфейса <code>/agents</code>. Важен не буквальный список идентификаторов, а то, что reviewer остаётся read-only и получает только то, что нужно для чтения diff и поиска evidence. Проверяйте доступные названия в текущем UI или документации.</p>
+      <p>Точные названия tool IDs и capability names зависят от версии Claude Code, но логика остаётся прежней: reviewer получает только то, что нужно для чтения diff и поиска evidence, и остаётся read-only. Если <code>tools</code> не указать, агент наследует почти все инструменты сессии, включая <code>Edit</code> и <code>Write</code>, — это не безопасный минимум.</p>
       <p>Frontmatter:</p>
       <pre><code>---
 name: reviewer
 description: AI-assisted reviewer for ready PR diffs. Read-only. Use for local review before human decision.
-tools: [read, grep, diff]
+tools: Read, Glob, Grep, Bash
+model: inherit
 ---</code></pre>
       <p>Тело инструкции в формате контракта:</p>
       <pre><code>## Роль
@@ -184,7 +186,8 @@ tools: [read, grep, diff]
 есть diff, понятен scope, по возможности запущены связанные тесты.
 
 ## Разрешённые действия и формат результата
-Читай diff, связанные файлы и тесты.
+Запусти git diff, прочитай затронутые файлы и тесты.
+Из команд — только read-only.
 Верни summary, findings по важности и open questions.
 Для каждого findings укажи file:line и evidence.
 Гипотезы без доказательств помечай как [hypothesis].
@@ -194,7 +197,7 @@ tools: [read, grep, diff]
 Если diff слишком большой или затрагивает чувствительные зоны,
 не делай широких выводов и попроси сузить scope или дать больше evidence.
 После findings передай решение человеку.</code></pre>
-      <p>Это уже рабочая инструкция. Её можно усилить и уточнить, но главное сделано: туман убран. Агент не притворяется старшим архитектором вселенной. Он делает одну работу, в понятный момент, в понятном формате и с понятным пределом ответственности.</p>
+      <p>Это уже рабочая инструкция. Её можно усилить и уточнить, но главное сделано: туман убран. Агент не притворяется старшим архитектором вселенной. Он делает одну работу, в понятный момент, в понятном формате и с понятным пределом ответственности. Проверить его можно точечным вызовом <code>@agent-reviewer</code> — например, попросить проверить diff последнего коммита.</p>
       <p>Полезный мысленный тест: откройте файл так, будто вы новый человек в команде и видите его впервые. Можете ли вы за минуту понять, когда агента вызывать, чего от него ждать и что он точно не должен делать? Если да, файл уже живой. Если нет, инструкция пока написана больше «для автора», чем для системы и команды.</p>
     </section>
 
@@ -237,7 +240,7 @@ tools: [read, grep, diff]
       <ol>
         <li>В вымышленном Workflow Kit создайте <code>.claude/agents/reviewer.md</code> с намеренно слабой инструкцией вроде «Ты опытный reviewer, найди всё важное». Используйте только фейковые файлы и данные.</li>
         <li>Проведите аудит по четырём элементам: роль, когда использовать, разрешённые действия и формат результата, условия остановки. Запишите пробелы в <code>REVIEWER_CONTRACT_AUDIT.md</code>.</li>
-        <li>Перепишите инструкцию: узкая роль для готового diff; триггер с «когда да» и «когда нет»; read-only действия; формат <code>summary → findings(severity, file:line, evidence) → open questions</code>; маркировка <code>[hypothesis]</code>; stop conditions для большого diff, зон <code>auth</code>/<code>payments</code>/<code>migrations</code> и нехватки evidence.</li>
+        <li>Перепишите инструкцию: узкая роль для готового diff; триггер с «когда да» и «когда нет»; read-only действия; <code>tools: Read, Glob, Grep, Bash</code> без <code>Edit</code>/<code>Write</code>; <code>model: inherit</code>; формат <code>summary → findings(severity, file:line, evidence) → open questions</code>; маркировка <code>[hypothesis]</code>; stop conditions для большого diff, зон <code>auth</code>/<code>payments</code>/<code>migrations</code> и нехватки evidence.</li>
         <li>Сделайте учебный diff с вымышленным багом: например, дубли заказов в <code>/api/orders</code> или неверная сортировка refund-запросов. Если Claude Code доступен, вызовите reviewer-агента; если нет — вручную сымитируйте его ответ строго по формату из контракта.</li>
         <li>Проверьте результат по четырём вопросам из раздела 8 и запишите вывод в <code>REVIEWER_CONTRACT_AUDIT.md</code>: что понятно, что пришлось додумывать, какие stop conditions сработали. Не меняйте реальный код проекта.</li>
       </ol>
@@ -247,6 +250,8 @@ tools: [read, grep, diff]
         <li>В файле явно есть все четыре элемента контракта.</li>
         <li>Роль сформулирована одной узкой фразой.</li>
         <li>Триггер содержит и условия запуска, и условия «не использовать».</li>
+        <li>В tools есть <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, но нет <code>Edit</code>/<code>Write</code>.</li>
+        <li>Указан <code>model: inherit</code> или другой осознанно выбранный движок.</li>
         <li>Формат результата требует severity, <code>file:line</code>, evidence и open questions.</li>
         <li>Гипотезы помечаются <code>[hypothesis]</code>.</li>
         <li>Есть минимум три условия остановки, включая чувствительные зоны.</li>

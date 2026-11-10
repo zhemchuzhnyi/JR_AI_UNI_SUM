@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Кастомный subagent: scope, четыре поля, description как маршрутизация, минимальные tools, создание agents/reviewer.md через /agents и жизнь файла в Git.">
+  <meta name="description" content="Кастомный subagent: scope, четыре поля и model, description как маршрутизация, tools Read/Glob/Grep/Bash, создание agents/reviewer.md и проверка файла в Git.">
   <title>Claude Code — 11 уровень, лекция 3</title>
   <style>
     :root {
@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Кастомный subagent</div>
       <h1>Claude Code</h1>
@@ -62,13 +62,13 @@
     </header>
 
     <div class="lead">
-      Когда узкая подзадача повторяется по правилам команды, одноразовое делегирование становится файлом репозитория: scope, четыре поля, минимальные tools и проверка через Git.
+      Когда узкая подзадача повторяется по правилам команды, одноразовое делегирование становится файлом репозитория: scope, четыре поля, model, минимальные tools и проверка через Git.
     </div>
 
     <section>
       <h2>1. Свой агент команды vs встроенные</h2>
-      <p>Изолированное расследование решило одну проблему: основная сессия перестаёт тонуть в промежуточном шуме. Но когда одна и та же узкая подзадача повторяется по правилам команды, встроенного поведения быстро становится мало. Тот же subagent-паттерн меняет форму: из одноразового делегирования становится версионируемым артефактом репозитория.</p>
-      <p>Встроенные агенты хороши для общих задач: поиск по коду, исследование файлов, планирование, сбор сведений. Но если команде нужен предсказуемый ритуал — смотреть готовый diff, не трогать файлы, возвращать замечания в одном формате и не превращать ревью в ремонт всего проекта — нужен custom subagent.</p>
+      <p>Изолированное расследование решает одну проблему: основная сессия перестаёт тонуть в промежуточном шуме. Но когда одна и та же узкая подзадача повторяется по правилам команды, встроенного поведения быстро становится мало. Тот же subagent-паттерн меняет форму: из одноразового делегирования становится версионируемым артефактом репозитория.</p>
+      <p>Встроенные агенты хороши для общих задач: <code>Explore</code> ищет по коду, <code>Plan</code> собирает материал для плана, <code>general-purpose</code> берёт многошаговые подзадачи. Но если команде нужен предсказуемый ритуал — смотреть готовый diff, не трогать файлы, возвращать замечания в одном формате и не превращать review в ремонт всего проекта — нужен custom subagent.</p>
       <p>В Workflow Kit это выглядит приземлённо:</p>
       <pre><code>workflow-kit/
   .claude/
@@ -96,7 +96,7 @@
 
     <section>
       <h2>3. Четыре поля стартового агента</h2>
-      <p>Для первого рабочего агента достаточно четырёх вещей: имени, описания, списка инструментов и тела инструкции. Остальное — тюнинг.</p>
+      <p>Для первого рабочего агента достаточно четырёх вещей: имени, описания, списка инструментов и тела инструкции. Остальное — тюнинг. Практически сразу полезно добавить пятое поле — <code>model</code>: оно выбирает движок под задачу.</p>
       <table>
         <thead><tr><th>Поле</th><th>Что означает</th><th>Зачем нужно</th></tr></thead>
         <tbody>
@@ -104,84 +104,81 @@
           <tr><td><code>description</code></td><td>когда и зачем использовать</td><td>чтобы Claude правильно делегировал задачу</td></tr>
           <tr><td><code>tools</code></td><td>разрешённые инструменты</td><td>чтобы агент не выходил за роль</td></tr>
           <tr><td>instruction body</td><td>текст инструкции</td><td>чтобы агент понимал, что делать после вызова</td></tr>
+          <tr><td><code>model</code></td><td><code>inherit</code>, Haiku или Opus</td><td>чтобы у лёгкого поиска и сложного анализа был подходящий движок</td></tr>
         </tbody>
       </table>
       <p>Минимальный каркас:</p>
       <pre><code>---
 name: reviewer
-description: Проверяет готовый diff и возвращает замечания без правки кода.
-tools:
-  - Read
-  - Grep
+description: Read-only review готового diff перед merge
+tools: Read, Glob, Grep, Bash
+model: inherit
 ---
 
-Проверь изменённые файлы и верни краткие замечания по найденным проблемам.</code></pre>
-      <p>Точные идентификаторы инструментов и формат интерфейса зависят от версии Claude Code; заполняя tools через <code>/agents</code>, ориентируйтесь на актуальные варианты. Тело — обычный markdown под frontmatter, его можно открыть в IDE и закоммитить.</p>
+Проверь изменённые файлы и верни краткие замечания.</code></pre>
+      <p><code>model: inherit</code> означает «та же модель, что в основной сессии». Для лёгкого поиска можно выбрать быструю Haiku, для сложного анализа — Opus. На какой модели агент реально работает, показывает <code>/tasks</code>: модель подписана в строке субагента.</p>
+      <p>Тело — обычный markdown под frontmatter. Его можно открыть в IDE, обсудить в PR и закоммитить.</p>
     </section>
 
     <section>
       <h2>4. description: решающее поле</h2>
       <p>Многие думают, что главное — «умная» инструкция внизу. На практике первое критическое поле — <code>description</code>: это правило выбора. Решая, делегировать ли задачу custom subagent, Claude смотрит на описанную область применения. Расплывчатое описание даёт плохую маршрутизацию.</p>
+      <p>У <code>description</code> две роли:</p>
+      <ul>
+        <li>по нему главная сессия выбирает агента;</li>
+        <li>по нему же она составляет задание для агента, поэтому конкретное описание даёт конкретный промпт.</li>
+      </ul>
       <pre><code>description: Reviewer для всего.</code></pre>
-      <pre><code>description: Read-only reviewer для готового diff. Использовать после того,
-как изменения собраны и нужен второй взгляд перед merge.</code></pre>
-      <p>Второй вариант отвечает на скрытые вопросы: кто это, когда использовать, в каком режиме. У Claude появляется не имя роли, а понятный триггер.</p>
+      <pre><code>description: Read-only reviewer готового diff. Запускать для локального
+review перед merge, когда тесты прогнаны. Use proactively после сборки diff.</code></pre>
+      <p>Второй вариант отвечает на скрытые вопросы: кто это, когда использовать, в каком режиме. Фраза <code>use proactively</code> подталкивает Claude звать агента чаще, а примеры сценариев чинят ситуацию «не подхватывается, когда должен».</p>
       <p>Хорошее description даёт три опоры:</p>
       <ul>
         <li>что агент делает;</li>
         <li>в какой момент workflow он нужен;</li>
         <li>где проходит его граница.</li>
       </ul>
-      <p>Для reviewer в Workflow Kit укажите: проверяет готовый diff, не редактирует код, нужен перед merge или локальным принятием изменений.</p>
+      <p class="warning">Если в frontmatter нет <code>name</code> или <code>description</code>, Claude Code пропускает файл, ничего не сообщая в сессии. Поэтому после создания проверьте, что агент появился в <code>@</code>-списке.</p>
     </section>
 
     <section>
       <h2>5. tools: граница полномочий</h2>
       <p>Начинающие любят мысль «дам всё, а там он сам разберётся». Агент с лишними tools не становится умнее — он получает больше способов сделать что-то неожиданное.</p>
-      <p>Для reviewer логика простая: читать изменения и возвращать замечания. Права на редактирование, широкий доступ к командам и режим «вдруг сам поправит» не нужны.</p>
-      <pre><code>tools:
-  - Read
-  - Grep</code></pre>
+      <p>Для reviewer логика простая: читать изменения, искать evidence и запускать безопасные read-only проверки. Права на редактирование ему не нужны.</p>
+      <pre><code>tools: Read, Glob, Grep, Bash</code></pre>
       <p>Вместо:</p>
-      <pre><code>tools:
-  - Read
-  - Grep
-  - Edit
-  - Bash</code></pre>
-      <p>Во втором варианте агент может начать редактировать код только потому, что «уже здесь». Смешивать review и реализацию — плохая привычка даже у людей, а у AI она возникает быстрее.</p>
-      <p>Агент живёт внутри рамки разрешений сессии и не вырастет в сверхсущество. Но tools всё равно важны: сужают его сильнее и делают поведение понятным. Сначала минимум; расширяйте осознанно, если реально не хватает read-only способа собрать evidence.</p>
+      <pre><code>tools: Read, Glob, Grep, Bash, Edit, Write</code></pre>
+      <p><code>Read</code> читает файл, <code>Bash</code> запускает команды. <code>Glob</code> и <code>Grep</code> ищут файлы по маске и по содержимому; на Windows они нужны отдельно, а на macOS, Linux и WSL Claude ищет через <code>find</code> и <code>grep</code> в Bash. <code>Bash</code> reviewer'у нужен ради <code>git diff</code> и безопасных read-only проверок. <code>Edit</code> и <code>Write</code> — право менять файлы — ему ни к чему.</p>
+      <div class="callout">Если <code>tools</code> не указаны вообще, агент наследует почти все инструменты сессии, включая <code>Edit</code>, <code>Write</code> и MCP, кроме нескольких служебных. «Не указал tools» не означает «безопасный минимум».</div>
+      <p>Минимум прав — это «под работу», а не «как можно меньше». Сначала выдайте необходимое, расширяйте только когда реально упёрлись.</p>
     </section>
 
     <section>
-      <h2>6. Создание agents/reviewer.md через /agents</h2>
-      <p>Агент создаётся через интерфейс управления агентами — обычно <code>/agents</code> или близкую панель. Название может отличаться; сверьтесь с <code>/help</code>, важен workflow.</p>
-      <pre><code>/agents
-  → выбор scope
-  → 4 поля: name, description, tools, body
-  → сохранение
-  → файл в .claude/agents/
-  → проверка через Git diff</code></pre>
-      <table>
-        <thead><tr><th>Шаг</th><th>Что делаете</th><th>На что смотрите</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>Открываете <code>/agents</code></td><td>Есть ли режим создания агента</td></tr>
-          <tr><td>2</td><td>Выбираете scope</td><td>Для командного артефакта — project</td></tr>
-          <tr><td>3</td><td>Заполняете 4 поля</td><td>Имя, описание, инструменты, инструкция</td></tr>
-          <tr><td>4</td><td>Сохраняете</td><td>Где именно появился файл</td></tr>
-          <tr><td>5</td><td>Проверяете diff</td><td>Агент должен быть виден в Git</td></tr>
-        </tbody>
-      </table>
-      <p>После сохранения в project файл обычно оказывается здесь:</p>
-      <pre><code>.claude/
-  agents/
-    reviewer.md</code></pre>
-      <p>Если файл в проекте, вы видите его в IDE и Git diff: можно прочитать, поправить, обсудить в PR. Создали в personal — Git промолчит, и команда не узнает про помощника.</p>
+      <h2>6. Создание agents/reviewer.md</h2>
+      <p>Субагент — это markdown-файл в папке <code>.claude/agents/</code>. В свежих версиях Claude Code есть два пути:</p>
+      <pre><code>Что должен делать агент
+  → попросить Claude сгенерировать черновик
+  → или добавить файл вручную
+  → .claude/agents/reviewer.md</code></pre>
+      <p>Лучший путь тот же, что со skill: опишите словами — «read-only reviewer, проверяет готовый diff, возвращает findings» — и Claude сам сгенерирует <code>name</code>, <code>description</code> и инструкцию. Вам останется отревьюить черновик. Второй путь — создать файл вручную и заполнить frontmatter.</p>
+      <p>В старых гайдах встречается команда <code>/agents</code>. В свежих версиях она удалена: при вводе Claude Code сам подсказывает замену — попросить Claude создать агента или отредактировать <code>.claude/agents/</code>. Если в вашей версии команда ещё есть, интерфейс может отличаться, но артефакт всё равно один — markdown-файл в папке агентов.</p>
+      <p>Почему не skill? Skill работает inline в вашем контексте, агент — в отдельном окне. Нужна изоляция и автономная работа — агент; повторяемая процедура без шума — skill.</p>
     </section>
 
     <section>
       <h2>7. Агент как файл репозитория</h2>
-      <p>Последняя привычка связана не с созданием, а с отношением к результату. Легко настроить агента и забыть про него как про бытовую магию IDE. Но если reviewer полезен проекту, он должен читаться, обсуждаться, меняться и проходить через Git наравне с инженерными файлами.</p>
-      <p>Через пару недель в Commerce OS меняются правила, появляются новые каталоги, иначе называются зоны риска, уточняется стиль review. Агент в репозитории — меняете description или инструкцию, смотрите diff, коммитите. Агент «где-то локально» — команда живёт со старой версией, вы с новой, и поведение одного инструмента различается у разных людей.</p>
+      <p>После создания агент лежит в <code>.claude/agents/reviewer.md</code>. Внутри — frontmatter и тело инструкции:</p>
+      <pre><code>---
+name: reviewer
+description: Read-only review готового diff перед merge
+tools: Read, Glob, Grep, Bash
+model: inherit
+---
+
+Проверь изменённые файлы и верни краткие замечания.</code></pre>
+      <p>Вызвать агента можно точечно: наберите <code>@</code> и выберите из списка или напишите <code>@agent-reviewer</code> вручную.</p>
+      <p>Добавили или поправили файл на диске — Claude Code замечает изменение за несколько секунд, без перезапуска. Restart нужен только один раз: если папка <code>agents/</code> создана впервые уже после старта сессии.</p>
+      <p>Если агент не появился в <code>@</code>-списке, первым делом проверьте frontmatter. Битый YAML найдёт <code>claude plugin validate .claude/agents</code>, а пропущенный <code>name</code> эта проверка не ловит — его нужно смотреть глазами.</p>
       <p>Хороший финальный жест прозаичен: сделайте <code>git status</code> после сохранения. Файл <code>agents/reviewer.md</code> виден в diff, лежит в project-области, поедет к команде вместе с кодом — значит scope выбран верно. Git промолчал — reviewer застрял в <code>~/.claude/</code>, и коллеги про него не узнают.</p>
     </section>
 
@@ -190,12 +187,13 @@ tools:
       <ul>
         <li>scope — <code>project</code>, если агент нужен команде;</li>
         <li><code>name</code> короткий и понятный;</li>
-        <li><code>description</code> объясняет, что делает, когда запускать и где граница;</li>
-        <li><code>tools</code> минимальны: для review достаточно <code>Read</code> и <code>Grep</code>;</li>
+        <li><code>description</code> объясняет, что делает, когда запускать и где граница; при необходимости — <code>use proactively</code> и примеры;</li>
+        <li><code>tools</code> минимальны: для review достаточно <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, без <code>Edit</code> и <code>Write</code>;</li>
+        <li><code>model</code> выбран осознанно: <code>inherit</code>, быстрая Haiku или Opus для сложного анализа;</li>
         <li>тело инструкции короткое: роль, порядок, формат findings, запрет на правки;</li>
         <li>файл лежит в <code>.claude/agents/</code>, виден в Git;</li>
-        <li>после сохранения проверен <code>git diff</code>;</li>
-        <li>агент не пытается чинить код вместо review;</li>
+        <li>после сохранения проверен <code>git status</code>/<code>git diff</code>;</li>
+        <li>агент вызывается через <code>@agent-reviewer</code>;</li>
         <li>при изменении правил команды файл обновляется через обычный PR.</li>
       </ul>
     </section>
@@ -206,35 +204,37 @@ tools:
         <li>Custom subagent нужен, когда узкая подзадача повторяется по правилам команды.</li>
         <li>Scope определяет, кто увидит агента: personal, project, plugin-provided, managed.</li>
         <li>Для командного артефакта обычно нужен <code>project</code>, а не personal.</li>
-        <li>Стартовые поля: <code>name</code>, <code>description</code>, <code>tools</code>, instruction body.</li>
-        <li><code>description</code> — правило выбора и маршрутизации, а не подпись.</li>
-        <li><code>tools</code> — граница полномочий; для reviewer достаточно read-only.</li>
-        <li><code>/agents</code> создаёт файл в <code>.claude/agents/</code>; проверяйте его в Git.</li>
+        <li>Стартовые поля: <code>name</code>, <code>description</code>, <code>tools</code>, instruction body; <code>model</code> — практичное дополнение.</li>
+        <li><code>description</code> — правило выбора и маршрутизации, а не подпись; по нему же строится задание агенту.</li>
+        <li><code>tools</code> — граница полномочий; для reviewer достаточно <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, без <code>Edit</code>/<code>Write</code>.</li>
+        <li>Если <code>tools</code> не указаны, агент наследует почти все инструменты сессии.</li>
+        <li>В свежих версиях <code>/agents</code> удалена: агента создают через Claude или вручную в <code>.claude/agents/</code>.</li>
+        <li>Агент вызывается через <code>@agent-reviewer</code>; правки файла подхватываются без перезапуска.</li>
         <li>Агент — файл репозитория, который меняется через diff и review.</li>
         <li>Git промолчал — агент остался личным и не стал командным.</li>
-        <li>Сначала минимальные права; расширяйте только по реальной необходимости.</li>
       </ul>
     </section>
 
     <section>
       <h2>Практика (15–25 минут)</h2>
-      <p><strong>Цель:</strong> создать project-scope reviewer-агента с четырьмя полями, минимальными tools и проверкой файла в Git.</p>
+      <p><strong>Цель:</strong> создать project-scope reviewer-агента с четырьмя полями, <code>model</code> и безопасными tools, затем проверить его в Git.</p>
       <h3>Что сделать</h3>
       <ol>
         <li>В вымышленном Workflow Kit создайте <code>.claude/agents/reviewer.md</code>. Используйте только фейковые данные.</li>
-        <li>Заполните frontmatter: <code>name: reviewer</code>, <code>description</code> с триггером «готовый diff, read-only, перед merge», <code>tools: [Read, Grep]</code>.</li>
-        <li>Добавьте тело: проверить только изменённые файлы, вернуть findings по рискам, пропущенным тестам и scope, не менять код, перечислить open questions.</li>
-        <li>Если Claude Code доступен, создайте агента через <code>/agents</code> в project scope и сравните файл с ручным вариантом; если нет — проверьте структуру вручную.</li>
-        <li>Выполните <code>git status</code> и <code>git diff</code>: файл должен быть виден как проектный артефакт. Запишите в <code>AGENT_REVIEW.md</code>, почему выбран project scope и какие tools сознательно не выданы.</li>
+        <li>Заполните frontmatter: <code>name: reviewer</code>, <code>description</code> с триггером «готовый diff, read-only, перед merge», <code>tools: Read, Glob, Grep, Bash</code>, <code>model: inherit</code>.</li>
+        <li>Добавьте тело: проверить только изменённые файлы, вернуть findings по рискам, пропущенным тестам и scope, не менять код, перечислить open questions. Явно запретите <code>Edit</code> и <code>Write</code>.</li>
+        <li>Если Claude Code доступен, создайте агента через Claude или вручную и вызовите <code>@agent-reviewer</code>; проверьте, что правка файла подхватилась без перезапуска. Если папка <code>agents/</code> создана впервые после старта сессии, один раз перезапустите Claude Code. Если Claude Code недоступен — проверьте структуру вручную.</li>
+        <li>Выполните <code>git status</code> и <code>git diff</code>: файл должен быть виден как проектный артефакт. Запишите в <code>AGENT_REVIEW.md</code>, почему выбран project scope, какие tools выданы и какие сознательно запрещены.</li>
       </ol>
       <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните доступную часть шагов вручную в редакторе, проверьте frontmatter и структуру; недоступные команды разберите по документации. Критерии проверки те же.</p>
       <h3>Проверка</h3>
       <ul>
         <li>Файл лежит в <code>.claude/agents/reviewer.md</code>.</li>
-        <li>Есть <code>name</code>, <code>description</code>, <code>tools</code> и тело инструкции.</li>
+        <li>Есть <code>name</code>, <code>description</code>, <code>tools</code>, <code>model</code> и тело инструкции.</li>
         <li><code>description</code> объясняет, когда запускать и где граница.</li>
-        <li>В tools только <code>Read</code> и <code>Grep</code>, без Edit/Bash.</li>
+        <li>В tools есть <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, но нет <code>Edit</code>/<code>Write</code>; <code>Bash</code> разрешён только для read-only проверок.</li>
         <li>Тело запрещает менять код и требует findings/open questions.</li>
+        <li>Агент вызывается через <code>@agent-reviewer</code> или виден в <code>@</code>-списке.</li>
         <li><code>git status</code>/<code>git diff</code> показывают файл.</li>
         <li>В практике только фейковые данные и нет реальных секретов.</li>
       </ul>
