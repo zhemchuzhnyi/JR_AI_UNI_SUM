@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tools и permissions для subagent: L1/L2, least privilege, явный allow-list, ограничения tester и reviewer, проверка changed files и проектирование прав от результата.">
+  <title>Claude Code — 12 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a></nav>
+    <header>
+      <div class="eyebrow">Tools и permissions</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">12 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      Инструкция без технической границы — табличка «не входить» на двери без замка. Роль отвечает, зачем агент существует, а <code>tools</code> — что он имеет право делать руками.
+    </div>
+
+    <section>
+      <h2>1. Инструкция без замка</h2>
+      <p>Когда вы впервые проектируете агента, очень легко влюбиться в красивую инструкцию: «ты tester, проверяешь тесты и не трогаешь production-код» — и кажется, что дальше всё сложится само. Это как повесить табличку «не входить» на дверь без замка и удивляться, почему кто-то всё-таки вошёл.</p>
+      <p>Представьте ситуацию из Commerce OS. Вы починили баг в refund flow — один сценарий возврата обрабатывался неверно — и хотите поручить tester-агенту написать regression test. Если у него есть всё подряд — чтение, поиск, команды, полное редактирование проекта, — он может решить, что быстрее «помочь» правкой боевого кода, а не тестом. Проблема формально исчезнет. А у вас вместо tester — очень инициативный соавтор, которого никто не просил.</p>
+      <p>Вот здесь и появляется ключевой принцип. Роль отвечает на вопрос «зачем агент существует». Набор инструментов — на вопрос «что именно он имеет право делать руками». Оставите только первое — агент выйдет свободным. А свободный агент — это лишний diff, лишние риски и тот момент, когда вы открываете изменения: «Я же просил проверить тесты, а не переставить мебель во всей квартире».</p>
+      <div class="callout">У роли должна быть не только инструкция, но и техническая граница. <code>tools</code> — это не декоративное поле во frontmatter, а граница ответственности роли.</div>
+    </section>
+
+    <section>
+      <h2>2. Два слоя прав: L1 и L2</h2>
+      <p>Чтобы не путаться в терминах, полезно разложить модель прав по слоям. Права складываются и вкладываются друг в друга: сессия задаёт потолок, агент сужает его под роль.</p>
+      <pre><code>L1: права текущей сессии
+  → L2: tools конкретного агента
+  → что агент реально может сделать</code></pre>
+      <p>Если говорить просто, L1 — режим сессии, в котором вы работаете вместе с Claude. L2 — права конкретного subagent внутри неё. Важнейшее правило: <strong>L2 не может сделать агента сильнее, чем позволяет L1</strong>. Только сузить, не расширить.</p>
+      <table>
+        <thead><tr><th>Слой</th><th>Кто задаёт</th><th>Что ограничивает</th><th>Пример</th></tr></thead>
+        <tbody>
+          <tr><td>L1 — права сессии</td><td>вы, как автор текущей сессии</td><td>общий потолок действий</td><td>сессия в режиме только чтения</td></tr>
+          <tr><td>L2 — права агента</td><td>конфиг агента</td><td>возможности конкретной роли</td><td>tester может править только тесты</td></tr>
+          <tr><td>L3 — командные правила</td><td>проект или команда</td><td>общие политики и защищённые зоны</td><td>запрет правок <code>payments/</code></td></tr>
+        </tbody>
+      </table>
+      <p>Сегодня нас интересует именно L2. Полезно посмотреть на практические комбинации:</p>
+      <table>
+        <thead><tr><th>Права сессии (L1)</th><th>tools агента (L2)</th><th>Что получится</th></tr></thead>
+        <tbody>
+          <tr><td>только чтение / plan mode</td><td><code>Read, Grep, Bash, Edit</code></td><td>агент всё равно не сможет править файлы</td></tr>
+          <tr><td>обычная рабочая сессия</td><td><code>Read, Grep, Bash</code></td><td>агент читает код и запускает проверки, но не пишет</td></tr>
+          <tr><td>обычная рабочая сессия</td><td><code>Read, Grep, Bash, Edit</code></td><td>агент потенциально может писать, но только если это соответствует его роли и инструкции</td></tr>
+        </tbody>
+      </table>
+      <p>Из этого следует практический вывод. Хотите агента безопаснее — не надейтесь на «будь осторожен» в инструкции. Сначала спросите: нужен ли этой роли такой инструмент? Не нужен — не выдавайте. Самая сильная защита от лишнего редактирования — отсутствие <code>Edit</code>, а не просьба «не редактируй ничего лишнего».</p>
+      <p class="warning">Некоторые поля могут дать агенту больше, чем есть у сессии. <code>permissionMode</code> (например, <code>acceptEdits</code> в Manual-сессии снимает запросы на правки) и <code>mcpServers</code> (подключает серверы, которых в сессии нет) — это уже не сужение, а расширение. Для первого tester их не трогаем.</p>
+    </section>
+
+    <section>
+      <h2>3. tools как инженерный договор</h2>
+      <p>Теперь можно смотреть на поле <code>tools</code> не как на мелочь, а как на инженерный договор: допустимый радиус действий роли. Как хороший API-контракт: границы ясны — поведение предсказуемо; границ нет — догадки, расширение scope и хаос с уверенным лицом.</p>
+      <p>Обычно инструменты делятся на естественные группы:</p>
+      <table>
+        <thead><tr><th>Группа</th><th>Зачем обычно нужна</th><th>Где начинается риск</th></tr></thead>
+        <tbody>
+          <tr><td><code>Read</code>, <code>Grep</code> и другие инструменты чтения и поиска</td><td>читать код, искать по проекту, собирать evidence</td><td>риск невысокий, но контекст легко раздуть</td></tr>
+          <tr><td><code>Bash</code> или выполнение команд</td><td>запускать тесты, сборку, <code>git diff</code>, диагностику</td><td>один и тот же инструмент умеет и полезное, и опасное</td></tr>
+          <tr><td><code>Edit</code> / write-инструменты</td><td>вносить изменения в файлы</td><td>самый высокий риск выхода за роль</td></tr>
+        </tbody>
+      </table>
+      <p>С <code>Read</code> и <code>Grep</code> всё относительно спокойно — это естественная база почти для любого аналитического или ревью-агента. А <code>Bash</code> — инструмент взрослый: им можно запустить <code>./gradlew test</code>, а можно выполнить совсем не ту команду, после которой вы внезапно полюбите резервные копии. Поэтому <code>Bash</code> почти никогда не живёт один: рядом нужны текстовые ограничения и понятные stop conditions.</p>
+      <p>Ещё важнее история с <code>Edit</code>. Частая ловушка новичка: кажется, лучше выдать чуть больше прав — вдруг пригодится. На практике это превращается в «вдруг он решил помочь сильнее, чем мы просили». Reviewer с <code>Edit</code> — уже не reviewer, а автор правок. Tester с <code>Edit</code> без каталоговых границ начнёт «чинить» production-код под видом борьбы за зелёные тесты.</p>
+      <div class="callout">Если инструмент не нужен роли для получения её результата, этого инструмента не должно быть в <code>tools</code>.</div>
+      <p>Важно: если <code>tools</code> не указать вообще, агент наследует почти все инструменты сессии, включая <code>Edit</code>, <code>Write</code> и MCP, кроме нескольких служебных. Явный список — это allow-list, а не пожелание. Обратный способ — <code>disallowedTools</code>: «всё, кроме». Он удобен, когда проще назвать запретное, но при таком подходе агент унаследует и <code>Agent</code>, то есть сможет нанимать своих субагентов. Для узкой роли добавьте <code>Agent</code> в запрет.</p>
+      <p>У агента есть и другие поля тюнинга — <code>permissionMode</code>, <code>maxTurns</code>, <code>effort</code>. Это для специальных случаев; первому tester они не нужны.</p>
+      <p>Точные имена инструментов и способ их объявления могут немного отличаться между версиями Claude Code. Суть не меняется: нужен явный allow-list, а не надежда на здравый смысл модели.</p>
+    </section>
+
+    <section>
+      <h2>4. Least-privilege на живых ролях Workflow Kit</h2>
+      <p>Теперь перенесём принцип least privilege в живые роли Workflow Kit. Разница видна не на «агенте вообще», а на нескольких ролях рядом — тогда сразу ясно, почему «одинаковый набор tools всем подряд» — плохая идея.</p>
+      <table>
+        <thead><tr><th>Роль</th><th>Какой результат она должна дать</th><th>Базовый набор tools</th><th>Что лучше не выдавать</th></tr></thead>
+        <tbody>
+          <tr><td>reviewer</td><td>замечания по diff, риски, evidence</td><td><code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code></td><td><code>Edit</code>, <code>Write</code></td></tr>
+          <tr><td>tester</td><td>тесты, результаты прогонов, пробелы в проверке</td><td><code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, <code>Edit</code>, <code>Write</code></td><td>редактирование production-файлов</td></tr>
+          <tr><td>documenter</td><td>обновлённые docs и пояснения</td><td><code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Edit</code>, <code>Write</code></td><td>широкие code edits, <code>Bash</code> «про запас»</td></tr>
+          <tr><td>debugger</td><td>root cause с evidence</td><td><code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code></td><td>обычно ничего не пишет</td></tr>
+        </tbody>
+      </table>
+      <p>С reviewer всё проще всего: прочитать diff, посмотреть связанные файлы, запустить безопасные проверки, вернуть findings. Как только reviewer получает <code>Edit</code>, идея ревью размывается — уже не взгляд со стороны, а второй автор, который ломает трассируемость: где закончился review и началось авторство.</p>
+      <p>С tester ситуация тоньше. Ему действительно часто нужен <code>Edit</code> и <code>Write</code>: работа не только запускать тесты, но и писать test-файлы. Но даже здесь least privilege не исчезает, а становится точнее: редактирование разрешено только внутри test-каталогов. Агент работает в <code>src/test/</code>, <code>tests/</code> и аналогичных зонах, но если для проверок нужно менять production-код — обязан остановиться и вернуть объяснение человеку.</p>
+      <p>Documenter — ещё один показательный случай. <code>Edit</code> ему нужен для документации, а <code>Bash</code> часто вообще не нужен: не выдавайте команды «про запас». Лишний <code>Bash</code> — лишний соблазн и лишняя поверхность риска.</p>
+      <p>Сноска про платформы: на macOS, Linux и WSL Claude Code ищет файлы через <code>Bash</code>, поэтому у ролей с <code>Bash</code> отдельные <code>Glob</code> и <code>Grep</code> могут не появиться. Нужен поиск без <code>Bash</code> — перечислите <code>Glob</code> и <code>Grep</code> без <code>Bash</code>, как у documenter.</p>
+      <p>Когда вы начинаете так смотреть на роли, принцип least privilege становится почти очевидным. Вопрос больше не «что умеет Claude», а: какой минимальный набор действий нужен этой роли ради этого результата.</p>
+      <div class="callout">Быстрый тест конфига: сможет ли агент случайно улучшить то, что вы не просили улучшать? Ответ «да» — набор инструментов всё ещё широкий.</div>
+    </section>
+
+    <section>
+      <h2>5. Собираем agents/tester.md для Workflow Kit</h2>
+      <p>Теперь превратим теорию в рабочий артефакт. Представим, что в репозитории Workflow Kit вы открываете <code>workflow-kit/.claude/agents/tester.md</code>. Задача — не «самый умный tester в мире», а первый безопасный вариант, который работает с Commerce OS и не расползётся по проекту.</p>
+      <p>Точный синтаксис frontmatter и имена инструментов могут отличаться в вашей версии Claude Code — воспринимайте пример как инженерный шаблон, а не как священный YAML.</p>
+      <pre><code>---
+name: tester
+description: Проверяет текущий diff Commerce OS, запускает тесты и пишет или обновляет тестовые файлы. Production-код не меняет.
+tools: Read, Glob, Grep, Bash, Edit, Write
+model: inherit
+---</code></pre>
+      <p>Тело агента:</p>
+      <pre><code>Ты tester-агент.
+Работай только в каталогах src/test/, tests/ и аналогичных test-папках.
+Не меняй production-файлы.
+Если для прохождения тестов нужен фикс в боевом коде,
+остановись и верни explanation человеку.
+После работы обязательно сообщи:
+какие тесты добавлены или обновлены,
+какие команды запущены,
+какие проверки не удалось подтвердить.</code></pre>
+      <p>В таком виде конфигурация намеренно узкая: минимальный набор действий, но ещё не весь контур знаний роли.</p>
+      <p>Поле <code>description</code> задаёт рамку: production-код уже не зона агента. <code>Edit</code> и <code>Write</code> в tools — только потому, что tester действительно пишет тесты. Собирали бы reviewer — этих прав не было бы вовсе.</p>
+      <p>Но одних tools здесь всё равно недостаточно. Поэтому ниже идёт жёсткое текстовое сужение: редактирование дано не как «право редактировать всё», а ради одного класса файлов. Это контракт поведения, а не технический замок: tools не умеют ограничивать запись одним каталогом. Поэтому после прогона смотрим changed files: production-файл в списке — результат не принимаем, даже если тесты зелёные.</p>
+      <p>Для контраста полезно посмотреть на reviewer:</p>
+      <pre><code>---
+name: reviewer
+description: Проводит локальный review diff перед PR. Только чтение.
+tools: Read, Glob, Grep, Bash
+model: inherit
+---</code></pre>
+      <pre><code>Ты reviewer-агент.
+Не редактируй файлы.
+Проверь diff, связанные тесты и команды проверки.
+Верни findings с evidence и уровнем серьёзности.</code></pre>
+      <p>Разница принципиальная. Оба смотрят на один и тот же refund bugfix в Commerce OS, но у одного <code>Edit</code> нет вовсе, у второго он связан границами каталогов. Вот это и есть least privilege в живом виде, а не лозунг на стене.</p>
+      <p>Если вы хотите быстро понять, хорошо ли собран <code>agents/tester.md</code>, задайте один вопрос: сможет ли этот агент случайно улучшить то, что вы не просили улучшать? Ответ «да» — набор инструментов всё ещё широкий.</p>
+    </section>
+
+    <section>
+      <h2>6. Собирай от результата, а не от прав</h2>
+      <p>Когда вы проектируете нового агента, очень хочется начать с tools: что бы выдать? Но надёжнее двигаться наоборот — от результата к минимальным действиям. Иначе выйдет типичный инженерный фокус: «сначала выдали права, потом придумали, зачем».</p>
+      <p>Работайте по простой последовательности из четырёх шагов:</p>
+      <ol>
+        <li><strong>Начните с результата.</strong> Что именно агент должен вернуть — findings по diff, набор тестов, документацию? Пока этого нет, поле tools — угадайка.</li>
+        <li><strong>Для каждого результата выпишите минимальные действия.</strong> Review findings — чтение кода, поиск и, возможно, запуск проверок. Написать тесты — появляется редактирование, но не раньше.</li>
+        <li><strong>Для каждого инструмента задайте неприятный вопрос:</strong> что плохого случится, если агент использует его неидеально? С <code>Read</code> вред ограничен. С <code>Bash</code> можно устроить приключение. С <code>Edit</code> — полноценный выход за роль.</li>
+        <li><strong>Уберите всё, без чего роль всё ещё справляется.</strong> Documenter не запускает команды — убирайте <code>Bash</code>. Reviewer не должен править код — убирайте <code>Edit</code>. Tester пишет только тесты — сужайте редактирование до test-каталогов.</li>
+      </ol>
+      <p>Эта последовательность хорошо работает на <code>agents/tester.md</code>. Начали с результата — дописать тесты и показать, что проверено, — и из этого выросли <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, <code>Edit</code> и <code>Write</code>. Не больше. Не «на всякий случай». Не «вдруг пригодится».</p>
+      <p>Когда вы в следующий раз откроете файл, в поле tools полезно видеть не список возможностей, а договор: что этой роли позволено ради результата — и что ей не позволено, даже если очень хочется помочь.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Инструкция без технической границы — табличка «не входить» на двери без замка.</li>
+        <li>L1 — права сессии, L2 — tools агента, L3 — командные правила и защищённые зоны.</li>
+        <li>L2 может сузить L1, но не расширить её.</li>
+        <li><code>permissionMode</code> и <code>mcpServers</code> могут дать больше, чем есть у сессии; для первого tester их не трогаем.</li>
+        <li>Если <code>tools</code> не указать, агент наследует почти все инструменты, включая <code>Edit</code>, <code>Write</code> и MCP.</li>
+        <li><code>disallowedTools</code> — подход «всё, кроме»; при нём агент может унаследовать <code>Agent</code>, поэтому узкой роли добавьте <code>Agent</code> в запрет.</li>
+        <li>Reviewer: <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, без <code>Edit</code>/<code>Write</code>.</li>
+        <li>Tester: <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, <code>Edit</code>, <code>Write</code>, но редактирует только test-каталоги.</li>
+        <li><code>Edit</code>/<code>Write</code> — не «на всякий случай», а под конкретный результат.</li>
+        <li>Текстовые границы каталогов не являются техническим замком; проверяйте changed files.</li>
+        <li>Проектируйте права от результата: результат → минимальные действия → риск неидеального использования → удаление лишнего.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать безопасные <code>tester.md</code> и <code>reviewer.md</code>, разложить их права по L1/L2 и проверить, не может ли агент выйти за границы роли.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>.claude/agents/tester.md</code>: <code>description</code> с запретом менять production-код, <code>tools: Read, Glob, Grep, Bash, Edit, Write</code>, <code>model: inherit</code>. В теле разрешите правки только в <code>src/test/</code> и <code>tests/</code>, а при необходимости production-фикса требуйте остановиться и вернуть объяснение.</li>
+        <li>Создайте <code>.claude/agents/reviewer.md</code> с <code>tools: Read, Glob, Grep, Bash</code> без <code>Edit</code>/<code>Write</code>; тело должно требовать findings с severity, <code>file:line</code> и evidence.</li>
+        <li>Заполните <code>PERMISSIONS_AUDIT.md</code>: для ролей reviewer, tester, documenter и debugger укажите результат, минимальные tools, что не выдано и что случится при неидеальном использовании инструмента.</li>
+        <li>Придумайте учебный diff в Commerce OS с тестовым файлом и production-файлом. Если Claude Code доступен, вызовите <code>@agent-tester</code> на фейковой задаче; если нет — вручную сымитируйте результат. Проверьте changed files: production-файл в списке означает отказ, даже если тесты зелёные.</li>
+        <li>Проверьте конфиги по вопросу «сможет ли агент случайно улучшить то, что я не просил?» и запишите вывод в <code>PERMISSIONS_AUDIT.md</code>. Не меняйте реальный код проекта.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните конфиги и аудит вручную в редакторе, а результат tester сымитируйте по фейковому diff; недоступные команды разберите по документации. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>У reviewer нет <code>Edit</code> и <code>Write</code>.</li>
+        <li>У tester есть <code>Edit</code>/<code>Write</code>, но в инструкции явно ограничены test-каталоги.</li>
+        <li>В <code>description</code> tester зафиксировано, что production-код не меняется.</li>
+        <li>Есть stop condition для случая «нужен production-фикс».</li>
+        <li>В <code>PERMISSIONS_AUDIT.md</code> разобраны четыре роли и их риски.</li>
+        <li>L1/L2/L3 не перепутаны: tools агента не выходят за права сессии.</li>
+        <li>Проверены changed files, а не только зелёный статус тестов.</li>
+        <li>В практике только фейковые данные, без секретов и реальных репозиториев.</li>
+        <li>Если Claude Code недоступен, аудит и симуляция выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>12 уровень · лекция 1. Tools — это allow-list под результат роли, а не список возможностей «на всякий случай». <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level12.lecture01" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
