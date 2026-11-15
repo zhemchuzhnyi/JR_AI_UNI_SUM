@@ -24,7 +24,9 @@
 
 ## Практика
 
-Практика вебинара — `file2md`: агент, который извлекает markdown из PDF, HTML и Excel через Python-скрипты. Она будет добавлена отдельной capstone-страницей после разбора лекций.
+- [Агент file2md: PDF, HTML и Excel → markdown](practice/index.html)
+
+Capstone-задание: собрать агента, три Python-скрипта, `requirements.txt`, README с двумя интерфейсами и четыре демо-прогона.
 
 ## Статус
 
@@ -33,4 +35,5 @@
 - Добавлена лекция 1 уровня 12: L1/L2-права, least privilege, tools для tester/reviewer и проверка changed files.
 - Добавлена лекция 2 уровня 12: четыре слоя capability, scoped skills, MCP, memory и контур знаний tester/migration assistant.
 - Добавлена лекция 3 уровня 12: context isolation, worktree isolation, `isolation: worktree`, `claude --worktree` и выбор изоляции под боль.
-- Следующий шаг — следующие лекции уровня 12, затем контрольные вопросы и практика.
+- Добавлена практика вебинара 8: агент `file2md`, три скрипта, requirements, README и четыре демо-прогона.
+- Следующий шаг — следующие лекции уровня 12 и контрольные вопросы.

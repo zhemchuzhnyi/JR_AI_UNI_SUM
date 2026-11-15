@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Практика вебинара 8: агент file2md извлекает markdown из PDF, HTML и Excel через узкие Python-скрипты, переводит человеческие параметры в точные вызовы и соблюдает output contract.">
+  <title>Claude Code — вебинар 8, практика file2md</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../level12/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a></nav>
+    <header>
+      <div class="eyebrow">Практика вебинара 8</div>
+      <h1>Агент file2md</h1>
+      <div class="subtitle">PDF · HTML · Excel · Python-скрипты · output contract</div>
+    </header>
+
+    <div class="lead">
+      Главная идея — <strong>агент думает, скрипт пашет</strong>. LLM понимает человеческий запрос и переводит его в точный вызов, а узкий Python-скрипт делает тяжёлую работу с файлами. Скрипты вы не пишете руками: просите Claude Code создать их, зафиксировать зависимости и проверить запуск.
+    </div>
+
+    <section>
+      <h2>Что получится</h2>
+      <ul>
+        <li><code>.claude/agents/file2md.md</code> — project-scope агент в Git;</li>
+        <li>три скрипта в <code>.claude/scripts/</code>: <code>pdf2md.py</code>, <code>html2md.py</code>, <code>excel2md.py</code>;</li>
+        <li><code>requirements.txt</code> с точными версиями зависимостей;</li>
+        <li><code>README.md</code> с двумя интерфейсами, output contract и таблицей выжимки;</li>
+        <li>четыре демо-прогона в <code>log/</code>: A, B, C, D;</li>
+        <li>фейковые входные файлы в <code>input/</code> и результаты в <code>output/</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Вход и выход</h2>
+      <p>Используйте только вымышленные файлы:</p>
+      <pre><code>input/
+  report.pdf
+  page.html
+  data.xlsx
+output/</code></pre>
+      <p>Требования к данным:</p>
+      <ul>
+        <li>PDF — небольшой вымышленный отчёт на 10–20 страниц;</li>
+        <li>HTML — простая страница с заголовками, списком и таблицей;</li>
+        <li>Excel — 2–3 листа с вымышленными строками;</li>
+        <li>никаких реальных персональных данных, договоров, счетов, токенов и секретов.</li>
+      </ul>
+      <p>Агент читает файл из <code>input/</code> и пишет <code>.md</code> в <code>output/</code> или рядом с исходником, если output не указан. Другие каталоги он не трогает.</p>
+    </section>
+
+    <section>
+      <h2>Два интерфейса</h2>
+      <p>У практики два разных интерфейса, и их нельзя смешивать.</p>
+      <h3>Интерфейс для человека</h3>
+      <p>Человек говорит агенту живым языком:</p>
+      <pre><code>достань первую, среднюю и последнюю страницы report.pdf</code></pre>
+      <h3>Интерфейс для скрипта</h3>
+      <p>Скрипт понимает только точный машинный вызов:</p>
+      <pre><code>python .claude/scripts/pdf2md.py input/report.pdf output/report.md --pages 1,10,20</code></pre>
+      <p>У всех трёх скриптов общий интерфейс:</p>
+      <pre><code>&lt;script&gt; &lt;input&gt; &lt;output&gt; [--pages n,n]
+&lt;script&gt; &lt;input&gt; --info</code></pre>
+      <p><code>--info</code> — служебный вызов: он возвращает метаданные, например количество страниц PDF, список листов Excel или размер HTML. <code>--pages</code> принимает только конкретные номера. Понимание слов «первая, средняя, последняя» — работа агента, а не скрипта.</p>
+      <div class="callout">Скрипт остаётся тупым, узким и надёжным. Вся гибкость понимания языка — в агенте.</div>
+    </section>
+
+    <section>
+      <h2>Параметры агента</h2>
+      <p>В теле <code>file2md.md</code> должна быть таблица параметров:</p>
+      <table>
+        <thead><tr><th>Вид</th><th>Параметр</th><th>Поведение</th></tr></thead>
+        <tbody>
+          <tr><td>обязательный</td><td>путь к входному файлу</td><td>нет файла — стоп</td></tr>
+          <tr><td>опциональный</td><td><code>type = auto | pdf | html | excel</code></td><td><code>auto</code> определяет по расширению; можно перебить явно</td></tr>
+          <tr><td>опциональный</td><td><code>pages</code> словами: «первую, среднюю, последнюю»</td><td>агент переводит слова в числа; для HTML — честный отказ, у него нет страниц</td></tr>
+          <tr><td>опциональный</td><td><code>output</code></td><td>куда класть <code>.md</code>; дефолт — рядом с исходником</td></tr>
+        </tbody>
+      </table>
+      <p>Правила:</p>
+      <ul>
+        <li><code>type=auto</code> — определить формат по расширению; неизвестное расширение — честный отказ, а не догадка;</li>
+        <li><code>pages</code> для PDF — сначала вызвать <code>--info</code>, получить количество страниц, вычислить номера, затем вызвать скрипт с <code>--pages</code>;</li>
+        <li><code>pages</code> для HTML — сказать, что у HTML нет страниц, и предложить извлечь весь документ;</li>
+        <li><code>pages</code> для Excel — если страницы не поддерживаются, честно отказать или предложить листы;</li>
+        <li><code>output</code> не указан — писать рядом с исходником;</li>
+        <li>повторный прогон перезаписывает результат, а не плодит копии.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Контракт агента</h2>
+      <p>Минимальный frontmatter:</p>
+      <pre><code>---
+name: file2md
+description: Extracts Markdown from PDF, HTML and Excel using Python scripts. Understands human page requests and calls the right script.
+tools: Read, Glob, Grep, Bash, Edit, Write
+model: inherit
+---</code></pre>
+      <p>Тело инструкции должно содержать:</p>
+      <ol>
+        <li><strong>Роль:</strong> агент-переводчик между человеческим запросом и узкими Python-скриптами.</li>
+        <li><strong>Когда использовать:</strong> нужно извлечь markdown из PDF, HTML или Excel.</li>
+        <li><strong>Действия:</strong> определить тип, при необходимости вызвать <code>--info</code>, перевести параметры, вызвать нужный скрипт, проверить exit code.</li>
+        <li><strong>Границы:</strong> скрипты только в <code>.claude/scripts/</code>; не трогать ничего за пределами <code>input/</code>, <code>output/</code> и <code>.claude/scripts/</code>; выход за границу — стоп.</li>
+        <li><strong>Формат результата:</strong> команда, exit code, что извлечено, что не удалось, путь к файлу.</li>
+        <li><strong>Stop conditions:</strong> нет входного файла — спросить; неизвестный формат — отказ; скрипт упал — показать лог, не писать «готово»; HTML с <code>--pages</code> — честный отказ.</li>
+      </ol>
+      <p class="warning"><code>Bash</code> здесь опаснее, чем в read-only reviewer: он запускает Python. Поэтому границы каталогов и stop conditions обязательны. <code>Edit</code>/<code>Write</code> нужны только для создания скриптов и результатов, а не для правки чужих файлов.</p>
+    </section>
+
+    <section>
+      <h2>Скрипты</h2>
+      <p>Попросите Claude Code создать три узких скрипта:</p>
+      <table>
+        <thead><tr><th>Формат</th><th>Библиотеки</th><th>Что делает</th></tr></thead>
+        <tbody>
+          <tr><td>PDF</td><td><code>pdfplumber</code></td><td>извлекает текст по страницам</td></tr>
+          <tr><td>HTML</td><td><code>beautifulsoup4</code> + <code>markdownify</code></td><td>превращает HTML в markdown</td></tr>
+          <tr><td>Excel</td><td><code>openpyxl</code></td><td>читает листы и строки, собирает markdown-таблицы</td></tr>
+        </tbody>
+      </table>
+      <p>Требования к скриптам:</p>
+      <ul>
+        <li>общий CLI: <code>&lt;input&gt; &lt;output&gt; [--pages n,n]</code> и <code>--info</code>;</li>
+        <li><code>--info</code> не пишет выходной файл, а печатает метаданные;</li>
+        <li>неизвестный формат или отсутствующий файл — понятная ошибка и ненулевой exit code;</li>
+        <li>никаких сетевых запросов и удаления файлов;</li>
+        <li>зависимости зафиксированы в <code>requirements.txt</code> точными версиями.</li>
+      </ul>
+      <p>Пример вызова:</p>
+      <pre><code>python .claude/scripts/pdf2md.py input/report.pdf --info
+# -&gt; 20 страниц
+
+python .claude/scripts/pdf2md.py input/report.pdf output/report.md --pages 1,10,20
+# -&gt; exit code 0, output/report.md готов</code></pre>
+      <div class="callout">Главная ловушка — агент гадает «среднюю» без <code>--info</code>. В инструкции должно быть явно: сначала <code>--info</code>, потом вычислить страницы, потом <code>--pages</code>.</div>
+    </section>
+
+    <section>
+      <h2>Output contract</h2>
+      <p>После каждого запуска агент обязан вернуть:</p>
+      <ul>
+        <li>какой скрипт и с какими аргументами запущен;</li>
+        <li>exit code;</li>
+        <li>что извлечено: формат, страницы/листы, путь к <code>.md</code>;</li>
+        <li>что не удалось и какой лог это подтверждает;</li>
+        <li>changed files и границы: не выходил ли он за <code>input/</code>, <code>output/</code>, <code>.claude/scripts/</code>.</li>
+      </ul>
+      <p>Если скрипт упал, агент не врёт «готово», а показывает stderr/stdout и завершает работу с ошибкой.</p>
+    </section>
+
+    <section>
+      <h2>Четыре демо-прогона</h2>
+      <p>Каждый прогон записывайте в отдельный файл в <code>log/</code>: запрос, команды, exit code, результат и вывод.</p>
+
+      <h3>Прогон A — PDF и слова про страницы</h3>
+      <pre><code>достань первую, среднюю и последнюю страницы report.pdf</code></pre>
+      <p>Ожидаемое поведение:</p>
+      <ol>
+        <li><code>pdf2md.py input/report.pdf --info</code> → например, 20 страниц;</li>
+        <li>агент вычисляет <code>1,10,20</code>;</li>
+        <li><code>pdf2md.py input/report.pdf output/report.md --pages 1,10,20</code> → exit code 0.</li>
+      </ol>
+      <p>В логе должны быть видны оба вызова — служебный и рабочий.</p>
+
+      <h3>Прогон B — HTML и честный отказ от страниц</h3>
+      <pre><code>достань первую страницу page.html</code></pre>
+      <p>Ожидаемое поведение: агент объясняет, что у HTML нет страниц, и предлагает извлечь весь документ. Если пользователь соглашается — запускает <code>html2md.py input/page.html output/page.md</code> и возвращает exit code 0. Не выдумывает страницы и не подставляет <code>--pages</code>.</p>
+
+      <h3>Прогон C — Excel и явный type</h3>
+      <pre><code>извлеки data.xlsx, type=excel, output=output/data.md</code></pre>
+      <p>Ожидаемое поведение: агент запускает <code>excel2md.py input/data.xlsx output/data.md</code>, проверяет exit code и перечисляет листы/строки. <code>type=auto</code> тоже должен работать, если расширение <code>.xlsx</code>.</p>
+
+      <h3>Прогон D — негативный сценарий</h3>
+      <p>Сначала:</p>
+      <pre><code>извлеки missing.pdf</code></pre>
+      <p>Ожидаемое поведение: агент останавливается и спрашивает файл, не выдумывает содержимое.</p>
+      <p>Затем:</p>
+      <pre><code>извлеки input/unknown.bin</code></pre>
+      <p>Ожидаемое поведение: честный отказ, ненулевой exit code или объяснение, почему формат не поддержан. Никаких пустых <code>.md</code> «на всякий случай».</p>
+    </section>
+
+    <section>
+      <h2>README</h2>
+      <p>В <code>README.md</code> практики должны быть:</p>
+      <ul>
+        <li>два интерфейса: человеческий и машинный;</li>
+        <li>таблица параметров <code>type</code>, <code>pages</code>, <code>output</code>;</li>
+        <li>output contract;</li>
+        <li>таблица выжимки: размер входа → размер <code>.md</code>, сколько страниц/листов извлечено;</li>
+        <li>команды запуска и ограничения;</li>
+        <li>список зависимостей и версий.</li>
+      </ul>
+      <p>Не пишите «markdown эффективнее в 150 раз»: покажите реальный замер, например «PDF 1.8 МБ → 12 КБ текстовой сути; отброшены служебные и оформительские блоки». Это разные утверждения.</p>
+    </section>
+
+    <section>
+      <h2>Проверка</h2>
+      <ul>
+        <li><code>.claude/agents/file2md.md</code> лежит в project-scope и виден в Git.</li>
+        <li>Агент и три скрипта закоммичены; <code>requirements.txt</code> содержит точные версии.</li>
+        <li><code>type=auto</code> работает для PDF, HTML и Excel; неизвестный формат даёт честный отказ.</li>
+        <li><code>pages</code> словами доказан логом: сначала <code>--info</code>, потом <code>--pages</code> с числами.</li>
+        <li>Для HTML с <code>--pages</code> — честный отказ, без выдуманных страниц.</li>
+        <li>Нет входного файла — агент спрашивает, а не выдумывает данные.</li>
+        <li>Скрипт упал — агент показывает лог, а не пишет «готово».</li>
+        <li>В инструкции есть границы <code>input/</code>, <code>output/</code>, <code>.claude/scripts/</code> и stop conditions.</li>
+        <li>Четыре демо-прогона A–D лежат в <code>log/</code>.</li>
+        <li><code>README.md</code> содержит два интерфейса, output contract и таблицу выжимки.</li>
+        <li>Повторный прогон перезаписывает результат, а не плодит копии.</li>
+        <li>В материалах только вымышленные файлы, без реальных данных и секретов.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Безопасность</h2>
+      <ul>
+        <li>Не используйте реальные PDF, договоры, счета, резюме и персональные данные.</li>
+        <li>Не давайте агенту доступ к домашней папке и чужим репозиториям.</li>
+        <li>Скрипты работают только с <code>input/</code>, <code>output/</code> и <code>.claude/scripts/</code>.</li>
+        <li>Запрещены сетевые запросы, установка пакетов из случайных источников и удаление файлов.</li>
+        <li><code>requirements.txt</code> фиксирует версии; устанавливайте зависимости в отдельное виртуальное окружение.</li>
+        <li>Не публикуйте результаты с чувствительными данными.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Если Claude Code недоступен</h2>
+      <p>Создайте <code>file2md.md</code>, три скрипта и <code>requirements.txt</code> вручную либо используйте готовые локальные скрипты с тем же CLI. Четыре демо-прогона можно выполнить на фейковых файлах вручную; если Python-библиотек нет, симулируйте <code>--info</code>, <code>--pages</code> и exit codes в <code>log/</code> и честно отметьте, что именно не запускалось. Критерии проверки не меняются: границы, честные ошибки, оба вызова для pages и отсутствие реальных данных.</p>
+    </section>
+
+    <footer>Вебинар 8 · практика. Агент думает, скрипт пашет: человеческий запрос → точный CLI → проверяемый markdown. <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;">Источник вебинара</a></footer>
+  </main>
+</body>
+</html>

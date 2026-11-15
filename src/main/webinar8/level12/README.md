@@ -16,4 +16,6 @@
 - output contract и приёмка результата;
 - failure modes и жизненный цикл агента.
 
-Практика вебинара — `file2md`: извлечение markdown из PDF, HTML и Excel через Python-скрипты.
+## Практика вебинара
+
+- [Агент file2md](../practice/index.html): извлечение markdown из PDF, HTML и Excel через Python-скрипты.
