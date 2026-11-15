@@ -229,6 +229,9 @@ src/main/
       lecture1/
         summary.txt
         index.html
+      lecture2/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -289,7 +292,7 @@ HTML-аналог:
 - **Вебинар 5:** уровень 9 — лекции 1–5 (extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files), 25 контрольных вопросов; практика — `/prompt-improve`. Аудит покрытия: [вебинар 5](webinar5/COVERAGE.md).
 - **Вебинар 6:** уровень 10 — лекции 1–5 (plugin как упаковка workflow; выбор по категориям; scope, namespace и lifecycle; проверка plugin; team-ready prototype), 25 контрольных вопросов; практика — team-kit и проверка plugin. Аудит покрытия: [вебинар 6](webinar6/COVERAGE.md).
 - **Вебинар 7:** уровень 11 — лекции 1–5 (терминология агентов; built-in delegation; custom subagent; engineering contract; роли агентов и 3-слойная модель review), 25 контрольных вопросов; практика — md2html. Аудит покрытия: [вебинар 7](webinar7/COVERAGE.md).
-- **Вебинар 8:** уровень 12 — лекция 1 (tools и permissions для subagent, L1/L2-права, least privilege, границы tester/reviewer); материалы будут добавляться по мере разбора следующих лекций.
+- **Вебинар 8:** уровень 12 — лекции 1–2 (tools и permissions для subagent; scoped skills, MCP и memory; least privilege и границы tester/reviewer); материалы будут добавляться по мере разбора следующих лекций.
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

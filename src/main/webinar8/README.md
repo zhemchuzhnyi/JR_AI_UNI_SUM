@@ -7,6 +7,7 @@
 ### Уровень 12
 
 - [Лекция 1 — Tools и permissions для subagent](level12/lecture1/index.html)
+- [Лекция 2 — Scoped skills, MCP и memory](level12/lecture2/index.html)
 
 Материалы уровня будут добавляться по мере разбора следующих лекций вебинара 8.
 
@@ -29,4 +30,5 @@
 - Создана папка вебинара 8 и уровень 12.
 - Добавлена ссылка на презентацию вебинара.
 - Добавлена лекция 1 уровня 12: L1/L2-права, least privilege, tools для tester/reviewer и проверка changed files.
+- Добавлена лекция 2 уровня 12: четыре слоя capability, scoped skills, MCP, memory и контур знаний tester/migration assistant.
 - Следующий шаг — следующие лекции уровня 12, затем контрольные вопросы и практика.

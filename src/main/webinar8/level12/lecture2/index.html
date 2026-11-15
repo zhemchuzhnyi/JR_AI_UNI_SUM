@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Scoped skills, MCP и memory: четыре слоя capability агента, least privilege для skills/MCP/memory, контур знаний tester и migration assistant.">
+  <title>Claude Code — 12 уровень, лекция 2</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture1/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a></nav>
+    <header>
+      <div class="eyebrow">Scoped capability</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">12 уровень · лекция 2</div>
+    </header>
+
+    <div class="lead">
+      Tools — руки, skills — инструкция к работе, MCP — окна во внешний мир, memory — заметки на полях. Least privilege применяется ко всем четырём слоям, а не только к инструментам.
+    </div>
+
+    <section>
+      <h2>1. От инструментов к знаниям: четыре слоя capability</h2>
+      <p>Когда вы впервые настраиваете subagent’ов, легко зациклиться на поле <code>tools</code> и решить, что работа почти сделана. Ловушка понятная: инструменты видны сразу и создают приятное ощущение контроля. Но хороший агент определяется не только набором «рук» — ещё и набором «знаний». <code>Read</code>, <code>Bash</code>, <code>Edit</code> отвечают лишь на вопрос о действиях. Они не говорят, по какой процедуре агент работает, куда смотрит и что тащит из прошлых задач.</p>
+      <p>Возможности агента удобно разложить на четыре слоя. По-человечески: tools — руки, skills — инструкция к работе, MCP — окна во внешний мир, memory — заметки на полях.</p>
+      <table>
+        <thead><tr><th>Слой</th><th>Главный вопрос</th><th>Пример для tester</th></tr></thead>
+        <tbody>
+          <tr><td>Tools</td><td>Что агент может физически делать?</td><td><code>Read</code>, <code>Grep</code>, <code>Bash</code>, ограниченный <code>Edit</code></td></tr>
+          <tr><td>Skills</td><td>По какой процедуре он работает?</td><td><code>test-strategy</code></td></tr>
+          <tr><td>MCP</td><td>Какие внешние данные он может читать?</td><td>обычно ничего</td></tr>
+          <tr><td>Memory</td><td>Что он переносит между запусками?</td><td>локальные заметки о структуре тестов</td></tr>
+        </tbody>
+      </table>
+      <p>Здесь особенно важна одна мысль: принцип least privilege применяется не только к tools, а сразу ко всем четырём слоям. Reviewer не занимается миграциями — <code>migration-plan</code> ему не нужен. Tester не анализирует внешнюю документацию — не нужен docs lookup. Роль не требует памяти — отсутствие memory не «недонастроенный агент», а дисциплина.</p>
+      <p>Точные имена полей и способ привязки skills, MCP и memory могут отличаться в вашей версии Claude Code и в структуре каталогов команды. Важна логика ограничения доступа; синтаксис сверяйте с текущей документацией.</p>
+      <div class="callout">Проверка конфигурации: уберу этот skill, MCP или память — агент перестанет выполнять роль? Ответ «нет, просто ему спокойнее» означает лишний контекст.</div>
+    </section>
+
+    <section>
+      <h2>2. Scoped skills: свой workflow на роль</h2>
+      <p>Со skills особенно легко ошибиться, потому что skill кажется безобидным — «всего лишь инструкция», не база данных и не запись в прод. Именно здесь многие подключают агенту все skills команды «на всякий случай». Агент начинает мыслить слишком широко, узкая роль расползается.</p>
+      <p>В Workflow Kit нет одного большого skill «делай всё хорошо» — там отдельные артефакты под разные типы повторяемой работы: <code>pr-review</code>, <code>test-strategy</code>, <code>migration-plan</code>, <code>release-notes</code>, возможно, <code>issue-analysis</code>. У разных ролей разные процедуры мышления. Reviewer читает diff, ищет риски, возвращает findings по severity. Tester думает уровнями тестов, edge cases, regression checks. Migration assistant читает changelog, ищет breaking changes, собирает compatibility picture. Дай всем всё сразу — получишь агента с богатым внутренним миром и слабой фокусировкой.</p>
+      <p>Внутри Workflow Kit:</p>
+      <pre><code>workflow-kit/
+  .claude/
+    skills/
+      pr-review/
+      test-strategy/
+      migration-plan/
+    agents/
+      reviewer.md
+      tester.md
+      migration-assistant.md</code></pre>
+      <p>Важно, чтобы <code>reviewer.md</code> тянул только review-skill, а <code>tester.md</code> — только тестовый workflow:</p>
+      <pre><code>---
+name: reviewer
+tools: [Read, Glob, Grep, Bash]
+skills:
+  - pr-review
+---</code></pre>
+      <pre><code>---
+name: tester
+tools: [Read, Glob, Grep, Bash, Edit, Write]
+skills:
+  - test-strategy
+---</code></pre>
+      <p>Эти два примера похожи внешне, но мыслят по-разному. Reviewer не должен советовать миграционный план только потому, что в проекте лежит красивый skill <code>migration-plan</code>. Tester не должен посреди проверки refund diff переключаться в автора release notes.</p>
+      <p>Skill не даёт новых прав. Reviewer, подключённый к <code>pr-review</code>, но без <code>Edit</code>, останется read-only. Skills описывают, как думать; tools определяют, что можно сделать руками. Поэтому scoped skill — не замена permission design, а его продолжение.</p>
+      <p>Есть и техническая деталь: skills — это предзагрузка, а не пропуск. Запретить агенту вызывать skills можно только через tools: не включать <code>Skill</code> в список или добавить его в <code>disallowedTools</code>. С MCP так же: явный список tools отрезает и MCP-инструменты сессии.</p>
+    </section>
+
+    <section>
+      <h2>3. Scoped MCP: внешние источники привязаны к роли</h2>
+      <p>С MCP хочется поступить как с power tools в гараже: пусть лежат у всех, вдруг пригодятся. С внешними источниками это особенно опасно. Лишний skill создаёт шум в мышлении. Лишний MCP создаёт шум в мышлении и лишнюю поверхность риска.</p>
+      <p>В рамках этой лекции не нужна полная картина настройки MCP, транспортов и авторизации. Достаточно зафиксировать простую идею: не нужен роли внешний источник — не подключайте никакой MCP. Пустой MCP-раздел — не обида агенту, а комплимент инженерной зрелости.</p>
+      <p>Для обычного reviewer на PR в Commerce OS внешние источники чаще всего не нужны: есть diff, файлы, тесты, команда локальных проверок. У tester хватает кода, существующих тестов и локального <code>Bash</code>. А вот migration assistant — другое дело: ему реально нужен read-only доступ к docs lookup, чтобы сверяться с официальными changelog’ами и migration notes. Не база пользователей, не админка магазина, не платёжная система — один конкретный внешний канал для одной конкретной роли.</p>
+      <pre><code>mcp:
+  - docs-lookup   # read-only
+  # без доступа к БД
+  # без внешних write-actions</code></pre>
+      <p>В презентации вебинара это поле может называться <code>mcpServers</code>; в примерах лекции используется <code>mcp</code>. Сверяйтесь с текущей схемой Claude Code.</p>
+      <p>В такой форме граница видна особенно хорошо: агент получает не «MCP в целом», а один конкретный внешний источник в режиме чтения. Read-only и write-capable — два разных мира. Read-only рискует тем, что принесёт в контекст слишком много данных или мусора. Write-capable уже может изменить внешнее состояние системы. Отсюда привычка: можно обойтись без MCP — обходимся; нельзя — сначала думаем о read-only.</p>
+      <p>Представьте: tester пишет regression test для refund flow. Подключите ему по умолчанию docs lookup, DB MCP и внешний issue tracker — и он пойдёт гулять по внешнему миру там, где задача решается чтением двух test-файлов и одного service-класса. Умнее он не станет. Он просто будет отвлекаться дороже.</p>
+    </section>
+
+    <section>
+      <h2>4. Scoped memory: без цифрового хлама</h2>
+      <p>Memory кажется самой уютной частью конфигурации. Кажется, будто сейчас мы научим агента «запоминать важное» — и дальше всё станет только лучше. На практике memory — место, где особенно быстро копится усталость системы. Хорошая memory экономит повторение стабильных фактов. Плохая консервирует случайные догадки и превращает их в привычки.</p>
+      <p>Первое правило простое: не каждому агенту нужна память. Новый агент без memory — нормальный старт. Особенно для reviewer: ему часто помогает свежий взгляд, а не ассоциации из прошлых diff’ов.</p>
+      <p>Если память всё же нужна, кладите только стабильные, проверенные, повторяемые факты. Не «кажется, payment tests сегодня флакали, давайте их больше не трогать», а «integration tests лежат в таком-то каталоге» или «regression tests по refund ищем по префиксу <code>Refund</code>». Memory хранит договорённости и устойчивые паттерны, а не эмоциональные воспоминания агента о тяжёлом вторнике.</p>
+      <table>
+        <thead><tr><th>В memory стоит класть</th><th>В memory не стоит класть</th></tr></thead>
+        <tbody>
+          <tr><td>расположение test-пакетов</td><td>разовую гипотезу о причине бага</td></tr>
+          <tr><td>устойчивые naming conventions</td><td>временный stack trace</td></tr>
+          <tr><td>проверенные правила команды</td><td>«эти тесты обычно падают, игнорируй»</td></tr>
+          <tr><td>стабильные ограничения роли</td><td>секреты, токены, чувствительные данные</td></tr>
+        </tbody>
+      </table>
+      <p>Локальная память роли tester:</p>
+      <pre><code># tester memory
+- unit tests лежат в `backend/src/test/java`
+- regression tests для refund ищем по префиксу `Refund`</code></pre>
+      <p>Такой формат хорош тем, что он короткий и почти не оставляет пространства для фантазии. Но даже здесь важно помнить: как только память становится общей для команды, она перестаёт быть личной заметкой и превращается в общее поведение — а оно должно проходить review. Иначе у вас не «умный агент команды», а распределённая система распространения устаревших убеждений. Кто-то однажды добавил в memory фразу про flaky tests, и через месяц tester обходит важные проверки с невинным видом «я так запомнил».</p>
+    </section>
+
+    <section>
+      <h2>5. Пример agents/tester.md: узкий контур знаний</h2>
+      <p>Теория быстро проясняется, когда вы собираете одного агента целиком. Возьмём <code>agents/tester.md</code> из Workflow Kit: он помогает в Commerce OS в задачах вроде bugfix в refund sorting или regression-проверок вокруг inbox. Нужен агент, который читает код, запускает тестовые команды, предлагает тест-дизайн и, если роль разрешает, редактирует только test-файлы. Ему не нужны review-skill, migration-plan, внешний docs lookup и память обо всех инцидентах компании. Берём собранный набор tools и доводим до рабочего профиля: один scoped skill, локальная память, те же жёсткие границы на редактирование.</p>
+      <pre><code>---
+name: tester
+description: проектирует и запускает тесты для текущего diff; production-код не меняет
+tools: [Read, Glob, Grep, Bash, Edit, Write]
+skills:
+  - test-strategy
+memory:
+  scope: agent-local
+---</code></pre>
+      <pre><code>## Ограничения
+Редактируй только файлы в `src/test` и `tests/`.
+Не используй внешние MCP servers, если это не указано отдельно.</code></pre>
+      <p>В этом примере видно несколько инженерных решений. <code>Edit</code> и <code>Write</code> есть, но это не «широкое право на всё подряд»: ограничение на test-файлы закреплено в инструкции и, по возможности, техническими рамками проекта. Skill ровно один — <code>test-strategy</code>; этого хватает мыслить в правильной плоскости: unit, integration, API, regression, edge cases. Memory локальная: короткие ролевые заметки можно, но всё подряд в основную сессию не тащится и на другие роли не влияет.</p>
+      <p>А migration assistant, напротив, будет собран иначе:</p>
+      <pre><code>---
+name: migration-assistant
+tools: [Read, Glob, Grep, Bash]
+skills:
+  - migration-plan
+mcp:
+  - docs-lookup   # read-only
+---</code></pre>
+      <p>Здесь уже нет Edit, зато появляется один внешний read-only источник — этой роли реально нужно читать официальные руководства и changelog’и. Полезно сравнивать такие агенты рядом: не потому, что у них «разные профессии», а потому что у них разный минимально достаточный контур знаний. А если задаче нужен только read-only анализ без правки test-файлов — это не новый агент с нуля, а более узкий режим того же tester. В этом и главная инженерная идея scoped design.</p>
+    </section>
+
+    <section>
+      <h2>6. Как это выглядит в Workflow Kit</h2>
+      <p>Когда вы настраиваете одного агента, всё довольно понятно. Настоящая красота scoped-подхода видна на уровне набора ролей. Workflow Kit перестаёт быть свалкой «полезных штук для Claude» и становится системой: у каждой роли свои tools, skill, внешний источник, подход к памяти. Тут доверяешь не уверенности тона, а предсказуемости поведения.</p>
+      <table>
+        <thead><tr><th>Агент</th><th>Skills</th><th>MCP</th><th>Memory</th><th>Почему этого достаточно</th></tr></thead>
+        <tbody>
+          <tr><td>Reviewer</td><td><code>pr-review</code></td><td>обычно нет</td><td>чаще всего нет</td><td>у него уже есть diff, файлы и checks</td></tr>
+          <tr><td>Tester</td><td><code>test-strategy</code></td><td>обычно нет</td><td>agent-local, короткая</td><td>ему нужен фокус на тестах, а не внешний мир</td></tr>
+          <tr><td>Migration assistant</td><td><code>migration-plan</code></td><td>docs lookup, read-only</td><td>локальная migration notes</td><td>без внешних docs эта роль слепнет</td></tr>
+        </tbody>
+      </table>
+      <p>Обратите внимание: таблица очень скучная. И это прекрасно. Хороший Workflow Kit редко выглядит эффектно — он выглядит так, будто кто-то спокойно и педантично продумал границы. Reviewer не получает migration-plan, чтобы не видеть миграции в каждом rename. Tester не получает DB MCP, чтобы не искать внешнюю причину там, где сначала нужно написать regression test. Migration assistant не получает Edit, потому что его задача — собрать картину совместимости, а не переписать полпроекта.</p>
+      <p>Именно поэтому scoped capability почти всегда повышает не только безопасность, но и качество результата. Чем уже контур знаний роли, тем меньше ложных срабатываний, контекстной пыли и соблазна «помочь ещё вот здесь, раз уж открыл файл». В хорошем Workflow Kit агент не чувствует себя всемогущим. Он чувствует себя уместным. А это для инженерного результата куда полезнее.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Capability агента — четыре слоя: tools, skills, MCP и memory.</li>
+        <li>Least privilege применяется ко всем четырём слоям, а не только к tools.</li>
+        <li>Skill задаёт процедуру мышления, но не выдаёт новых прав.</li>
+        <li>Reviewer не нужен migration-plan; tester не нужен docs lookup «на всякий случай».</li>
+        <li>MCP — конкретный внешний источник под роль, а не «MCP в целом».</li>
+        <li>По умолчанию лучше без MCP; если нужен, сначала read-only.</li>
+        <li>Skills — предзагрузка, а не пропуск: ограничить можно через tools или <code>disallowedTools</code>.</li>
+        <li>Явный список tools отрезает и MCP-инструменты сессии.</li>
+        <li>Memory не обязательна; отсутствие памяти — дисциплина, а не недонастройка.</li>
+        <li>В memory кладут стабильные факты и правила, а не гипотезы, stack trace, секреты и «эти тесты всегда падают».</li>
+        <li>Общая memory проходит review, как общее поведение команды.</li>
+        <li>Проверка конфигурации: убери capability — роль перестанет работать? Если нет, это лишний контекст.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> спроектировать scoped-контур знаний для tester и migration assistant, проверить least privilege по skills, MCP и memory и зафиксировать, какие capability действительно нужны роли.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>CAPABILITY_MAP.md</code> с таблицей для ролей reviewer, tester и migration assistant: tools, skills, MCP, memory и ответ на вопрос «почему этого достаточно».</li>
+        <li>Соберите <code>agents/tester.md</code>: <code>tools: Read, Glob, Grep, Bash, Edit, Write</code>, skill <code>test-strategy</code>, <code>memory: scope: agent-local</code>, без MCP. В инструкции оставьте правки только в test-каталогах и запрет production-кода.</li>
+        <li>Соберите <code>agents/migration-assistant.md</code>: <code>tools: Read, Glob, Grep, Bash</code>, skill <code>migration-plan</code>, один read-only MCP <code>docs-lookup</code>, без <code>Edit</code>/<code>Write</code> и без памяти «на всякий случай».</li>
+        <li>Проведите аудит: для каждого skill, MCP и memory-факта ответьте, перестанет ли роль работать без него. Уберите всё, что не влияет на результат; отдельно проверьте, что в memory нет гипотез, временных stack trace, секретов и фраз вроде «эти тесты всегда падают».</li>
+        <li>Если Claude Code доступен, вызовите <code>@agent-tester</code> и <code>@agent-migration-assistant</code> на фейковых задачах и сравните поведение; если нет — сымитируйте ответы вручную. Запишите вывод в <code>CAPABILITY_MAP.md</code>, не используя реальные данные и секреты.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> соберите конфиги и проведите аудит вручную в редакторе, а поведение агентов опишите по ожидаемому контракту. Критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>CAPABILITY_MAP.md</code> разобраны три роли и все четыре слоя capability.</li>
+        <li>У tester есть только <code>test-strategy</code>, без review/migration skills и без MCP.</li>
+        <li>У migration assistant есть <code>migration-plan</code> и только read-only <code>docs-lookup</code>.</li>
+        <li>У migration assistant нет <code>Edit</code>/<code>Write</code>.</li>
+        <li>Memory содержит только стабильные факты; секретов и временных гипотез нет.</li>
+        <li>Для каждой capability есть ответ, зачем она нужна роли.</li>
+        <li>Лишние skills, MCP и memory удалены или обоснованы.</li>
+        <li>В практике только фейковые данные и учебные конфиги.</li>
+        <li>Если Claude Code недоступен, конфиги и аудит выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>12 уровень · лекция 2. Scoped design — это не «дать всё полезное», а собрать минимальный контур знаний под конкретную роль. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level12.lecture02" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
