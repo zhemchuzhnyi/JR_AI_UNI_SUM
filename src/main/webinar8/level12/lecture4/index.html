@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Output contract агента: секции результата, evidence, [hypothesis], приёмка reviewer и tester, решения принять/вернуть/отклонить и запрос по пяти элементам.">
+  <title>Claude Code — 12 уровень, лекция 4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a></nav>
+    <header>
+      <div class="eyebrow">Output contract</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">12 уровень · лекция 4</div>
+    </header>
+
+    <div class="lead">
+      «Проверь это» — не задача, а приглашение к уверенному тексту без evidence. Output contract заранее задаёт, что агент обязан вернуть, где доказательства и когда результат можно принять.
+    </div>
+
+    <section>
+      <h2>1. Фраза «проверь это» даёт мутный результат</h2>
+      <p>Когда люди впервые начинают работать с агентами, рука сама тянется к коротким командам: «проверь diff», «посмотри тесты», легендарное «review this». Кажется, что умный агент сам всё поймёт. Разбирается он, к сожалению, не в том, что вам нужно, а в том, что проще выдать убедительным текстом.</p>
+      <p>Представьте типичную сцену в Commerce OS. Вы трогаете refund flow, где логика возвратов завязана на суммы, статусы заказа и ограничения по времени. Отдаёте reviewer-агенту: «проверь текущий diff». В ответ: «Код в целом выглядит нормально, возможно, стоит добавить пару тестов и проверить edge cases». Агент не глупый — вы не задали ему форму результата. Он не знает, возвращать ли замечания по severity, указывать ли <code>file:line</code>, отделять ли гипотезы от фактов, можно ли редактировать код и что делать, если diff накрыл половину модуля.</p>
+      <p>Разница между двумя запросами:</p>
+      <p>Плохо:</p>
+      <pre><code>Проверь этот diff.</code></pre>
+      <p>Лучше:</p>
+      <pre><code>Проверь текущий diff в auth и billing flows.
+Код не редактируй.
+Сфокусируйся на пропущенных тестах, совместимости API и крайних случаях.
+Верни замечания по severity с file:line, evidence и предложенными проверками.
+Если diff больше 500 строк — остановись и попроси разбить change.</code></pre>
+      <p>Во втором варианте агенту уже некуда расплываться. И важно это не только для него, но и для вас — именно вам потом решать, брать результат в работу или гнать на доработку.</p>
+      <div class="callout">Агент без output contract похож на коллегу, который на вопрос «ну как там ревью?» отвечает: «в целом нормально, но есть нюансы».</div>
+    </section>
+
+    <section>
+      <h2>2. Output contract против Session Handoff Note</h2>
+      <p>Чтобы не смешивать разные артефакты, полезно развести два документа, похожих по духу, но разных по цели: в одном вы передаёте дальше состояние задачи, в другом — принимаете результат делегированной роли.</p>
+      <p>Output contract — договор о результате, который агент должен вернуть. Не о личности, не о «стиле работы», не о красивом тексте — именно о результате. Вы заранее решаете, что обязано быть в ответе, где доказательства, как помечается неопределённость, что считается нарушением границ и когда агент обязан остановиться.</p>
+      <table>
+        <thead><tr><th>Артефакт</th><th>Главный вопрос</th><th>Когда используется</th><th>Что в нём главное</th></tr></thead>
+        <tbody>
+          <tr><td><code>HANDOFF_NOTE.md</code> / Session Handoff Note</td><td>«Что происходит с задачей сейчас?»</td><td>когда вы передаёте работу другой сессии или человеку</td><td>текущее состояние, решения, открытые вопросы, следующий шаг</td></tr>
+          <tr><td>Output contract агента</td><td>«Можно ли принять этот результат?»</td><td>когда subagent закончил роль и вернул output</td><td>формат результата, evidence, scope, uncertainty, stop conditions</td></tr>
+        </tbody>
+      </table>
+      <p>Session Handoff Note вы уже встречали раньше — он нужен, чтобы не потерять контекст длинной задачи между сессиями. Output contract нужен для другого: посмотреть на результат reviewer- или tester-агента и сказать одно из трёх — «беру в работу», «вернись и уточни», «нарушены границы, не принимаю».</p>
+      <p>Это различие особенно полезно помнить в Workflow Kit. <code>agents/reviewer.md</code> и <code>agents/tester.md</code> — не просто файлы с ролью, а артефакты, обязанные возвращать результат в предсказуемом формате. Если reviewer пишет свободное эссе, а tester — «тесты добавлены», у вас не инженерный процесс, а литературный кружок с элементами shell-скриптов.</p>
+    </section>
+
+    <section>
+      <h2>3. Из чего состоит хороший output contract</h2>
+      <p>Сильный контракт не обязан быть большим — наоборот, чем он короче и яснее, тем лучше работает. Но без нескольких секций вы снова скатываетесь в ситуацию, когда агент что-то сказал, а вы угадываете, можно ли на это опираться.</p>
+      <table>
+        <thead><tr><th>Секция</th><th>Зачем она нужна</th><th>Что вы проверяете</th></tr></thead>
+        <tbody>
+          <tr><td>summary</td><td>даёт короткую рамку результата</td><td>понял ли агент задачу и scope</td></tr>
+          <tr><td>findings</td><td>содержит замечания или предложения</td><td>есть ли у замечаний severity и привязка к коду</td></tr>
+          <tr><td>evidence</td><td>доказывает каждое важное утверждение</td><td>есть ли <code>file:line</code>, команда, лог, diff</td></tr>
+          <tr><td>tests/checks run</td><td>показывает, что реально запускалось</td><td>есть ли команды и exit codes, а не «вроде запускал»</td></tr>
+          <tr><td>uncertainty</td><td>отделяет факты от предположений</td><td>есть ли пометки <code>[hypothesis]</code></td></tr>
+          <tr><td>changed files</td><td>показывает, нарушил ли агент границы роли</td><td>для reviewer — должно быть пусто</td></tr>
+          <tr><td>next step</td><td>делает результат применимым</td><td>понятно ли, что делать дальше</td></tr>
+          <tr><td>stop conditions</td><td>ограничивает вред при нештатной ситуации</td><td>остановился ли агент там, где должен</td></tr>
+        </tbody>
+      </table>
+      <p>На практике это может выглядеть так:</p>
+      <pre><code>## Формат вывода
+- summary: 3–5 предложений, без воды
+- findings: severity, file:line, evidence, recommendation
+- tests/checks run: команда + exit code
+- uncertainty: отдельный блок с [hypothesis]
+- changed files: список или none
+- next step: одно ясное действие для разработчика</code></pre>
+      <p>Точные названия разделов и синтаксис agent file в текущей версии Claude Code могут отличаться. Важен принцип: результат устроен так, чтобы его можно было проверить, а не только прочитать.</p>
+      <p>Поля удобно делить на жёсткие и мягкие:</p>
+      <table>
+        <thead><tr><th>Тип поля</th><th>Пример</th><th>Чем хорош</th></tr></thead>
+        <tbody>
+          <tr><td>Жёсткое</td><td><code>orders/refund/RefundPolicy.java:87</code>, <code>./gradlew test</code>, <code>exit code 1</code>, <code>changed files: none</code></td><td>можно проверить почти механически</td></tr>
+          <tr><td>Мягкое</td><td><code>severity: major</code>, <code>risk: regression in refund flow</code>, <code>recommendation: add integration test</code></td><td>требует человеческого суждения</td></tr>
+        </tbody>
+      </table>
+      <p>Жёсткие поля защищают от красивой риторики, мягкие делают результат полезным. Если в контракте только мягкие поля, агент превращается в очень уверенного комментатора; если только жёсткие — он выдаёт сухой протокол без смысла. Хороший контракт держит баланс.</p>
+    </section>
+
+    <section>
+      <h2>4. Запрос агенту под контракт</h2>
+      <p>Даже хороший контракт бесполезен, если вы ставите задачу в стиле «ну посмотри». Он срабатывает только тогда, когда запрос сам сформулирован как инженерное задание: границы, фокус, запрет на лишнее, ожидаемый формат.</p>
+      <p>С reviewer-агентом это видно особенно наглядно.</p>
+      <p>Плохо:</p>
+      <pre><code>Проверь код после моих изменений.</code></pre>
+      <p>Нормально:</p>
+      <pre><code>Проверь текущий diff по refund flow в Commerce OS.
+Код не редактируй.
+Сфокусируйся на regressions, пропущенных тестах и совместимости API.
+Верни findings по severity с file:line, evidence и suggested checks.
+Если diff больше 500 строк — остановись и попроси разбить change.</code></pre>
+      <p>Почему это работает лучше? Здесь зафиксированы сразу пять вещей:</p>
+      <ol>
+        <li>scope — refund flow, не весь проект;</li>
+        <li>границы роли — не редактировать код;</li>
+        <li>фокус внимания — regressions, tests, API;</li>
+        <li>формат результата — severity, <code>file:line</code>, evidence;</li>
+        <li>условие остановки — diff слишком большой, не геройствовать.</li>
+      </ol>
+      <p>С tester-агентом картина похожая, но акценты другие: ему мало сказать «проверь тесты» — лучше сформулировать запрос так, чтобы было понятно, что он пишет только тесты, а production-код не трогает.</p>
+      <pre><code>Подготовь тестовое покрытие для текущего diff в auth flow.
+Production-код не меняй.
+Если нужны изменения, ограничься файлами в tests/**.
+Верни список сценариев, команды запуска, exit codes и отмеченные [hypothesis].
+Если падают больше пяти нерелевантных тестов — остановись и отчитайся.</code></pre>
+      <p>Хороший запрос почти всегда опирается на уже существующий output contract, даже не цитируя его целиком. Вы не изобретаете формат заново, а активируете заранее описанную роль. В этом и сила Workflow Kit: контракт живёт в <code>agents/reviewer.md</code> или <code>agents/tester.md</code>, а сессионная постановка лишь заземляет его в конкретный diff.</p>
+    </section>
+
+    <section>
+      <h2>5. Приёмка или отклонение результата</h2>
+      <p>Самая взрослая часть работы начинается не в момент делегирования, а в момент возврата результата. Именно тут видно, построили вы инженерный процесс или просто завели ещё один чат с очень самоуверенным собеседником.</p>
+      <p>Приёмка делегированной работы обычно сводится к трём решениям:</p>
+      <table>
+        <thead><tr><th>Решение</th><th>Когда подходит</th><th>Что делаете дальше</th></tr></thead>
+        <tbody>
+          <tr><td>Принять</td><td>есть evidence, scope соблюдён, границы роли не нарушены, следующий шаг понятен</td><td>берёте findings в работу или фиксируете отсутствие проблем</td></tr>
+          <tr><td>Вернуть на уточнение</td><td>идея полезная, но не хватает доказательств, ясности или маркировки гипотез</td><td>просите переформатировать output по контракту</td></tr>
+          <tr><td>Отклонить</td><td>нет evidence, были неожиданные edits, нарушены stop conditions или границы роли</td><td>не используете результат и пересобираете задачу заново</td></tr>
+        </tbody>
+      </table>
+      <p>Хороший reviewer-output в Commerce OS:</p>
+      <pre><code>### находки
+- major — orders/refund/RefundPolicy.java:87
+  evidence: условие допускает amount == 0, а теста на нулевой refund нет
+  recommendation: добавить regression test на zero-amount case
+### прогнанные тесты/проверки
+- ./gradlew test --tests RefundPolicyTest → exit code 0
+### изменённые файлы
+- none</code></pre>
+      <p>Здесь почти всё на месте: severity, конкретная строка, evidence, рекомендация, команда, подтверждение, что reviewer ничего не менял. Такой результат можно принимать.</p>
+      <p>А вот пример, который стоит вернуть:</p>
+      <pre><code>### находки
+- Возможно, здесь есть проблемы с refund flow.
+- Стоит ещё посмотреть тесты.
+- В целом код выглядит рискованно.</code></pre>
+      <p>Почему вернуть, а не сразу выбросить? Потому что агент, возможно, действительно что-то заметил, но не оформил результат по контракту. Нет <code>file:line</code>, нет evidence, нет severity, непонятно, что запускалось. В работу как есть — нельзя.</p>
+      <p class="warning">А если reviewer внезапно вернул <code>changed files</code> с production-кодом, хотя роль была read-only, — это уже повод не «уточнять», а отклонять результат как нарушение границ.</p>
+      <p>Схема приёмки:</p>
+      <pre><code>Агент вернул результат
+  → есть evidence? нет → вернуть на уточнение или отклонить
+  → scope и role boundaries соблюдены? нет → отклонить
+  → гипотезы помечены? нет → вернуть на уточнение
+  → следующий шаг понятен? нет → вернуть на уточнение
+  → принять в работу</code></pre>
+      <p>Смысл простой: вы принимаете не умное впечатление, а структурированный артефакт.</p>
+    </section>
+
+    <section>
+      <h2>6. Гипотезы помечаем, а не прячем в уверенный тон</h2>
+      <p>Одна из самых неприятных ловушек — не явная ошибка, а неотмеченная неопределённость. Агент пишет очень уверенно, и только потом выясняется, что половина выводов была догадкой. Поэтому в контракте есть отдельный блок uncertainty, а гипотезы помечаются явно — маркером <code>[hypothesis]</code>.</p>
+      <p>Плохой вариант:</p>
+      <pre><code>- major: refund flow ломается из-за stale cache в billing service</code></pre>
+      <p>Проблема в том, что это звучит как установленный факт. А где доказательство — лог, трассировка вызова, тест? Может быть, агент просто увидел похожий паттерн и достроил картину.</p>
+      <p>Гораздо честнее:</p>
+      <pre><code>- [hypothesis] possible regression in refund flow
+  evidence: прямого подтверждения в diff не найдено
+  why suspect: billing cache читается до проверки refund status
+  needed check: прогнать integration test на stale status</code></pre>
+      <p>Во втором варианте агент не стал «менее умным» — он стал пригодным для инженерной работы. Видно, что подтверждено, что пока только предполагается и какой шаг нужен, чтобы гипотезу подтвердить или выбросить.</p>
+      <p>Особенно это важно для tester-агента. Он часто работает на стыке существующего тестового набора, новых сценариев и неполного знания о проекте. Если он не умеет честно сказать «здесь я предполагаю» — он начнёт закреплять свои догадки в тестах. А это уже тот случай, когда автоматизация ломает систему не громко, а очень вежливо и документированно.</p>
+    </section>
+
+    <section>
+      <h2>7. В Workflow Kit: reviewer и tester</h2>
+      <p>Чтобы всё это не осталось абстракцией, заземлим тему в артефактах Workflow Kit — там контракт перестаёт быть красивой идеей и становится частью поддерживаемого файла.</p>
+      <p>Для reviewer контракт может быть таким:</p>
+      <pre><code>## Формат вывода
+- summary: 3–5 предложений
+- findings: severity, file:line, evidence, recommendation
+- tests/checks run: команда + exit code
+- uncertainty: помечать как [hypothesis]
+- changed files: none
+- next step: одно ясное действие</code></pre>
+      <p>Для tester — немного иным:</p>
+      <pre><code>## Формат вывода
+- summary: какое поведение покрывается
+- proposed tests: файл + сценарий
+- commands run: команда + exit code
+- changed files: только tests/**
+- uncertainty: помечать как [hypothesis]
+- stop conditions: при массовых нерелевантных падениях остановиться</code></pre>
+      <p>Разница не косметическая. Reviewer по роли должен остаться read-only, поэтому <code>changed files</code> у него обязаны быть пустыми. Tester может менять тестовые файлы, но именно тестовые, а не production-логику. Иначе получится классический сюжет: «агент починил тесты», переписав поведение системы под тест, а не наоборот.</p>
+      <p>Контракт не только помогает принимать результат — он дисциплинирует саму роль. Пока контракт не зафиксирован, reviewer и tester различаются только словами в заголовке файла; как только он появляется, их поведение становится измеримым и предсказуемым.</p>
+      <p>Точные имена разделов, поля frontmatter и формат agent file могут меняться от версии к версии Claude Code. Страшно другое: когда у агента нет явного договора о результате, а значит, нет и нормальной инженерной приёмки.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>«Проверь это» — не задача, а приглашение к уверенному тексту без evidence.</li>
+        <li>Output contract — договор о результате, а не о личности агента.</li>
+        <li>Session Handoff Note передаёт состояние задачи дальше; output contract принимает результат роли назад.</li>
+        <li>Секции контракта: summary, findings, evidence, tests/checks, uncertainty, changed files, next step, stop conditions.</li>
+        <li>Жёсткие поля проверяются механически, мягкие требуют суждения; нужны оба слоя.</li>
+        <li>Хороший запрос фиксирует scope, границы, фокус, формат и stop condition.</li>
+        <li>Решения приёмки: принять, вернуть на уточнение, отклонить.</li>
+        <li>Reviewer с production-изменениями отклоняется, а не «уточняется».</li>
+        <li>Гипотезы помечаются <code>[hypothesis]</code> и не выдаются за факт.</li>
+        <li>Контракт дисциплинирует роль: reviewer остаётся read-only, tester пишет только тесты.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать output contracts для reviewer и tester, проверить три результата по контракту и принять решения «принять / вернуть / отклонить».</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>OUTPUT_CONTRACTS.md</code>. Опишите контракт reviewer: summary, findings severity/<code>file:line</code>/evidence/recommendation, tests/checks run, uncertainty с <code>[hypothesis]</code>, changed files <code>none</code>, next step, stop conditions. Отдельно опишите контракт tester: proposed tests, commands/exit codes, changed files только <code>tests/**</code>, uncertainty и stop conditions.</li>
+        <li>Добавьте эти секции в <code>agents/reviewer.md</code> и <code>agents/tester.md</code>; проверьте, что роли не смешиваются: reviewer не редактирует код, tester не меняет production.</li>
+        <li>Создайте <code>ACCEPTANCE_LOG.md</code> и разберите три фейковых результата: сильный reviewer-output с evidence (принять), расплывчатый output без <code>file:line</code> (вернуть на уточнение), output с production-изменениями у reviewer (отклонить). Для каждого укажите причину и следующий шаг.</li>
+        <li>Сформулируйте один запрос к reviewer по пяти элементам: scope, границы, фокус, формат, stop condition. Сформулируйте аналогичный запрос к tester с <code>tests/**</code> и production-запретом.</li>
+        <li>Если Claude Code доступен, вызовите агента на фейковом diff и оцените output по контракту; если нет — сымитируйте три результата вручную. В практике только фейковые файлы, без секретов и реальных репозиториев.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> оформите контракты, запросы и три результата вручную в <code>ACCEPTANCE_LOG.md</code>; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>OUTPUT_CONTRACTS.md</code> есть контракты reviewer и tester.</li>
+        <li>У reviewer <code>changed files</code> равен <code>none</code>; у tester — только <code>tests/**</code>.</li>
+        <li>Есть секции evidence, tests/checks run, uncertainty и next step/stop conditions.</li>
+        <li>Три результата в <code>ACCEPTANCE_LOG.md</code> размечены как принять / вернуть / отклонить.</li>
+        <li>Для каждого решения есть причина по полям контракта.</li>
+        <li>Гипотезы помечены <code>[hypothesis]</code>.</li>
+        <li>Запрос к агенту содержит scope, границы, фокус, формат и stop condition.</li>
+        <li>В практике только фейковые данные, без реальных правок и секретов.</li>
+        <li>Если Claude Code недоступен, контракты и приёмка выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>12 уровень · лекция 4. Output contract превращает ответ агента в проверяемый артефакт с понятной приёмкой. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level12.lecture04" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>

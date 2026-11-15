@@ -9,6 +9,7 @@
 - [Лекция 1 — Tools и permissions для subagent](level12/lecture1/index.html)
 - [Лекция 2 — Scoped skills, MCP и memory](level12/lecture2/index.html)
 - [Лекция 3 — Context isolation и worktree isolation](level12/lecture3/index.html)
+- [Лекция 4 — Output contract агента](level12/lecture4/index.html)
 
 Материалы уровня будут добавляться по мере разбора следующих лекций вебинара 8.
 
@@ -35,5 +36,6 @@ Capstone-задание: собрать агента, три Python-скрипт
 - Добавлена лекция 1 уровня 12: L1/L2-права, least privilege, tools для tester/reviewer и проверка changed files.
 - Добавлена лекция 2 уровня 12: четыре слоя capability, scoped skills, MCP, memory и контур знаний tester/migration assistant.
 - Добавлена лекция 3 уровня 12: context isolation, worktree isolation, `isolation: worktree`, `claude --worktree` и выбор изоляции под боль.
+- Добавлена лекция 4 уровня 12: output contract, evidence, `[hypothesis]`, приёмка результата и контракты reviewer/tester.
 - Добавлена практика вебинара 8: агент `file2md`, три скрипта, requirements, README и четыре демо-прогона.
 - Следующий шаг — следующие лекции уровня 12 и контрольные вопросы.

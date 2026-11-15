@@ -15,7 +15,7 @@
 - **Вебинар 5** — уровень 9, лекции 1–5: extension taxonomy; slash-команды; переход от prompt к skill; `SKILL.md`, метаданные и права; dynamic context и supporting files; практика `/prompt-improve`.
 - **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype; практика team-kit и 25 контрольных вопросов.
 - **Вебинар 7** — уровень 11, лекции 1–5: терминология агентов, built-in delegation, кастомный subagent, engineering contract, роли агентов и 3-слойная модель review; практика md2html и 25 контрольных вопросов.
-- **Вебинар 8** — уровень 12, лекции 1–3: tools и permissions для subagent, least privilege, scoped skills/MCP/memory, context и worktree isolation; практика file2md; следующие лекции и контрольные вопросы будут добавляться.
+- **Вебинар 8** — уровень 12, лекции 1–4: tools и permissions, scoped skills/MCP/memory, context и worktree isolation, output contract; практика file2md; следующие лекции и контрольные вопросы будут добавляться.
 
 ## Навигация
 
