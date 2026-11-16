@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Tools и permissions</div>
       <h1>Claude Code</h1>
@@ -88,6 +88,7 @@
           <tr><td>L3 — командные правила</td><td>проект или команда</td><td>общие политики и защищённые зоны</td><td>запрет правок <code>payments/</code></td></tr>
         </tbody>
       </table>
+      <p>Агент работает внутри permission-контекста сессии: deny-правила и protected paths действуют и на него. Спорное действие фонового агента приходит в сессию как permission prompt или решается классификатором в auto mode.</p>
       <p>Сегодня нас интересует именно L2. Полезно посмотреть на практические комбинации:</p>
       <table>
         <thead><tr><th>Права сессии (L1)</th><th>tools агента (L2)</th><th>Что получится</th></tr></thead>

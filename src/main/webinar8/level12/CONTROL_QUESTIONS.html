@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 12 — контрольные вопросы по tools и permissions, scoped skills/MCP/memory, изоляции, output contract и lifecycle агентов.">
+  <title>Уровень 12 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111318; --panel:#1a1e26; --text:#f1f2f4; --muted:#a5adba; --accent:#f5a66b; --line:#303642; --green:#a8d8a0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 85% 0,#33261f 0,transparent 34rem),var(--bg); color:var(--text); font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:0 auto; padding:48px 0 80px; }
+    h1 { margin:18px 0 22px; font-size:clamp(2rem,6vw,3.4rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:38px 0 14px; padding-top:18px; border-top:1px solid var(--line); font-size:1.35rem; }
+    p { margin:12px 0; }
+    ol, ul { margin:10px 0; padding-left:1.5rem; }
+    li { margin:10px 0; }
+    strong { color:#fff; }
+    code { color:var(--green); }
+    a { color:var(--accent); }
+    footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+    @media (max-width:620px) { main { padding-top:30px; } h1 { font-size:2rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <h1>Уровень 12 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 12 и практике вебинара 8: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы синхронизированы с презентацией: tools и least privilege, scoped skills/MCP/memory, context и worktree isolation, output contract, lifecycle и evaluation.</p>
+<h2>Лекция 1 — tools и permissions</h2>
+<ol start="1">
+  <li><strong>На какой вопрос отвечает поле <code>tools</code> во frontmatter subagent’а?</strong><br>
+    На вопрос «что именно агент имеет право делать руками»: какие инструменты и действия ему технически разрешены. Роль отвечает, зачем агент существует, а <code>tools</code> задаёт техническую границу его действий.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Как соотносятся L1 — права сессии и L2 — tools агента?</strong><br>
+    L1 — общий потолок действий сессии, L2 — allow-list конкретного агента. L2 может только сузить L1, но не расширить его. Фактически возможности агента — это <code>L1 ∩ L2</code>: в read-only сессии <code>Edit</code> в tools не даст права писать.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Что произойдёт, если <code>tools</code> не указать вообще? Что такое <code>disallowedTools</code>?</strong><br>
+    Без <code>tools</code> агент наследует почти все инструменты сессии, включая <code>Edit</code>, <code>Write</code> и MCP, кроме нескольких служебных. <code>disallowedTools</code> — подход «всё, кроме»; при нём агент может унаследовать и <code>Agent</code>, поэтому узкой роли нужно добавить <code>Agent</code> в запрет.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Какой набор tools рекомендуется reviewer и чем отличается tester?</strong><br>
+    Reviewer: <code>Read</code>, <code>Glob</code>, <code>Grep</code>, <code>Bash</code>, без <code>Edit</code>/<code>Write</code>. Tester: те же инструменты плюс <code>Edit</code> и <code>Write</code>, но правки ограничены test-каталогами (<code>src/test/</code>, <code>tests/</code>), а production-код менять нельзя. <code>Edit</code> tester’у нужен ради тестов, reviewer’у — не нужен вовсе.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Почему <code>Edit</code>/<code>Write</code> считаются самым высоким риском выхода за роль?</strong><br>
+    Они напрямую меняют файлы. Reviewer с <code>Edit</code> становится не проверяющим, а соавтором diff; tester без границ начинает «чинить» production-код под видом зелёных тестов. Поэтому write-права выдаются только под конкретный результат и с границами каталогов.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+</ol>
+<h2>Лекция 2 — scoped skills, MCP и memory</h2>
+<ol start="6">
+  <li><strong>На какие четыре слоя capability удобно делить возможности агента?</strong><br>
+    Tools — что можно делать руками; skills — по какой процедуре работать; MCP — к каким внешним данным есть доступ; memory — что переносится между запусками. Least privilege применяется ко всем четырём слоям, а не только к tools.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Что делает scoped skill и даёт ли он новые права?</strong><br>
+    Scoped skill подключает агенту конкретную процедуру под роль: reviewer — <code>pr-review</code>, tester — <code>test-strategy</code>, migration assistant — <code>migration-plan</code>. Новых прав skill не даёт: он описывает, как думать, а tools определяют, что можно делать руками. Reviewer с <code>pr-review</code>, но без <code>Edit</code>, остаётся read-only.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Какому агенту Workflow Kit разумнее подключить read-only MCP <code>docs-lookup</code> и почему?</strong><br>
+    Migration assistant: ему нужно сверяться с официальными changelog’ами и migration notes. Reviewer и tester обычно не нуждаются во внешнем MCP — им хватает diff, файлов, тестов и локальных проверок. Подключается один конкретный read-only источник, без БД и write-actions.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему по умолчанию лучше обходиться без MCP, а если он нужен — выбирать read-only?</strong><br>
+    Лишний MCP создаёт шум в контексте и дополнительную поверхность риска. Read-only источник может принести лишние данные, но не меняет внешнее состояние; write-capable уже может изменить систему. Принцип: можно обойтись — обходимся; нельзя — сначала думаем о read-only.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Что стоит и что не стоит класть в memory агента?</strong><br>
+    Стоит: расположение test-пакетов, устойчивые naming conventions, проверенные правила команды, стабильные ограничения роли. Не стоит: разовые гипотезы, временные stack trace, «эти тесты всегда падают, игнорируй», секреты и чувствительные данные. Memory не обязательна; её отсутствие — дисциплина, а не недонастройка.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
+<h2>Лекция 3 — context и worktree isolation</h2>
+<ol start="11">
+  <li><strong>От какой боли защищает context isolation?</strong><br>
+    От засорения основной сессии промежуточным исследованием: десятками прочитанных файлов, grep-выводом, stack trace и ложными гипотезами. Подзадача уходит в отдельное окно контекста, а обратно возвращается короткая сводка с evidence.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>От чего защищает worktree isolation?</strong><br>
+    От смешивания экспериментальных или параллельных правок с основным checkout. Агент получает отдельную рабочую директорию, ветку и собственный diff; неудачный эксперимент можно удалить, не трогая основной Git state.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какая Git-команда используется для создания отдельного рабочего дерева под эксперимент?</strong><br>
+    <code>git worktree add ../commerce-os-refund-lab -b exp/refund-rules</code>, затем <code>cd</code> в эту директорию и запуск отдельной сессии. В свежих версиях Claude Code также доступен <code>claude --worktree refund-lab</code>, который создаёт worktree в <code>.claude/worktrees/</code>.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Что делает <code>isolation: worktree</code> и какие детали worktree важно помнить?</strong><br>
+    Агент получает временную копию репозитория; worktree удаляется сам, если правок не было. Worktree — свежий checkout без незакоммиченных правок; по умолчанию ветвится от default-ветки. Для старта от локального HEAD нужен <code>worktree.baseRef: "head"</code>, для копирования <code>.env</code> — <code>.worktreeinclude</code>, а <code>.claude/worktrees/</code> стоит добавить в <code>.gitignore</code>.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Когда изоляция не нужна и почему форк <code>/subtask</code> не считается context isolation?</strong><br>
+    Для задачи на один-два файла без экспериментов изоляция может стоить дороже пользы. Форк <code>/subtask</code> видит весь текущий разговор: у него не изолирован вход, изолирован только результат. Для context isolation нужен именно свежий subagent, а не форк.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+</ol>
+<h2>Лекция 4 — output contract</h2>
+<ol start="16">
+  <li><strong>Чем output contract отличается от Session Handoff Note?</strong><br>
+    Handoff Note передаёт состояние задачи дальше — другой сессии или человеку: решения, открытые вопросы, следующий шаг. Output contract принимает результат роли назад и отвечает, можно ли его принять: формат, evidence, scope, uncertainty, stop conditions.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Из каких секций состоит хороший output contract?</strong><br>
+    Summary, findings, evidence, tests/checks run, uncertainty, changed files, next step и stop conditions. Для reviewer <code>changed files</code> должен быть <code>none</code>; для tester — только <code>tests/**</code>.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Чем «жёсткие» поля output contract отличаются от «мягких»?</strong><br>
+    Жёсткие проверяются почти механически: <code>file:line</code>, команда, <code>exit code</code>, <code>changed files: none</code>, diff, лог. Мягкие требуют человеческого суждения: severity, риск, recommendation. Нужны оба слоя: только мягкие дают уверенного комментатора, только жёсткие — сухой протокол без смысла.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Какие три решения возможны при приёмке результата?</strong><br>
+    Принять — evidence есть, scope и границы роли соблюдены, следующий шаг понятен. Вернуть на уточнение — идея полезная, но не хватает evidence или маркировки гипотез. Отклонить — были неожиданные edits, нарушены stop conditions или границы роли.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Как правильно подавать неопределённость в output агента?</strong><br>
+    Явно маркировать гипотезы <code>[hypothesis]</code>, выносить их в блок <code>uncertainty</code> и указывать evidence, причину подозрения и нужную проверку. Нельзя выдавать догадку за установленный факт вроде «refund flow ломается из-за stale cache» без доказательств.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+</ol>
+<h2>Лекция 5 — lifecycle и evaluation</h2>
+<ol start="21">
+  <li><strong>По каким критериям лекция предлагает оценивать полезность агента?</strong><br>
+    Correctness, source anchoring, scope discipline, useful severity, false positives, missed issues, no unwanted edits и human time saved. Главный практический критерий — human time saved: если человек дольше разбирает output, чем сделал бы сам, агент не окупается.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Какие failure modes агента считаются типовыми и как они лечатся?</strong><br>
+    Hallucinated findings — жёстче evidence; over-permissioned agent — сузить tools и убрать write; stale instructions — обновить файл и версию; memory pollution — почистить memory; plugin/config conflicts — упростить конфигурацию; lost context — уточнить description и входной контекст. Лечение — правка конфигурации, а не просьба «быть внимательнее».<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как выглядит жизненный цикл агента?</strong><br>
+    Создали → прогнали на маленьких кейсах → разобрали сбои → сузили tools и contract → подняли версию → поделились с командой → собрали feedback → обновили или пометили deprecated → удалили, если агент вреднее, чем полезнее.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Зачем нужны маленькие кейсы и <code>CHANGELOG.md</code>?</strong><br>
+    Маленькие кейсы (3–5) с заранее известным ожиданием показывают нарушение границ без эксперимента над живым проектом. <code>CHANGELOG.md</code> фиксирует, что изменилось в поведении агента и почему, помогает сравнить версии и откатиться.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Когда агента стоит упростить или отправить в deprecation?</strong><br>
+    Когда он шумит больше, чем помогает, экономит меньше времени, чем отнимает на разбор output, или дублируется другой ролью. Можно сузить роль до tester-lite, оставить для конкретных зон или честно пометить deprecated и удалить. Это нормальная инженерная развилка, а не поражение.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+</ol>
+<h2>Статус</h2>
+<ul>
+  <li>25 вопросов покрывают все 5 лекций уровня 12.</li>
+  <li>Вопросы синхронизированы с презентацией вебинара 8: tools/least privilege, scoped skills/MCP/memory, isolation, output contract, lifecycle/evaluation.</li>
+  <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">file2md</a>.</li>
+  <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+</ul>
+    <footer>Уровень 12 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>

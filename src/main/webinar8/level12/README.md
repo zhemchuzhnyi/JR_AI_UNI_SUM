@@ -8,7 +8,7 @@
 - [Лекция 4 — Output contract агента](lecture4/index.html)
 - [Лекция 5 — Lifecycle и evaluation subagent’а](lecture5/index.html)
 
-Материалы уровня будут добавляться по мере разбора следующих лекций вебинара 8.
+Уровень 12 собран: 5 лекций, практика `file2md` и 25 контрольных вопросов.
 
 ## Темы уровня
 
@@ -18,6 +18,8 @@
 - output contract и приёмка результата;
 - failure modes и жизненный цикл агента.
 
-## Практика вебинара
+## Контрольные вопросы и практика
 
-- [Агент file2md](../practice/index.html): извлечение markdown из PDF, HTML и Excel через Python-скрипты.
+- [Контрольные вопросы по уровню 12](CONTROL_QUESTIONS.html)
+- [Практика вебинара — file2md](../practice/index.html)
+- [Покрытие вебинара 8](../COVERAGE.md)
