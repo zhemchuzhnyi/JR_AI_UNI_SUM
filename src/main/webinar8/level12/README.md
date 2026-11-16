@@ -6,6 +6,7 @@
 - [Лекция 2 — Scoped skills, MCP и memory](lecture2/index.html)
 - [Лекция 3 — Context isolation и worktree isolation](lecture3/index.html)
 - [Лекция 4 — Output contract агента](lecture4/index.html)
+- [Лекция 5 — Lifecycle и evaluation subagent’а](lecture5/index.html)
 
 Материалы уровня будут добавляться по мере разбора следующих лекций вебинара 8.
 

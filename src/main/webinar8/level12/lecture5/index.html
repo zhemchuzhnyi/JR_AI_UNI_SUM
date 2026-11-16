@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Lifecycle и evaluation subagent: критерии полезности, failure modes, маленькие кейсы, версии, CHANGELOG, deprecation и разбор tester-агента.">
+  <title>Claude Code — 12 уровень, лекция 5</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="https://ru-claude-code-08-07c0.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;text-decoration:none;">Презентация вебинара 8</a></nav>
+    <header>
+      <div class="eyebrow">Lifecycle и evaluation</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">12 уровень · лекция 5</div>
+    </header>
+
+    <div class="lead">
+      Subagent — инженерный артефакт, а не настройка «создал и забыл». Его оценивают по evidence, соблюдению scope и сэкономленному времени, а не по уверенности тона. Если он шумит больше, чем помогает, его упрощают или убирают.
+    </div>
+
+    <section>
+      <h2>1. Subagent сопровождают как код, а не как настройку</h2>
+      <p>Когда вы впервые запускаете хорошо собранного subagent’а, легко испытать опасное чувство: «всё, у меня умный tester, можно расслабиться». Это примерно как после первого удачного омлета объявить себя шеф-поваром. Приятно, но реальность чуть сложнее — один прогон не доказывает ничего.</p>
+      <p>Через весь курс тянется одна мысль: Claude ускоряет инженерную работу, но ответственность остаётся у разработчика. С subagent’ами она становится важнее вдвойне. Любой агент — инженерный артефакт: файл, конфигурация, инструкция и ограничения. Он живёт в репозитории, меняется, проходит review и устаревает. Если им пользуется команда, он обязан отвечать на приземлённые вопросы. Повторяем ли поведение? Понимаем границы? Видим, когда стало хуже? Откатим неудачное изменение?</p>
+      <p>Суровое, но честное правило: <strong>если агент не работает лучше, чем хороший prompt в свежей сессии, он команде не нужен</strong>. Тратите на лечение tester-агента больше, чем на ручной запрос с task spec, — перед вами не asset, а дорогая игрушка.</p>
+      <p>На примере Workflow Kit это видно хорошо. Если <code>agents/tester.md</code> предлагает полезные regression-тесты, не лезет в production-код и экономит время перед PR — развивайте. Если через раз переписывает <code>RefundService.java</code>, шумит ложными тревогами и требует полчаса фильтрации — это не «умный агент», а красиво оформленная проблема.</p>
+    </section>
+
+    <section>
+      <h2>2. Признаки реально полезного агента</h2>
+      <p>После output contract есть хорошая база: агента оценивают не по харизме ответа, а по скучным, но надёжным инженерным признакам. Именно скука здесь и спасает проект.</p>
+      <table>
+        <thead><tr><th>Критерий</th><th>Вопрос, который вы задаёте</th><th>Тревожный сигнал</th></tr></thead>
+        <tbody>
+          <tr><td>Correctness</td><td>Прав ли агент по сути?</td><td>уверенные, но неверные выводы</td></tr>
+          <tr><td>Source anchoring</td><td>Есть ли ссылки на файлы, строки, команды, тесты?</td><td>«кажется, проблема тут» без evidence</td></tr>
+          <tr><td>Scope discipline</td><td>Удержался ли агент в рамках роли?</td><td>tester полез в production-код, reviewer начал «немного чинить»</td></tr>
+          <tr><td>Useful severity</td><td>Полезно ли разделение по важности?</td><td>всё marked как critical</td></tr>
+          <tr><td>False positives</td><td>Сколько шума агент создаёт?</td><td>много замечаний, которые не имеют смысла</td></tr>
+          <tr><td>Missed issues</td><td>Не пропускает ли он очевидные проблемы?</td><td>формально красивый отчёт, но баг остался без внимания</td></tr>
+          <tr><td>No unwanted edits</td><td>Не сделал ли агент того, чего делать не должен?</td><td>появились неожиданные изменения в файлах</td></tr>
+          <tr><td>Human time saved</td><td>Реально ли он сэкономил время человеку?</td><td>человек дольше разгребал output, чем делал бы сам</td></tr>
+        </tbody>
+      </table>
+      <p>Эти критерии полезны именно вместе. Агент может быть безупречен по scope, но findings настолько слабые, что пользы нет. Или наоборот: находит интересное и плодит столько false positives, что ему перестают доверять.</p>
+      <p>Для новичка особенно важен критерий <strong>human time saved</strong>. Его часто забывают, потому что тянет оценивать «умность», а не пользу. Представьте: вы дали tester-агенту diff по refund flow, а он вернул 15 пунктов: 11 банальных замечаний, 2 сомнительные гипотезы, 1 повтор известных ограничений и только 1 полезную подсказку про пропущенный regression test. Формально «что-то нашёл». А время сэкономил? Нет.</p>
+      <p>Полезно завести для Workflow Kit небольшой файл с оценкой после нескольких прогонов:</p>
+      <pre><code># AGENT_EVAL_CHECKLIST.md
+correctness: 2/2
+evidence: 1/2
+scope_discipline: 2/2
+false_positives: 0/2
+time_saved: 1/2
+comment: нашёл полезный кейс, но шумит и требует сильной ручной фильтрации</code></pre>
+      <p>Такой файл хорош не красотой, а тем, что вынуждает оценивать агента по повторяемым признакам, а не по настроению «сегодня агент бодрый».</p>
+    </section>
+
+    <section>
+      <h2>3. Типовые failure modes: агент ломается предсказуемо</h2>
+      <p>Когда subagent ведёт себя странно, хочется сказать: «ну, AI сегодня не в духе». Звучит почти по-человечески, но пользы от такого объяснения ноль. Лучше считать, что у агента не плохое настроение, а <strong>failure mode</strong> — повторяемый тип сбоя, который можно распознать и починить.</p>
+      <table>
+        <thead><tr><th>Failure mode</th><th>Как это выглядит</th><th>Обычно лечится так</th></tr></thead>
+        <tbody>
+          <tr><td>Hallucinated findings</td><td>агент уверенно утверждает то, чего не подтвердил кодом</td><td>жёстче требовать evidence в output contract</td></tr>
+          <tr><td>Over-permissioned agent</td><td>агент редактирует лишнее или делает broad change</td><td>сузить tools, убрать <code>Edit</code>/<code>Write</code></td></tr>
+          <tr><td>Stale instructions</td><td>агент живёт по старым правилам проекта</td><td>обновить agent file, поднять версию</td></tr>
+          <tr><td>Memory pollution</td><td>агент тащит старые предположения в новые задачи</td><td>очистить или сузить memory scope</td></tr>
+          <tr><td>Plugin / config conflicts</td><td>поведение внезапно меняется из-за внешней настройки</td><td>упростить конфигурацию, проверить inheritance</td></tr>
+          <tr><td>Lost context</td><td>агент формально отвечает по шаблону, но не попадает в задачу</td><td>уточнить when-to-use и входной контекст</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Hallucinated findings</strong> — reviewer пишет «возможно, здесь race condition», но не даёт ни ссылки на код, ни trace, ни теста. Это не находка, а гипотеза; так её и маркировать. Смешивает с фактами — виноват слабый output contract.</p>
+      <p><strong>Over-permissioned agent</strong> выглядит ещё веселее. Вы запускали tester-а, чтобы он предложил тесты, а он зачем-то правит production-файл, «чтобы тесты проходили». Выглядит как инициатива, а это конфигурационная авария. Лишних возможностей «на всякий случай» не раздают: в инженерии это «до первого неприятного сюрприза».</p>
+      <p><strong>Stale instructions</strong> подкрадываются тише. В Commerce OS обновили <code>CLAUDE.md</code>, scripts и conventions, а <code>agents/tester.md</code> всё ещё ссылается на старый паттерн — и агент выглядит глупее, чем есть: живёт во вчерашнем дне. Agent file — версия артефакта, не надпись на камне.</p>
+      <p><strong>Memory pollution</strong> особенно коварна там, где агенту дали слишком много долговременной памяти или плохо отделили role-local memory от main session. Tester запоминает старую гипотезу про refund logic и ищет её там, где баг другой. Повторяет неактуальное — пересмотрите memory scope.</p>
+      <p><strong>Plugin / config conflicts</strong>: поставили плагин со своим skill или hook — и удивляетесь, почему reviewer изменил поведение. Чем сложнее иерархия capabilities, тем труднее найти источник странного поведения. Агент сломался — не добавляйте магию, упростите стек.</p>
+    </section>
+
+    <section>
+      <h2>4. Жизненный цикл агента: от черновика до доверия</h2>
+      <p>Очень легко представить агента как готовый объект: создали файл, отладили, положили в <code>.claude/agents/</code>, забыли. Но хороший subagent живёт примерно как код в проекте: черновик, проверки, фиксы, версия, распространение, feedback и иногда — честная отправка на пенсию.</p>
+      <pre><code>Создали agent
+  → проверили на маленьких кейсах
+  → разобрали сбои
+  → сузили tools и contract
+  → подняли версию
+  → поделились с командой
+  → собрали feedback
+  → обновили или пометили deprecated
+  → удалили, если агент вреднее, чем полезнее</code></pre>
+      <p>Самый недооценённый этап — <strong>проверка на маленьких кейсах</strong>. Многих тянет тестировать агента сразу на реальной, живой задаче — а по факту выходит эксперимент над собственным проектом. Гораздо безопаснее взять 3–5 коротких кейсов с заранее понятным ожиданием.</p>
+      <pre><code># tests/_examples/agent-tester/case-01-refund.md
+Задача: предложить regression test для бага в refund formatter
+Ожидаемый scope: только test-файлы
+Нельзя: править RefundService.java
+Хороший результат: 1-2 тестовых сценария с понятными assertions</code></pre>
+      <p>Такой пример полезен сразу по двум причинам: вы быстро видите, не нарушил ли агент границы роли, и не гадаете «наверное, в целом неплохо» — критерий успеха задан заранее.</p>
+      <p>Когда агент прошёл несколько маленьких кейсов, его можно версионировать. Здесь помогает обычный человеческий <code>CHANGELOG.md</code>. Да, для файла агента. Особенно для файла агента.</p>
+      <pre><code>## tester v0.3 — 2026-05-01
+- убран Edit вне test-файлов
+- добавлен stop condition: diff &gt; 500 lines -&gt; request to split
+- обновлены команды запуска тестов под текущий Workflow Kit</code></pre>
+      <p>Такая запись полезна не только истории ради. Она отвечает на важный командный вопрос: что поменялось в поведении агента и почему. Новая версия хуже — есть с чем сравнить и куда откатить.</p>
+      <p>У жизненного цикла есть финальная стадия, которую особенно не любят романтики автоматизации, — <strong>deprecation</strong>. Агент устарел, дублируется или постоянно шумит — не «оставить вдруг пригодится», а честно пометить deprecated и удалить. Workflow Kit — рабочий набор, а не музей старых YAML-файлов.</p>
+    </section>
+
+    <section>
+      <h2>5. Разбор agents/tester.md на примере Commerce OS</h2>
+      <p>Приземлим всё на сквозной проект. Команда Commerce OS ловит баг в refund flow: после правки сортировки заявок надо убедиться, что edge cases целы, — запускаем <code>agents/tester.md</code>.</p>
+      <p>Первая версия на бумаге выглядит неплохо: читает diff, запускает тесты, имеет <code>Edit</code>, «если вдруг нужно дописать тест». На практике агент находит идею для regression test, но заодно правит <code>RefundService</code> и добавляет три слишком общих замечания без ссылок на код. Формально активен, а доверие уже просело.</p>
+      <table>
+        <thead><tr><th>Версия</th><th>Поведение</th><th>Что не так</th><th>Что меняем</th></tr></thead>
+        <tbody>
+          <tr><td><code>v0.1</code></td><td>запускает тесты, пишет сценарии, иногда редактирует код</td><td>слишком широкие права, много шума</td><td>убираем лишний <code>Edit</code>, усиливаем contract</td></tr>
+          <tr><td><code>v0.2</code></td><td>не правит production, даёт findings</td><td>часть findings без evidence</td><td>делаем evidence обязательным</td></tr>
+          <tr><td><code>v0.3</code></td><td>даёт test scenarios, команды, file refs, без лишних правок</td><td>полезен и предсказуем</td><td>можно шарить в команде</td></tr>
+        </tbody>
+      </table>
+      <p>Маленький чек-лист приёмки после прогона tester-агента:</p>
+      <pre><code># tester-review-checklist.md
+evidence_present: yes
+production_files_edited: no
+test_scope_respected: yes
+false_positives_count: 1
+useful_findings_count: 2
+decision: keep_and_iterate</code></pre>
+      <p>В нём есть всё важное — не «агент вёл себя неплохо», а факты: были ли evidence, полез ли в production, сколько шума, развивать ли. Именно так subagent становится поддерживаемым артефактом.</p>
+      <p>Если после пары итераций tester всё ещё нестабилен, у команды есть несколько честных вариантов. Можно сузить роль до tester-lite — только test suggestions без права что-либо запускать. Можно оставить tester для конкретных зон — refund и billing. А можно честно признать, что роль не окупается, и вернуться к обычному prompt в свежей сессии. Это не поражение, а нормальная инженерная развилка.</p>
+      <p>Иногда лучшая версия агента — та, которую вы не героически «дотерпели», а вовремя упростили, переписали или убрали. <code>agents/tester.md</code> похож на обычный код: пока помогает команде — он живой. Как только шумит больше, чем помогает, — лечить его надо так же спокойно, как любой файл в проекте.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Subagent — инженерный артефакт, который живёт в репозитории, меняется и устаревает.</li>
+        <li>Если агент не лучше хорошего prompt в свежей сессии, команде он не нужен.</li>
+        <li>Оценка агента: correctness, source anchoring, scope discipline, severity, false positives, missed issues, unwanted edits, human time saved.</li>
+        <li>Human time saved — главный практический критерий, а не «умность» ответа.</li>
+        <li>Failure modes предсказуемы: hallucinated findings, over-permission, stale instructions, memory pollution, config conflicts, lost context.</li>
+        <li>Лечение failure mode — правка конфигурации и контракта, а не просьба «быть внимательнее».</li>
+        <li>Жизненный цикл: черновик → маленькие кейсы → разбор сбоев → сужение tools/contract → версия → команда → feedback → deprecated/удаление.</li>
+        <li>Маленькие кейсы с заранее известным ожиданием безопаснее живой задачи.</li>
+        <li><code>CHANGELOG.md</code> фиксирует изменения поведения агента и помогает откатиться.</li>
+        <li>Deprecation — нормальная стадия; иногда лучшая версия агента — упрощённая или удалённая.</li>
+        <li>Если агент шумит больше, чем помогает, его нужно упростить, сузить или убрать.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> оценить tester-агента на маленьких кейсах, заполнить eval-checklist, разобрать failure modes и принять решение — развивать, сузить или deprecated.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте 3–5 коротких кейсов в <code>tests/_examples/agent-tester/</code>: задача, ожидаемый scope, запрет на production-правки и ожидаемый результат. Используйте только фейковый refund flow.</li>
+        <li>Прогоните <code>agents/tester.md</code> на кейсах или сымитируйте ответы вручную. Для каждого зафиксируйте evidence, changed files, false positives, полезные findings и соблюдение scope.</li>
+        <li>Заполните <code>AGENT_EVAL_CHECKLIST.md</code> по критериям: correctness, source anchoring, scope discipline, useful severity, false positives, missed issues, no unwanted edits, human time saved. Поставьте оценки и короткий комментарий.</li>
+        <li>Разберите минимум два failure mode из списка: например, evidence без <code>file:line</code> и лишний <code>Edit</code> в production. Для каждого запишите лечение через конфигурацию/контракт, а не «попросить быть внимательнее».</li>
+        <li>Создайте <code>AGENT_CHANGELOG.md</code> с версиями <code>v0.1</code> → <code>v0.2</code> и решением <code>keep_and_iterate</code>, <code>simplify</code> или <code>deprecate</code>. Обоснуйте решение фактами из чек-листа. Не используйте реальные репозитории и секреты.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> оформите кейсы, оценки и решения вручную в <code>AGENT_EVAL_CHECKLIST.md</code> и <code>AGENT_CHANGELOG.md</code>; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Есть 3–5 маленьких кейсов с ожидаемым scope и результатом.</li>
+        <li>В <code>AGENT_EVAL_CHECKLIST.md</code> заполнены все критерии оценки.</li>
+        <li>Для каждого кейса проверены evidence и changed files.</li>
+        <li>Разобраны минимум два failure mode и их лечения.</li>
+        <li><code>AGENT_CHANGELOG.md</code> содержит версии и конкретные изменения.</li>
+        <li>Решение развивать/сузить/deprecated обосновано фактами.</li>
+        <li>Нет production-правок и реальных данных.</li>
+        <li>Если Claude Code недоступен, кейсы и оценки выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>12 уровень · лекция 5. Агент — это код: его оценивают по evidence и пользе, версионируют и вовремя убирают. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level12.lecture05" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
