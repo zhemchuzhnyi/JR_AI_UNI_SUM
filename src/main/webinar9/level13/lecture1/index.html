@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MCP как внешний слой Claude Code: клиент, сервер и инструменты, внешние данные и действия, read-only доступ, отличие MCP от task spec, skills, subagents и карты проекта.">
+  <title>Claude Code — 13 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a></nav>
+    <header>
+      <div class="eyebrow">MCP как внешний слой</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">13 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      Код — важная часть истории, но не вся. MCP добавляет Claude Code контролируемый доступ к внешнему контексту: трекеру, monitoring, read-only базе, документации и PR-комментариям.
+    </div>
+
+    <section>
+      <h2>1. Одного репозитория уже недостаточно</h2>
+      <p>В реальной работе задача редко выглядит как «открой один файл и поправь строчку». Обычно всё начинается снаружи: кто-то завёл тикет в трекере, monitoring прислал алерт, менеджер приложил дизайн, аналитик попросил свериться с отчётом, а поддержка прислала номер заказа. Код — важная часть истории, но не вся.</p>
+      <p>Без внешнего доступа Claude Code похож на очень сильного коллегу, которого позвали расследовать баг, но забыли выдать доступ к трекеру, monitoring и документации: гениальный — и работающий в режиме «пришлите ещё скриншот, ещё лог, ещё кусок текста». Для разовой задачи терпимо, для повторяющегося workflow уже нет. Начинается офисное кардио: браузер, скопировать issue, вставить в Claude, снова браузер за комментариями, снова вставить.</p>
+      <table>
+        <thead><tr><th>Где живёт информация</th><th>Что это такое</th><th>Как вы работали до сих пор</th></tr></thead>
+        <tbody>
+          <tr><td>Внутри репозитория</td><td>код, тесты, конфиги, <code>CODEBASE_INVENTORY.md</code>, <code>API_MAP.md</code></td><td>Claude читает это напрямую</td></tr>
+          <tr><td>Снаружи репозитория</td><td>issue tracker, monitoring, read-only БД, документация, дизайн, PR-комментарии</td><td>вы приносите это в чат вручную</td></tr>
+        </tbody>
+      </table>
+      <p>Важно не перепутать две вещи. Когда мы говорим про внутренние артефакты вроде <code>CODEBASE_INVENTORY.md</code>, мы описываем сам проект. Когда говорим про MCP — мы описываем мост во внешний мир команды: не новый способ читать код, а контролируемый доступ к тому, что раньше вы таскали в сессию вручную.</p>
+    </section>
+
+    <section>
+      <h2>2. MCP простыми словами</h2>
+      <p>Слово protocol в названии Model Context Protocol звучит так, будто сейчас начнётся лекция про сетевые пакеты. На деле протокол здесь — договорённость, как Claude Code узнаёт, какие внешние инструменты доступны, как их вызывать и в каком виде получать ответ.</p>
+      <p>MCP — это внешний слой возможностей для Claude Code. Он не делает модель магической и не открывает модели весь интернет. Он добавляет ограниченные «окошки» во внешние системы: через них Claude читает данные, выполняет действия или получает узкоспециализированный контекст.</p>
+      <p>Три роли:</p>
+      <ul>
+        <li><strong>клиент</strong> — кто хочет спросить или вызвать; у нас это Claude Code;</li>
+        <li><strong>сервер</strong> — кто даёт доступ к возможностям внешней системы;</li>
+        <li><strong>инструмент</strong> — отдельное действие с именем: <code>list_issues</code>, <code>get_issue</code>, <code>search_docs</code>.</li>
+      </ul>
+      <pre><code>Задача пользователя
+  → Claude Code
+  → MCP-клиент внутри Claude Code
+  → MCP-сервер
+  → внешняя система: трекер / мониторинг / база / docs</code></pre>
+      <p>Аналогия: Claude Code — инженер, MCP-сервер — стойка доступа в здании, инструменты — пропуска. Один пропуск даёт посмотреть задачу, другой — найти документацию, третий — прочитать схему базы. Стойка не обязана выдавать мастер-ключ от всего здания.</p>
+      <p>Для учебного Workflow Kit пока можно записать простую модель ролей и доступа:</p>
+      <pre><code>{
+  "server": "issue-tracker",
+  "tools": ["list_issues", "get_issue", "search_issues"],
+  "access": "read-only"
+}</code></pre>
+      <p>Это не канонический формат боевого конфига, а умственная модель: внешний сервер <code>issue-tracker</code> даёт три инструмента в безопасном режиме, только чтение.</p>
+    </section>
+
+    <section>
+      <h2>3. От какой рабочей боли MCP нас спасает</h2>
+      <p>Проблема не в том, что Claude Code «недостаточно умный», а в том, что часть инженерного контекста живёт вне репозитория, а таскать его руками долго и ненадёжно.</p>
+      <p>Ситуация в Commerce OS. В трекере появилась карточка COM-481: возвраты заказов в определённом статусе отображаются в неправильном порядке. Без MCP вы вручную переносите её в Claude Code и просите найти затронутые файлы. Через десять минут в карточке новый комментарий — а у Claude его нет. Снова копипаст.</p>
+      <p>С MCP сценарий меняется по сути: Claude Code не ждёт копирования — через <code>get_issue</code> читает актуальную задачу и сопоставляет её с <code>CODEBASE_INVENTORY.md</code> и кодовой базой Commerce OS. Репозиторий остаётся внутренним источником истины о коде, трекер — внешним источником истины о постановке задачи.</p>
+      <table>
+        <thead><tr><th>Сценарий</th><th>Без MCP</th><th>С MCP</th></tr></thead>
+        <tbody>
+          <tr><td>Разобрать issue из трекера</td><td>вы копируете текст задачи вручную</td><td>Claude читает задачу через внешний инструмент</td></tr>
+          <tr><td>Проверить свежий алерт</td><td>вы вставляете кусок лога вручную</td><td>Claude получает актуальные данные из monitoring</td></tr>
+          <tr><td>Свериться со схемой БД</td><td>вы копируете SQL-результаты или скриншоты</td><td>Claude читает схему через read-only доступ</td></tr>
+          <tr><td>Найти актуальную документацию</td><td>вы ищете и вставляете фрагменты сами</td><td>Claude запрашивает нужный справочный контекст</td></tr>
+        </tbody>
+      </table>
+      <p>MCP не заменяет вашу голову — он убирает рутину переноса данных в сессию.</p>
+    </section>
+
+    <section>
+      <h2>4. Возможности MCP для Claude Code</h2>
+      <p>Полезнее мыслить не конкретными продуктами, а классами возможностей. Их три:</p>
+      <ol>
+        <li><strong>Доступ к внешним данным</strong> — issue из трекера, список PR, график ошибки из monitoring, схема таблицы из read-only базы. Это действие «понять мир», и на старте нужен именно он.</li>
+        <li><strong>Внешние действия</strong> — оставить комментарий в PR, создать тикет, изменить статус задачи, запустить операцию. Технически MCP это умеет, но наличие действия не значит, что его надо сразу разрешать.</li>
+        <li><strong>Узкоспециализированный контекст от внешнего инструмента</strong> — например, документация: без MCP вы сами ищете актуальный раздел, а с инструментом Claude Code получает именно тот фрагмент справки, который нужен.</li>
+      </ol>
+      <p>Различайте три вопроса:</p>
+      <ul>
+        <li>данные — «что происходит снаружи?»;</li>
+        <li>действия — «что я могу изменить снаружи?»;</li>
+        <li>контекст — «что мне нужно знать снаружи, чтобы понять задачу?».</li>
+      </ul>
+      <div class="callout">Так MCP перестаёт быть абстрактной платформенной магией: это данные, действия и контекст с внешней стороны.</div>
+    </section>
+
+    <section>
+      <h2>5. MCP встраивается в уже знакомый workflow</h2>
+      <p>Появление MCP не ломает workflow из предыдущих модулей. Он не отменяет task spec, не заменяет plan mode, не убирает diff и не делает тесты необязательными. Он лишь добавляет источник входных данных до планирования.</p>
+      <pre><code>Задача: разобраться с COM-481
+Внешний источник: issue tracker
+Внутренние артефакты: CODEBASE_INVENTORY.md, API_MAP.md
+Результат: список затронутых модулей и план проверки
+Код не менять</code></pre>
+      <p>Решение всё равно принимается по знакомой схеме: задача → контекст → план → проверка. MCP — слой под уже знакомым процессом; всё из модулей про task specification, context hygiene и evidence-based discovery остаётся в силе.</p>
+    </section>
+
+    <section>
+      <h2>6. MCP не заменяет другие артефакты</h2>
+      <p>Когда появляется новый сильный механизм, рука тянется использовать его как замену всему подряд. Лучше затормозить и развести роли.</p>
+      <table>
+        <thead><tr><th>Что вам уже знакомо</th><th>Для чего это нужно</th><th>Почему MCP это не заменяет</th></tr></thead>
+        <tbody>
+          <tr><td><code>CLAUDE.md</code></td><td>постоянные правила проекта</td><td>MCP даёт внешние возможности, а не память проекта</td></tr>
+          <tr><td>Skill</td><td>повторяемая процедура</td><td>MCP даёт доступ к внешней системе, но не описывает workflow</td></tr>
+          <tr><td>Subagent</td><td>отдельная роль и изолированный контекст</td><td>MCP — это возможность, а не роль</td></tr>
+          <tr><td><code>CODEBASE_INVENTORY.md</code></td><td>карта внутреннего устройства проекта</td><td>MCP работает с внешними системами, а не с картой кода</td></tr>
+          <tr><td><code>API_MAP.md</code></td><td>карта внутренних API и интеграций проекта</td><td>MCP не описывает внутренние маршруты приложения</td></tr>
+        </tbody>
+      </table>
+      <p>Skill — рецепт. Subagent — роль. <code>CLAUDE.md</code> — правила. <code>CODEBASE_INVENTORY.md</code> — карта внутренней местности. MCP — пропуск к внешней системе.</p>
+      <p class="warning">Иногда кажется: раз Claude прочитает задачу из трекера, значит <code>TASK_SPEC.md</code> не нужен. Нет. Issue в трекере — сырой внешний сигнал, task spec — инженерная постановка работы именно в вашем контексте. MCP приносит сигнал, но не оформляет за вас задачу.</p>
+    </section>
+
+    <section>
+      <h2>7. Сквозной пример: Workflow Kit и Commerce OS</h2>
+      <p>Основной проект уровня — Claude Workflow Kit for Team, второй контекст — Commerce OS. Workflow Kit отвечает за то, как команда работает с Claude Code, Commerce OS — реальная кодовая база с багами, фичами и интеграционными вопросами.</p>
+      <p>Команда Commerce OS регулярно берёт задачи из внешнего трекера, и без MCP каждый приносит их вручную — вход у всех разного качества. Workflow Kit стабилизирует сам вход:</p>
+      <pre><code># Внешний источник для issue-analysis
+Система: issue tracker Commerce OS
+Режим: только чтение
+Инструменты: list_issues, get_issue, search_issues
+Назначение: забирать актуальные задачи без ручного копирования</code></pre>
+      <p>Никакого «распределённого AI-платформенного поколения» — команда увидела повторяющуюся боль и оформила внешний доступ как инженерный артефакт.</p>
+      <p>Главный сдвиг лекции: раньше репозиторий был единственным, что Claude Code видел напрямую, а всё остальное вы приносили руками. Теперь у картины два источника: внутренняя карта проекта (код, тесты, <code>CODEBASE_INVENTORY.md</code>) и внешний источник задач через MCP-мост. Claude Code работает с обоими, а COM-481 перестаёт жить в браузере отдельно от кода.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>MCP — внешний слой возможностей Claude Code, а не «весь интернет» и не замена коду.</li>
+        <li>MCP-клиент — Claude Code, MCP-сервер — доступ к внешней системе, инструмент — отдельное действие.</li>
+        <li>MCP закрывает разрыв между кодом в репозитории и внешним контекстом: трекер, monitoring, БД, docs, дизайн, PR-комментарии.</li>
+        <li>Три класса возможностей: внешние данные, внешние действия, специализированный контекст.</li>
+        <li>На старте нужнее read-only данные, а не write-действия.</li>
+        <li>MCP не отменяет task spec, plan mode, diff, тесты и evidence-based discovery.</li>
+        <li>MCP не заменяет <code>CLAUDE.md</code>, skill, subagent, <code>CODEBASE_INVENTORY.md</code> и <code>API_MAP.md</code>.</li>
+        <li>Issue из трекера — сырой сигнал; task spec — инженерная постановка задачи.</li>
+        <li>Для Workflow Kit разумный первый шаг — read-only issue tracker с <code>list_issues</code>, <code>get_issue</code>, <code>search_issues</code>.</li>
+        <li>MCP добавляет второй источник истины: внутреннюю карту проекта и внешний контекст задачи.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> спроектировать первый read-only MCP-контур для Workflow Kit, развести MCP и уже знакомые артефакты и проверить сценарий COM-481 без реальных внешних подключений.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>MCP_CAPABILITY_MAP.md</code>. Опишите MCP-клиент, сервер <code>issue-tracker</code> и три инструмента <code>list_issues</code>, <code>get_issue</code>, <code>search_issues</code>; зафиксируйте режим <code>read-only</code>.</li>
+        <li>Заполните таблицу «внутреннее vs внешнее»: код, тесты, <code>CODEBASE_INVENTORY.md</code>, <code>API_MAP.md</code> — внутри; issue tracker, monitoring, docs — снаружи. Для каждого внешнего источника укажите, нужен ли он роли и почему.</li>
+        <li>Разведите артефакты: <code>CLAUDE.md</code>, skill, subagent, <code>CODEBASE_INVENTORY.md</code>, <code>API_MAP.md</code> и MCP. Для каждого напишите, что он делает и почему MCP его не заменяет.</li>
+        <li>Разберите сценарий COM-481: какой инструмент читает issue, с какими внутренними артефактами сопоставляется, какой результат нужен и почему код не меняется. Добавьте отдельный <code>TASK_SPEC.md</code>, чтобы показать разницу между сырым issue и инженерной постановкой.</li>
+        <li>Проверьте карту по вопросам: есть ли внешние write-actions? есть ли секреты? не пытается ли MCP заменить task spec или карту проекта? Если Claude Code доступен, сымитируйте чтение issue и сверку с inventory; если нет — выполните вручную. Запишите вывод в <code>MCP_CAPABILITY_MAP.md</code>.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code или MCP недоступны:</strong> выполните карту и сценарий вручную в редакторе, без реальных подключений и токенов; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>MCP_CAPABILITY_MAP.md</code> есть клиент, сервер и минимум три read-only инструмента.</li>
+        <li>Внешние источники отделены от внутренних артефактов.</li>
+        <li>MCP не заменяет <code>CLAUDE.md</code>, skill, subagent, <code>CODEBASE_INVENTORY.md</code> и <code>API_MAP.md</code>.</li>
+        <li>Для COM-481 указано, какой инструмент читает issue и с чем он сопоставляется.</li>
+        <li>Есть <code>TASK_SPEC.md</code>, и объяснено отличие issue от task spec.</li>
+        <li>Нет внешних write-actions, реальных токенов и секретов.</li>
+        <li>Сценарий не меняет код на этапе discovery.</li>
+        <li>Если Claude Code или MCP недоступны, карта и сценарий выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>13 уровень · лекция 1. MCP — это пропуск к внешнему контексту, а не замена task spec, skills, subagents и карты проекта. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level13.lecture01" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
