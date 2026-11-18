@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Конфиг MCP: transport, scope, auth, auth-scope, секреты в env, проверка через /mcp и сборка read-only issue-tracker.json для Workflow Kit.">
+  <title>Claude Code — 13 уровень, лекция 4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Конфиг MCP</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">13 уровень · лекция 4</div>
+    </header>
+
+    <div class="lead">
+      MCP-конфиг — инженерный артефакт, а не туманная магия. Он отвечает на четыре вопроса: как Claude добирается до сервера, где живёт файл, от чьего имени идёт запрос и чем вы проверяете подключение.
+    </div>
+
+    <section>
+      <h2>1. MCP-конфиг как инженерный артефакт</h2>
+      <p>Когда дело доходит до реального подключения MCP, легко представить туманную магию: где-то что-то прописали, Claude внезапно увидел issue tracker, все счастливы. В реальной работе так лучше не делать. MCP без понятного конфига — как удлинитель без вилки: выглядит технически, а пользы мало.</p>
+      <p>Конфиг превращает подключение в артефакт: его читают, кладут в репозиторий, обсуждают в diff, при нужде отключают. Такие вы уже знаете — <code>CLAUDE.md</code>, <code>SKILL.md</code>, файл агента. MCP-конфиг фиксирует, к какому серверу Claude подключается, как до него добирается, где живёт и как проходит авторизация.</p>
+      <pre><code>workflow-kit/
+  .claude/
+    mcp/
+      issue-tracker.json</code></pre>
+      <pre><code>mcp/issue-tracker.json
+  → transport: как Claude добирается до сервера
+  → scope конфига: где живёт файл и кому доступен
+  → auth: как проходит авторизация
+  → MCP server → issue tracker</code></pre>
+      <table>
+        <thead><tr><th>Часть конфига</th><th>На какой вопрос отвечает</th></tr></thead>
+        <tbody>
+          <tr><td>name</td><td>что это за подключение</td></tr>
+          <tr><td>transport</td><td>как Claude добирается до сервера</td></tr>
+          <tr><td>endpoint или command</td><td>куда именно идти или что запускать</td></tr>
+          <tr><td>scope конфига</td><td>где живёт файл и кому он доступен</td></tr>
+          <tr><td>auth</td><td>как проходит авторизация</td></tr>
+          <tr><td>notes</td><td>зачем вообще это подключение существует</td></tr>
+        </tbody>
+      </table>
+      <p>Точные ключи, формат файла и даже названия transport’ов могут немного отличаться от версии к версии. Важнее логика. Если вы открыли <code>mcp/issue-tracker.json</code>, вы должны быстро понять три вещи: <strong>куда Claude идёт, от чьего имени он туда идёт и кто ещё в команде видит этот конфиг</strong>.</p>
+      <p class="warning">Если вы когда-нибудь увидите токен прямо внутри такого файла, это уже не «удобство». Это крик о помощи.</p>
+    </section>
+
+    <section>
+      <h2>2. Transport: дорога Claude к MCP-серверу</h2>
+      <p>Transport — ответ на вопрос, каким способом Claude Code разговаривает с MCP-сервером. Не что сервер умеет, а как до него добраться. Аналогия: transport — это дорога. Можно идти в соседнюю комнату пешком, а можно звонить в другой офис по сети.</p>
+      <p>В MCP «внешний» означает внешний по отношению к встроенному контексту репозитория: возможность приходит не из того, что Claude и так читает внутри проекта. Но физически она может жить как в локальном процессе на вашей машине, так и в удалённом сервисе по сети.</p>
+      <table>
+        <thead><tr><th>Вариант</th><th>Что это значит по-человечески</th><th>Когда обычно подходит</th></tr></thead>
+        <tbody>
+          <tr><td>Локальный stdio</td><td>Claude запускает процесс рядом с собой и обменивается данными через стандартные потоки</td><td>локальный скрипт, утилита, эксперимент на вашей машине</td></tr>
+          <tr><td>Удалённый HTTP-подобный transport</td><td>Claude подключается к уже работающему серверу по сети</td><td>общая командная система: issue tracker, docs lookup, monitoring</td></tr>
+        </tbody>
+      </table>
+      <p>Локальный вариант удобен для быстрых экспериментов:</p>
+      <pre><code>{
+  "name": "docs-local",
+  "transport": "stdio",
+  "command": "python",
+  "args": ["scripts/docs_server.py"]
+}</code></pre>
+      <p>Минус очевиден: пока сервер живёт только на вашей машине, для команды это не актив, а личная игрушка.</p>
+      <p>Для Workflow Kit и issue-tracker логичнее удалённый сервер. Issue tracker — не программа «только у Пети под столом», а общая внешняя система команды:</p>
+      <pre><code>{
+  "name": "issue-tracker",
+  "transport": "http",
+  "endpoint": "${ISSUE_TRACKER_URL}"
+}</code></pre>
+      <p>Важен не сам ключ <code>http</code>, а идея: сервер уже существует отдельно, а Claude лишь подключается к нему по адресу. Если возможность нужна только вам и живёт в локальном скрипте — берите локальный процесс; если система общая и должна работать одинаково у всей команды — чаще выигрывает удалённый endpoint.</p>
+    </section>
+
+    <section>
+      <h2>3. Scope: где живёт конфиг и кому он принадлежит</h2>
+      <p>После transport студенты чаще всего путаются в scope. И это нормально, потому что слово одно, а в практике рядом живут два разных смысла. <strong>Scope конфига</strong> — где лежит файл и кому доступен. <strong>Auth-scope</strong> — права токена или OAuth, например <code>read:issues</code>.</p>
+      <p>Scope конфига отвечает: это моя личная настройка, локальная настройка проекта, командный артефакт в репозитории или часть установленного плагина?</p>
+      <table>
+        <thead><tr><th>scope конфига</th><th>Где живёт</th><th>Кому виден</th><th>Когда обычно выбирать</th></tr></thead>
+        <tbody>
+          <tr><td>user</td><td>в ваших пользовательских настройках</td><td>только вам</td><td>один и тот же сервер нужен вам в разных проектах</td></tr>
+          <tr><td>local</td><td>локально в конкретном проекте, без коммита</td><td>только вам в этом репозитории</td><td>вы тестируете интеграцию и ещё не готовы делиться</td></tr>
+          <tr><td>project</td><td>в репозитории проекта</td><td>всей команде</td><td>MCP — часть общего workflow</td></tr>
+          <tr><td>plugin</td><td>приезжает вместе с плагином</td><td>всем, кто поставил plugin</td><td>capability распространяется на несколько репозиториев</td></tr>
+        </tbody>
+      </table>
+      <p>Самый важный для нас случай — <strong>project</strong>. <code>mcp/issue-tracker.json</code> в Workflow Kit — не личная заметка на холодильнике, а командный артефакт: раз <code>issue-analysis</code> рассчитывает на read-only доступ к issue tracker, подключение должно быть видно команде, лежать в Git и проходить review как код.</p>
+      <p>Local scope отлично подходит для проб и ошибок: проверяете новый docs lookup сервер, не уверены в формате, не хотите засорять репозиторий — делаете локально, а как только capability реально помогает, повышаете до project. С plugin scope логика похожая, только масштаб больше: подключение приезжает частью plugin-пакета — и ревьюить его нужно так же внимательно.</p>
+    </section>
+
+    <section>
+      <h2>4. Auth: доступ без выставки токенов</h2>
+      <p>На этом месте у новичков появляется опасное желание: «Ну давайте просто быстро впишем токен прямо в JSON, чтобы уже заработало». Желание человеческое. И очень вредное. Хороший MCP-конфиг всегда разводит две вещи: описание способа авторизации и секретное значение, которое реально даёт доступ.</p>
+      <p>Конфиг может говорить: «я использую OAuth» или «мне нужен endpoint из переменной окружения». Но сам токен, секрет, пароль или ключ в Git не кладётся. Никогда. Даже если это «только для учебного проекта».</p>
+      <pre><code># .env.example
+ISSUE_TRACKER_URL=
+ISSUE_TRACKER_TOKEN=</code></pre>
+      <pre><code># .gitignore
+.env
+.env.local
+*.token
+mcp/*.local.json</code></pre>
+      <p>Конфиг ссылается на эти значения, а не хранит их внутри:</p>
+      <pre><code>{
+  "name": "issue-tracker",
+  "transport": "http",
+  "endpoint": "${ISSUE_TRACKER_URL}",
+  "auth": "oauth"
+}</code></pre>
+      <p>Синтаксис подстановки переменных может отличаться от версии и инструмента. Где-то это <code>${VAR}</code>, где-то другой формат. Важен принцип: <strong>секреты живут вне репозитория, а конфиг только знает, что они существуют</strong>.</p>
+      <p>Auth-scope — не scope конфига, а права самой авторизации. Issue tracker может разрешать токену только <code>read:issues</code>. Именно это нужно для учебного Workflow Kit. Не <code>admin:*</code>, не «полный доступ ко всему», а узкое право на чтение issue. Чем уже auth-scope, тем меньше радиус поражения.</p>
+      <div class="callout">Auth отвечает на вопрос «как пройти в здание», а auth-scope — «в какие комнаты вас после этого пустят». Обычно нужен не мастер-ключ директора, а гостевой пропуск.</div>
+    </section>
+
+    <section>
+      <h2>5. /mcp: панель проверки подключения</h2>
+      <p>Допустим, вы аккуратно написали конфиг, убрали секреты из репозитория и положили файл туда, куда нужно. Следующий шаг простой и очень недооценённый: не верить на слово, что всё подключилось правильно. Для этого существует служебный интерфейс вроде команды <code>/mcp</code> или её аналога. Точное имя и набор подкоманд могут меняться, но модель обычно одна: list, get, status, debug.</p>
+      <pre><code>/mcp list            # показать все подключённые MCP-серверы
+/mcp get issue-tracker  # открыть детали конкретного подключения
+/mcp status          # состояние и последние ошибки
+/mcp debug           # более подробная диагностика</code></pre>
+      <p>Не держитесь за эти названия как за заповеди в камне — в вашей версии формулировки могут отличаться. Логика полезна в любой версии.</p>
+      <ul>
+        <li><code>list</code> — видит ли система ваш MCP-сервер вообще;</li>
+        <li><code>get</code> — что за transport, endpoint и описание у конкретного подключения;</li>
+        <li><code>status</code> — когда «вроде настроили, но ничего не работает»;</li>
+        <li><code>debug</code> — когда нужна подробная диагностика и логи.</li>
+      </ul>
+      <p>Полезное профессиональное правило: если <code>get_issue</code> не работает, не начинайте с переписывания половины workflow. Сначала проверьте <code>/mcp</code>. Часто проблема скучная и бытовая: неправильный endpoint, не тот scope, забытая переменная окружения, просроченный токен. Лучше чинить на уровне подключения, а не городить новые слои хаоса.</p>
+      <p>Для Workflow Kit это особенно важно. Если <code>issue-analysis</code> внезапно перестал «видеть» задачу Commerce OS, не нужно сразу обвинять skill. Возможно, <code>issue-tracker</code> не поднялся или не прошёл auth. Диагностика через <code>/mcp</code> экономит время и драматические монологи в терминал.</p>
+    </section>
+
+    <section>
+      <h2>6. Собираем mcp/issue-tracker.json для Workflow Kit</h2>
+      <p>Теперь соберём в один артефакт read-only issue-tracker, который уже оправдали для <code>issue-analysis</code>. Нужен project-scoped MCP-конфиг в Workflow Kit. Задача — перестать копировать описание issue руками и дать Claude читать задачи из внешней системы контролируемым способом.</p>
+      <pre><code>{
+  "name": "issue-tracker",
+  "transport": "http",
+  "endpoint": "${ISSUE_TRACKER_URL}",
+  "auth": "oauth",
+  "authScopes": ["read:issues"],
+  "tools": [
+    { "name": "list_issues", "permissions": "read-only" },
+    { "name": "get_issue", "permissions": "read-only" },
+    { "name": "search_issues", "permissions": "read-only" }
+  ],
+  "notes": "Read-only access for Commerce OS issue analysis."
+}</code></pre>
+      <p>Точные имена полей могут отличаться — где-то tools подтягиваются с сервера сами, где-то <code>authScopes</code> оформлены иначе. Но как учебная модель чтения конфиг идеален: удалённый сервер, OAuth, суженный до чтения, три read-only tool без единой write-операции. <code>notes</code> объясняет, зачем подключение существует, чтобы через месяц никто не гадал про ещё один JSON-файл.</p>
+      <p>Если положить файл в <code>workflow-kit/.claude/mcp/issue-tracker.json</code>, закоммитить без секретов и проверить через <code>/mcp</code>, вместо разговорной идеи «надо подключить issue tracker» появится инженерный актив команды: его можно ревьюить, обсуждать, улучшать, переиспользовать. А skill <code>issue-analysis</code> перестанет зависеть от копирования из браузера и обопрётся на читаемый, прозрачный, ограниченный слой возможностей.</p>
+      <p>Главный результат лекции: туманная магия «где-то что-то прописали» раскладывается на четыре читаемых решения в одном файле:</p>
+      <ol>
+        <li><strong>transport</strong> — как Claude добирается до сервера;</li>
+        <li><strong>scope конфига</strong> — где файл живёт и кто его видит;</li>
+        <li><strong>auth</strong> со ссылкой на env — от чьего имени и с какими правами идёт запрос;</li>
+        <li><strong>/mcp</strong> — чем вы это проверяете, когда «вроде настроили, а не работает».</li>
+      </ol>
+      <p>Открыли <code>issue-tracker.json</code>, прочитали эти четыре ответа за минуту — значит, конфиг написан по-инженерному, а не скопирован из случайного JSON в интернете.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>MCP-конфиг — инженерный артефакт, который читают, ревьюят и версионируют.</li>
+        <li>Конфиг отвечает: куда Claude идёт, от чьего имени и кто ещё видит подключение.</li>
+        <li>Transport — способ добраться до сервера: локальный stdio или удалённый HTTP-подобный.</li>
+        <li>Scope конфига — где живёт файл и кому доступен: user, local, project, plugin.</li>
+        <li>Для командного Workflow Kit обычно нужен project scope.</li>
+        <li>Auth описывает способ авторизации, но секреты хранятся вне репозитория.</li>
+        <li>Auth-scope сужает права токена, например <code>read:issues</code>.</li>
+        <li>Секреты — в <code>.env</code>/переменных окружения; в Git только <code>.env.example</code>.</li>
+        <li><code>/mcp</code> помогает проверить list, get, status и debug подключения.</li>
+        <li>Если инструмент не работает, сначала проверьте <code>/mcp</code>, а не переписывайте workflow.</li>
+        <li>Read-only issue tracker: <code>list_issues</code>, <code>get_issue</code>, <code>search_issues</code>, без write-операций.</li>
+        <li>Четыре ответа читаемого конфига: transport, scope, auth, проверка через <code>/mcp</code>.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать project-scoped read-only MCP-конфиг для issue tracker, спрятать секреты и проверить подключение через <code>/mcp</code> или ручной аудит.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>mcp/issue-tracker.json</code> с <code>transport: http</code>, <code>${ISSUE_TRACKER_URL}</code>, <code>auth: oauth</code>, <code>authScopes: ["read:issues"]</code> и read-only tools <code>list_issues</code>, <code>get_issue</code>, <code>search_issues</code>.</li>
+        <li>Создайте <code>.env.example</code> с пустыми <code>ISSUE_TRACKER_URL</code> и <code>ISSUE_TRACKER_TOKEN</code>; добавьте <code>.env</code>, <code>.env.local</code>, <code>*.token</code> и <code>mcp/*.local.json</code> в <code>.gitignore</code>.</li>
+        <li>Заполните <code>MCP_CONFIG_REVIEW.md</code>: transport и почему он подходит; scope конфига и кто видит файл; auth-scope; какие tools read-only, какие write-actions запрещены; как проверить через <code>/mcp</code>.</li>
+        <li>Проверьте конфиг на секреты: токенов, реальных URL и паролей внутри JSON быть не должно. Если Claude Code доступен, выполните <code>/mcp list</code> и <code>/mcp get issue-tracker</code>; если нет — проведите ручной аудит по тем же полям.</li>
+        <li>Зафиксируйте в <code>MCP_CONFIG_REVIEW.md</code> fallback: если MCP недоступен, issue читается вручную и кладётся в <code>TASK_SPEC.md</code>. Не подключайте реальные внешние сервисы.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code или MCP недоступны:</strong> выполните конфиг и аудит вручную в редакторе, без реальных подключений; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>Конфиг лежит в <code>mcp/issue-tracker.json</code> и использует project scope.</li>
+        <li><code>transport</code>, endpoint, auth и auth-scope явно указаны.</li>
+        <li>В конфиге только read-only tools; write-actions отсутствуют.</li>
+        <li>Секретов в JSON нет; <code>.env.example</code> и <code>.gitignore</code> настроены.</li>
+        <li>В <code>MCP_CONFIG_REVIEW.md</code> объяснены все четыре решения: transport, scope, auth, <code>/mcp</code>.</li>
+        <li>Есть fallback при недоступном MCP.</li>
+        <li>Нет реальных токенов, URL и внешних подключений.</li>
+        <li>Если Claude Code недоступен, аудит выполнен вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>13 уровень · лекция 4. Читаемый MCP-конфиг отвечает на четыре вопроса: transport, scope, auth и как это проверить через /mcp. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level13.lecture04" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
