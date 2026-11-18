@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MCP-серверы и сценарии разработчика: категории возможностей, read-only старт, issue tracker и PR, monitoring и docs lookup, Context7, карта MCP для Workflow Kit.">
+  <title>Claude Code — 13 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">MCP-категории</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">13 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Запоминать названия MCP-серверов бесполезно. Думайте категориями рабочих болей: issue tracker, PR, monitoring, docs, read-only DB, browser, communications, deployment — и для каждой выбирайте чтение или действие.
+    </div>
+
+    <section>
+      <h2>1. Названия серверов запоминать бесполезно</h2>
+      <p>Если начинать знакомство с MCP со списка конкретных серверов, быстро возникает ложное ощущение, что нужно запомнить чей-то зоопарк интеграций. Один ходит в issue tracker, другой читает pull request, третий знает документацию. Через десять минут всё слипается в «что-то там про внешние инструменты». Запоминать чужой зоопарк — тупик.</p>
+      <p>В реальной работе вы думаете не «как называется модный MCP-сервер этой недели», а «прочитать issue», «увидеть diff PR», «понять, что горит в monitoring». То есть не брендом инструмента, а типом рабочей боли.</p>
+      <p>Полезнее запоминать не названия, а три вопроса к любой категории:</p>
+      <ol>
+        <li>Какой внешний сигнал или данные она даёт?</li>
+        <li>Claude через неё только читает — или уже может что-то менять?</li>
+        <li>Как этот сигнал встраивается в наш процесс — task spec, план, diff, tests, review?</li>
+      </ol>
+      <p>Если на эти вопросы есть ответ, категория понятна. Если ответа нет — вы пока смотрите на MCP как на витрину, а не как на рабочий инструмент.</p>
+      <p>У большинства команд набор категорий стабилен. В Commerce OS почти всегда есть задачи, PR, логи, документация, иногда база, браузерная проверка, коммуникации. Эту карту и соберём.</p>
+    </section>
+
+    <section>
+      <h2>2. Главные категории MCP-возможностей</h2>
+      <p>Если смотреть на MCP глазами разработчика, большинство сценариев укладывается в несколько повторяющихся корзин. Таблица ниже — не про бренды, а про типы задач.</p>
+      <table>
+        <thead><tr><th>Категория</th><th>Что Claude обычно читает</th><th>Что иногда может делать</th><th>Хороший безопасный старт</th></tr></thead>
+        <tbody>
+          <tr><td>Трекер задач</td><td>issue, статусы, labels, комментарии</td><td>менять статус, создавать issue, комментировать</td><td>читать и искать issue</td></tr>
+          <tr><td>Система PR / source control</td><td>diff, комментарии ревью, статусы проверок</td><td>комментировать, закрывать, merge</td><td>читать diff и комментарии</td></tr>
+          <tr><td>Monitoring / incidents</td><td>alert, stack trace, метрики, логи</td><td>acknowledge, silence, менять статус инцидента</td><td>читать сигналы и логи</td></tr>
+          <tr><td>Docs lookup</td><td>официальные docs, changelog, примеры API</td><td>обычно только чтение</td><td>искать и читать документацию</td></tr>
+          <tr><td>Read-only DB</td><td>схему, таблицы, safe select-запросы</td><td>update/delete/insert, запуск миграций</td><td>читать схему и безопасные выборки</td></tr>
+          <tr><td>Browser / design</td><td>страницу, скриншоты, состояние интерфейса, дизайн-артефакты</td><td>кликать, заполнять формы, делать шаги сценария</td><td>осмотр страницы и визуального контекста</td></tr>
+          <tr><td>Коммуникации команды</td><td>треды, сообщения, обсуждения</td><td>отправлять сообщения, создавать треды</td><td>начинать очень осторожно</td></tr>
+          <tr><td>Platform / deployment</td><td>список релизов, статусы окружений, сборки</td><td>деплой, рестарт, rollback</td><td>только чтение статусов</td></tr>
+        </tbody>
+      </table>
+      <p>В таблице важнее всего не левая колонка, а две центральные. У категории почти всегда есть два режима жизни. Трекер задач бывает источником данных для <code>TASK_SPEC.md</code> — а бывает местом, где Claude меняет статус. PR-система бывает окном в diff — а бывает делает merge. База бывает schema и safe select — а бывает выполняет изменения.</p>
+      <div class="callout">Категория ничего не обещает: понимайте, подключаете вы чтение или действие. Безопасный старт почти всегда read-only.</div>
+      <p>Read-only не выглядит героически. Зато потом никто не просыпается с мыслью: «Интересно, кто вчера дал ИИ право закрывать production-инциденты?»</p>
+    </section>
+
+    <section>
+      <h2>3. Трекер задач и PR: старт для Commerce OS</h2>
+      <p>После read-only issue-tracker следующий логичный шаг — PR и diff. Issue tracker и PR / source control дают максимум пользы при минимуме риска: одна отвечает за постановку задачи, вторая — за то, что меняется в коде.</p>
+      <p>С задачей COM-481 это видно сразу: прочитать описание issue и посмотреть связанный PR. Без MCP вы таскаете это руками через браузер и чат. С read-only Claude получает живой текст issue и комментарии ревью.</p>
+      <p>В Workflow Kit это стыкуется с уже знакомыми артефактами. <code>skills/issue-analysis/SKILL.md</code> опирается на живые данные из issue tracker, а не на вставленный вручную текст. <code>agents/reviewer.md</code> читает не только локальный diff, но и комментарии к PR. Пока речь именно о чтении, не о действии.</p>
+      <pre><code>COM-481
+  → get_issue: читаем живое описание и шаги воспроизведения
+  → TASK_SPEC.md: превращаем ticket в инженерную постановку
+  → diff и review notes: сравниваем план с реальными изменениями</code></pre>
+      <p>Эта пара категорий отвечает на два приземлённых вопроса. Трекер: что хотели изменить? Diff: что на самом деле изменили? Когда есть оба ответа, Claude работает не в вакууме, а внутри реального цикла разработки.</p>
+    </section>
+
+    <section>
+      <h2>4. Monitoring и docs lookup: боль и норма</h2>
+      <p>После задач и PR логично перейти к паре категорий, которые часто идут рядом. Monitoring даёт сигнал, что что-то пошло не так. Docs lookup — ориентир, как система должна себя вести. Одно — фактическая боль, другое — ожидаемое поведение.</p>
+      <p>Monitoring приносит не мнение, а симптом: alert, stack trace, всплеск ошибок, просадку метрики. Для debugging Claude видит не только код, но и внешний след проблемы. Сначала evidence, потом гипотеза.</p>
+      <p>Docs lookup — про то, как устроен внешний API, как библиотека рекомендует мигрировать настройки, какой параметр устарел. Docs дают нормативный контекст, monitoring — фактический сигнал. Документация бывает красивой и уверенной, а код всё равно работает иначе. Лог, наоборот, жёсткий и неулыбчивый — зато правдивый.</p>
+      <table>
+        <thead><tr><th>Категория</th><th>На какой вопрос отвечает</th><th>Что даёт в работу Claude</th></tr></thead>
+        <tbody>
+          <tr><td>Monitoring</td><td>Где и как именно болит?</td><td>alert, лог, stack trace, метрику</td></tr>
+          <tr><td>Docs lookup</td><td>Как это должно работать по официальной версии?</td><td>changelog, reference, пример API</td></tr>
+        </tbody>
+      </table>
+      <p>Для Commerce OS: задача начинается с ошибки — monitoring собирает факты. Упирается во внешний фреймворк или SDK — docs lookup не даёт гадать по памяти. Пара не заменяет кодовую базу, но делает разговор точнее.</p>
+      <p>Хороший пример docs lookup — <strong>Context7 от Upstash</strong>. Он подтягивает актуальную version-specific документацию популярных библиотек прямо в контекст Claude. LLM по умолчанию опирается на документацию из обучающих данных, а она почти всегда устарела: чуть выдуманные API, чуть устаревшие сигнатуры. Context7 идёт за свежими docs во внешний источник.</p>
+      <p>Capability surface узкий: два инструмента — один преобразует имя библиотеки во внутренний идентификатор, второй вытаскивает фрагмент документации. Никаких write-операций, деплоя, доступа к коду. Идеальная иллюстрация «сначала read-only»: живой нормативный контекст, blast radius почти нулевой. Подключается как обычный MCP-сервер через удалённый URL или локальный пакет; конкретные команды зависят от версии.</p>
+    </section>
+
+    <section>
+      <h2>5. Read-only DB, browser, design и коммуникации</h2>
+      <p>Есть категории MCP дальше от привычного «issue → code → PR», но они отвечают на другие вопросы. Read-only база: что реально хранится и как связано? Браузер и дизайн: что видит пользователь и что задумал дизайнер? Коммуникации: что команда уже обсуждала?</p>
+      <p>Read-only база хороша не для «магических SQL-приключений», а для аккуратной проверки схемы и данных: Claude видит поле у таблицы, понимает связи, проверяет результат безопасного select. Для новичка важная развилка: база через MCP — не приглашение выполнять update и delete. Сначала это способ лучше понять данные, а не быстрее их испортить.</p>
+      <p>Браузерные и дизайн-категории решают другую боль. Код бывает формально правильным, а UI ведёт себя странно. Браузерный контекст показывает страницу, состояние формы, результат действия. Дизайн-контекст даёт свериться с тем, что должно получиться.</p>
+      <p>С коммуникационными инструментами надо быть особенно трезвым. Прочитать тред полезно. Но как только инструмент умеет писать сообщения от вашего имени, ответственность резко меняется. На старте — источник контекста, а не рупор для автоответов.</p>
+      <p>То же с платформой и деплоем. Считать статус релиза — одно. Дать ИИ право нажать deploy — совсем другое. Мыслить категориями полезно: вы видите не «подключили MCP», а смысл конкретного внешнего канала.</p>
+    </section>
+
+    <section>
+      <h2>6. Один сервер бывает и безопасным, и опасным</h2>
+      <p>Самая важная мысль лекции: опасность MCP почти никогда не определяется одной только категорией. Её определяют конкретные tools внутри. Один и тот же сервер бывает скучным и безопасным в read-only — и очень бодрым источником проблем, если дать ему право менять внешний мир.</p>
+      <table>
+        <thead><tr><th>Категория</th><th>Read-only пример</th><th>Пример с внешним действием</th></tr></thead>
+        <tbody>
+          <tr><td>Issue tracker</td><td><code>get_issue</code>, <code>search_issues</code></td><td><code>update_issue</code>, <code>transition_issue</code></td></tr>
+          <tr><td>PR / source control</td><td><code>get_diff</code>, <code>list_comments</code></td><td><code>post_comment</code>, <code>merge_pr</code></td></tr>
+          <tr><td>Monitoring</td><td><code>get_alert</code>, <code>get_metrics</code></td><td><code>acknowledge_alert</code>, <code>silence_alert</code></td></tr>
+          <tr><td>DB</td><td><code>describe_schema</code>, <code>select_rows</code></td><td><code>update_rows</code>, <code>delete_rows</code></td></tr>
+          <tr><td>Коммуникации</td><td><code>read_thread</code></td><td><code>post_message</code></td></tr>
+          <tr><td>Deployment</td><td><code>list_releases</code>, <code>get_build_status</code></td><td><code>deploy_release</code>, <code>rollback_release</code></td></tr>
+        </tbody>
+      </table>
+      <p>Если посмотреть на таблицу, становится ясно, почему курс упорно толкает к минимально достаточным правам. Нужна issue? Читайте issue. Нужен diff? Читайте diff. Нужен alert? Читайте alert. Прибавка к качеству контекста огромная, а blast radius маленький.</p>
+      <pre><code>### MCP-правило команды
+- issue tracker — только чтение
+- PR-система — только чтение
+- monitoring — только чтение
+- база данных — только схема и safe select</code></pre>
+      <p>Это не выглядит героически, зато отражает взрослый инженерный подход. Сначала учимся получать качественный внешний контекст. Только потом, если есть повторяющаяся боль и понятный контроль, обсуждаем внешние write-actions. Не наоборот.</p>
+    </section>
+
+    <section>
+      <h2>7. Карта MCP-возможностей для Workflow Kit</h2>
+      <p>Когда мышление категориями появилось, следующий шаг — не держать карту только в голове. В <code>README.md</code> Workflow Kit добавьте короткую таблицу: не только «что подключить», но и зачем, в каком режиме и кому это нужно.</p>
+      <pre><code>## MCP-карта команды
+| Категория | Зачем подключаем | Первый режим | Кто использует |
+|---|---|---|---|
+| issue tracker | делать TASK_SPEC.md из живых issue | read-only | issue-analysis skill |
+| PR / git | читать diff и комментарии ревью | read-only | reviewer agent |
+| docs lookup | сверять официальные docs и changelog | read-only | человек / исследователь |
+| monitoring | видеть alerts и stack trace | read-only | debugging workflow |</code></pre>
+      <p>Здесь нет попытки перечислить весь мировой рынок MCP — и это прекрасно. Хорошая карта помогает решить: что реально нужно для процесса, в каком режиме подключать, кто будет пользоваться. Не заполняется «зачем подключаем» — сервер пока не нужен. Не заполняется «первый режим» — вы перескакиваете в опасную часть.</p>
+      <p>Workflow Kit — не музей красивых конфигов. <code>SKILL.md</code> для анализа issue, <code>agents/reviewer.md</code> для локального review, <code>TASK_SPEC.md</code> для постановки уже существуют как осмысленные артефакты. MCP должен усиливать их, а не жить рядом как гордый, но бесполезный экзотический зверь.</p>
+      <p>Запоминайте не зоопарк серверов, а три вопроса к любой категории: какой внешний сигнал она даёт, читает Claude через неё или уже меняет, куда это встраивается в цикл — task spec, план, diff, tests, review. Ответили на все три — категория у вас в руках, и неважно, как назовут завтрашний модный сервер этой же корзины.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Запоминать названия MCP-серверов бесполезно; думайте категориями рабочих болей.</li>
+        <li>К любой категории три вопроса: какой сигнал, чтение или изменение, куда встраивается в процесс.</li>
+        <li>Основные категории: issue tracker, PR/source control, monitoring, docs lookup, read-only DB, browser/design, коммуникации, deployment.</li>
+        <li>У категории почти всегда два режима: read-only и write-action.</li>
+        <li>Безопасный старт почти всегда read-only.</li>
+        <li>Issue tracker + PR отвечают на «что хотели изменить?» и «что реально изменили?».</li>
+        <li>Monitoring даёт факты, docs lookup — нормативный контекст.</li>
+        <li>Один сервер может быть безопасным и опасным: риск определяют конкретные tools.</li>
+        <li>MCP-правило команды: issue tracker, PR, monitoring — read-only; БД — схема и safe select.</li>
+        <li>MCP-карта в README фиксирует категорию, цель, режим и владельца.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать карту MCP-категорий для Workflow Kit, выбрать read-only режим для каждой и показать, что риск определяется конкретными tools, а не названием сервера.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>MCP_CAPABILITY_MAP.md</code> с категориями issue tracker, PR/source control, monitoring, docs lookup, read-only DB, browser/design, communications, deployment.</li>
+        <li>Для каждой категории заполните: какой внешний сигнал даёт, что Claude читает, какие tools были бы write-actions, кто в Workflow Kit использует результат.</li>
+        <li>Выберите безопасный старт: для issue tracker, PR и monitoring — read-only; для БД — схема и safe select; для communications и deployment — только чтение статусов или отказ.</li>
+        <li>Разберите один сервер в двух режимах: например, issue tracker с <code>get_issue</code>/<code>search_issues</code> против <code>update_issue</code>/<code>transition_issue</code>. Объясните, почему категория одна, а риск разный.</li>
+        <li>Добавьте в README Workflow Kit короткую MCP-карту: категория, зачем, первый режим, кто использует. Проверьте, что нет write-actions, реальных токенов и подключений; если Claude Code или MCP недоступны — выполните вручную.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code или MCP недоступны:</strong> выполните карту и разбор вручную в редакторе, без реальных подключений и токенов; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>MCP_CAPABILITY_MAP.md</code> есть все восемь категорий.</li>
+        <li>Для каждой указаны сигнал, чтение, потенциальные write-actions и потребитель.</li>
+        <li>Read-only выбран для issue tracker, PR, monitoring, docs lookup и БД.</li>
+        <li>Один сервер разобран в безопасном и опасном режимах.</li>
+        <li>В README Workflow Kit есть карта «категория → зачем → режим → кто использует».</li>
+        <li>Нет реальных write-действий, секретов и внешних подключений.</li>
+        <li>Решение объясняет, какую рабочую боль закрывает категория.</li>
+        <li>Если Claude Code или MCP недоступны, карта выполнена вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>13 уровень · лекция 3. Думайте категориями, а не брендами; риск MCP определяют конкретные tools, а безопасный старт — read-only. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level13.lecture03" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
