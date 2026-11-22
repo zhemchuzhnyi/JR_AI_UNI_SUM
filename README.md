@@ -16,7 +16,7 @@
 - **Вебинар 6** — уровень 10, лекции 1–5: от skill к plugin, namespace, marketplace, install scopes, manifest, выбор по категориям, lifecycle, проверка и team-ready prototype; практика team-kit и 25 контрольных вопросов.
 - **Вебинар 7** — уровень 11, лекции 1–5: терминология агентов, built-in delegation, кастомный subagent, engineering contract, роли агентов и 3-слойная модель review; практика md2html и 25 контрольных вопросов.
 - **Вебинар 8** — уровень 12, лекции 1–5: tools и permissions, scoped skills/MCP/memory, context и worktree isolation, output contract, lifecycle и evaluation; практика file2md и 25 контрольных вопросов.
-- **Вебинар 9** — уровень 13, лекции 1–5: MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска; презентация будет добавлена.
+- **Вебинар 9** — уровень 13, лекции 1–5: MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска; 25 контрольных вопросов; презентация будет добавлена.
 
 ## Навигация
 
@@ -49,3 +49,4 @@
 - [Вебинар 6, уровень 10 — 25 вопросов](src/main/webinar6/level10/CONTROL_QUESTIONS.md)
 - [Вебинар 7, уровень 11 — 25 вопросов](src/main/webinar7/level11/CONTROL_QUESTIONS.md)
 - [Вебинар 8, уровень 12 — 25 вопросов](src/main/webinar8/level12/CONTROL_QUESTIONS.md)
+- [Вебинар 9, уровень 13 — 25 вопросов](src/main/webinar9/level13/CONTROL_QUESTIONS.md)

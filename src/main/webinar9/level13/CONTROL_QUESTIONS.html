@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 13 — контрольные вопросы по MCP как внешнему слою, правилу «сначала вручную», категориям, конфигу и четырём зонам риска.">
+  <title>Уровень 13 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111318; --panel:#1a1e26; --text:#f1f2f4; --muted:#a5adba; --accent:#f5a66b; --line:#303642; --green:#a8d8a0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 85% 0,#33261f 0,transparent 34rem),var(--bg); color:var(--text); font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:0 auto; padding:48px 0 80px; }
+    h1 { margin:18px 0 22px; font-size:clamp(2rem,6vw,3.4rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:38px 0 14px; padding-top:18px; border-top:1px solid var(--line); font-size:1.35rem; }
+    p { margin:12px 0; }
+    ol, ul { margin:10px 0; padding-left:1.5rem; }
+    li { margin:10px 0; }
+    strong { color:#fff; }
+    code { color:var(--green); }
+    a { color:var(--accent); }
+    footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+    @media (max-width:620px) { main { padding-top:30px; } h1 { font-size:2rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <h1>Уровень 13 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 13: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы покрывают MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска.</p>
+<h2>Лекция 1 — MCP как внешний слой</h2>
+<ol start="1">
+  <li><strong>Что такое MCP применительно к Claude Code?</strong><br>
+    MCP — внешний слой возможностей Claude Code: договорённость, как Claude узнаёт о внешних инструментах, вызывает их и получает ответ. Он не открывает весь интернет, а добавляет контролируемые «окошки» во внешние системы: трекер, monitoring, read-only БД, документацию, PR-комментарии.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Какие три роли выделяются в концептуальной модели MCP?</strong><br>
+    Клиент — Claude Code; сервер — доступ к возможностям внешней системы; инструмент — отдельное действие вроде <code>list_issues</code>, <code>get_issue</code>, <code>search_docs</code>. Схема: задача → Claude Code → MCP-клиент → MCP-сервер → внешняя система.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Какие три класса возможностей даёт MCP?</strong><br>
+    Доступ к внешним данным («что происходит снаружи?»), внешние действия («что можно изменить снаружи?») и узкоспециализированный контекст («что нужно знать снаружи, чтобы понять задачу?»). На старте обычно нужнее данные, а не write-действия.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Что MCP не заменяет и чем issue отличается от task spec?</strong><br>
+    MCP не заменяет <code>CLAUDE.md</code>, skill, subagent, <code>CODEBASE_INVENTORY.md</code>, <code>API_MAP.md</code> и <code>TASK_SPEC.md</code>. Issue в трекере — сырой внешний сигнал, а task spec — инженерная постановка задачи в контексте проекта. MCP приносит сигнал, но не оформляет задачу.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Почему для Workflow Kit разумен read-only issue-tracker с <code>list_issues</code>, <code>get_issue</code>, <code>search_issues</code>?</strong><br>
+    Он закрывает повторяющуюся боль с ручным копированием issue, даёт живые данные для <code>issue-analysis</code> и при этом не меняет внешнее состояние. Репозиторий остаётся источником истины о коде, трекер — о постановке задачи.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+</ol>
+<h2>Лекция 2 — правило «сначала вручную»</h2>
+<ol start="6">
+  <li><strong>В чём формула «сначала вручную» для MCP?</strong><br>
+    Автоматизировать внешний доступ стоит только тогда, когда он повторяется, приносит реальную пользу и остаётся управляемым. Сначала действие выполняется руками; это показывает настоящую боль, её границы и то, что вообще имеет смысл автоматизировать.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Через какие три измерения курса советует прогонять идею MCP?</strong><br>
+    Ценность (какую конкретную боль убираем), повторяемость (как часто это происходит) и управляемость (можно ли ограничить scope, использовать read-only и проверить результат). Если хотя бы одно измерение проваливается, с MCP лучше не спешить.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Когда MCP скорее не нужен?</strong><br>
+    Для разового локального stack trace, одного скриншота, маленького лога или однократного обращения к документации. Также если сервер сомнительный, credentials не ограничить, output огромный или результат нельзя быстро проверить.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему read-only MCP почти всегда первый шаг?</strong><br>
+    Он даёт качественный внешний контекст при минимальном blast radius и не меняет внешнее состояние. Сначала доказываем пользу и проверяемость интеграции, а write-операции рассматриваем отдельно, с подтверждениями и согласованием.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Где фиксируется решение по MCP и что в нём должно быть?</strong><br>
+    В <code>TASK_SPEC.md</code> или рядом со skill’ом: какой источник используется, read-only режим, какие действия запрещены, что делать при недоступном MCP. Нужен fallback: если MCP не работает, текст issue берётся вручную.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
+<h2>Лекция 3 — категории MCP-возможностей</h2>
+<ol start="11">
+  <li><strong>Почему запоминать названия MCP-серверов бесполезно и что важнее?</strong><br>
+    Названия и продукты меняются, а типы рабочих болей стабильны. Важнее три вопроса к категории: какой внешний сигнал она даёт, Claude только читает или уже меняет, куда это встраивается в процесс — task spec, план, diff, tests, review.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какие основные категории MCP-возможностей перечисляет лекция?</strong><br>
+    Issue tracker, PR/source control, monitoring/incidents, docs lookup, read-only DB, browser/design, communications, platform/deployment. У каждой категории есть read-only режим и потенциальные write-actions.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какую пару категорий лекция называет хорошим стартом для Commerce OS?</strong><br>
+    Issue tracker и PR/source control: трекер отвечает «что хотели изменить?», diff — «что реально изменили?». С read-only Claude получает живое описание issue и комментарии ревью, не меняя внешнее состояние.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Чем monitoring отличается от docs lookup и какую проблему закрывает Context7?</strong><br>
+    Monitoring даёт фактический сигнал: alert, stack trace, метрику, лог. Docs lookup даёт нормативный контекст: как это должно работать по официальной версии. Context7 подтягивает актуальную version-specific документацию библиотек, чтобы Claude не опирался на устаревшие знания из обучения.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Почему один и тот же MCP-сервер может быть и безопасным, и опасным?</strong><br>
+    Риск определяют конкретные tools, а не название категории. <code>get_issue</code> и <code>search_issues</code> — read-only, а <code>update_issue</code> и <code>transition_issue</code> уже меняют внешний мир. Поэтому нужен минимально достаточный набор tools и read-only по умолчанию.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+</ol>
+<h2>Лекция 4 — конфиг MCP</h2>
+<ol start="16">
+  <li><strong>Почему MCP-конфиг называют инженерным артефактом?</strong><br>
+    Его читают, кладут в репозиторий, обсуждают в diff, версионируют и при необходимости отключают. По конфигу должно быть понятно, куда Claude идёт, от чьего имени и кто ещё видит подключение.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>На какой вопрос отвечает <code>transport</code> и какие варианты рассматриваются?</strong><br>
+    Transport отвечает, как Claude добирается до MCP-сервера. Локальный <code>stdio</code> — процесс рядом с Claude; удалённый HTTP-подобный — подключение к уже работающему серверу по сети. Для командной системы чаще нужен удалённый endpoint.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Чем scope конфига отличается от auth-scope и какой scope нужен Workflow Kit?</strong><br>
+    Scope конфига — где живёт файл и кому доступен: <code>user</code>, <code>local</code>, <code>project</code>, <code>plugin</code>. Auth-scope — права токена/OAuth, например <code>read:issues</code>. Для командного <code>mcp/issue-tracker.json</code> нужен <code>project</code> scope: файл лежит в репозитории, виден команде и проходит review.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Как правильно обращаться с токеном MCP?</strong><br>
+    Не хранить токен в конфиге или репозитории. Секреты — в переменных окружения/<code>.env</code>, реальные файлы в <code>.gitignore</code>, в Git только <code>.env.example</code>. В конфиге ссылка <code>${ISSUE_TRACKER_URL}</code>, auth-scope <code>read:issues</code>, плюс ротация и отзыв токена.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Зачем нужна <code>/mcp</code> и какие действия она обычно поддерживает?</strong><br>
+    Чтобы проверить подключение, а не верить на слово. <code>list</code> показывает серверы, <code>get</code> — детали конкретного подключения, <code>status</code> — состояние и ошибки, <code>debug</code> — подробную диагностику. Если инструмент не работает, сначала проверяют <code>/mcp</code>, а не переписывают workflow.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+</ol>
+<h2>Лекция 5 — четыре зоны риска</h2>
+<ol start="21">
+  <li><strong>Какие четыре зоны риска MCP выделяет лекция?</strong><br>
+    Credentials (секреты и scope), prompt injection (внешний текст как инструкции), избыточный объём данных (засорение контекста) и side effects (write-действия и другие изменения снаружи). Каждой зоне соответствует своя политика.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как защищаться от prompt injection через issue или документ?</strong><br>
+    Считать любой внешний текст данными, а не инструкциями. Извлекать симптомы, ограничения и риски, но не выполнять команды внутри issue. Помнить, что injection не всегда атака — это может быть обычный хаос в тексте.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как ограничивать объём данных, который MCP возвращает в контекст?</strong><br>
+    Использовать <code>filter</code>, <code>limit</code>, <code>fields</code> и <code>summarize</code>: выбирать только нужные объекты и поля, сначала делать обзорную выборку, потом точечно читать полный issue. Не просить «дай всё» без конкретной задачи.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Какая политика предлагается для side effects и MCP из плагина?</strong><br>
+    Read-only по умолчанию; write-actions только по явному сценарию, с подтверждением на каждый вызов. <code>close_issue</code> выключен, <code>deploy_release</code> вне учебного baseline. MCP из плагина проверяется дважды: сначала плагин, затем сам сервер, его tools, scopes и credentials.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как выглядит риск-модель issue-tracker для Workflow Kit?</strong><br>
+    Credentials — только env vars; permissions — <code>read:issues</code>; prompt injection — текст issue считается данными; output — не больше 20 тикетов, fields-only; freshness — критичные статусы перепроверяются; revocation — токены отзываются. Write-действия отсутствуют.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+</ol>
+<h2>Статус</h2>
+<ul>
+  <li>25 вопросов покрывают все 5 лекций уровня 13.</li>
+  <li>Вопросы основаны на конспектах уровня; сверка с презентацией вебинара 9 будет добавлена после получения ссылки.</li>
+  <li>Практика вебинара и аудит покрытия пока не добавлены.</li>
+  <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+</ul>
+    <footer>Уровень 13 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>
