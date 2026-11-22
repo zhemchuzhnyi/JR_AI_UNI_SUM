@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture4/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">MCP-категории</div>
       <h1>Claude Code</h1>
@@ -127,6 +127,11 @@
       <p>Для Commerce OS: задача начинается с ошибки — monitoring собирает факты. Упирается во внешний фреймворк или SDK — docs lookup не даёт гадать по памяти. Пара не заменяет кодовую базу, но делает разговор точнее.</p>
       <p>Хороший пример docs lookup — <strong>Context7 от Upstash</strong>. Он подтягивает актуальную version-specific документацию популярных библиотек прямо в контекст Claude. LLM по умолчанию опирается на документацию из обучающих данных, а она почти всегда устарела: чуть выдуманные API, чуть устаревшие сигнатуры. Context7 идёт за свежими docs во внешний источник.</p>
       <p>Capability surface узкий: два инструмента — один преобразует имя библиотеки во внутренний идентификатор, второй вытаскивает фрагмент документации. Никаких write-операций, деплоя, доступа к коду. Идеальная иллюстрация «сначала read-only»: живой нормативный контекст, blast radius почти нулевой. Подключается как обычный MCP-сервер через удалённый URL или локальный пакет; конкретные команды зависят от версии.</p>
+      <p>Пример подключения Context7 в свежих версиях:</p>
+      <pre><code>claude mcp add --transport stdio context7 -- npx -y @upstash/context7-mcp
+# проверить: /mcp</code></pre>
+      <p><code>npx</code> запускает чужой код на вашей машине, поэтому подключайте серверы от авторов, которым доверяете. После подключения в сессии можно написать «проверь последнюю версию Next.js, use context7» — ответ будет строиться на актуальной документации, а не на снимке обучения.</p>
+      <p>Типичный опыт команд: с энтузиазмом подключают 15 серверов, а через месяц реально живут 3–4. Начинайте с одного, который закрывает самую частую боль.</p>
     </section>
 
     <section>

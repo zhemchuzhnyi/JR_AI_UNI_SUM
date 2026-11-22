@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">Конфиг MCP</div>
       <h1>Claude Code</h1>
@@ -73,6 +73,7 @@
   .claude/
     mcp/
       issue-tracker.json</code></pre>
+      <p>В актуальном Claude Code project-scope конфиг обычно называется <code>.mcp.json</code> и лежит в корне проекта. Схема <code>mcp/issue-tracker.json</code> ниже — учебная модель; при переносе используйте <code>.mcp.json</code> и карту <code>mcpServers</code>.</p>
       <pre><code>mcp/issue-tracker.json
   → transport: как Claude добирается до сервера
   → scope конфига: где живёт файл и кому доступен
@@ -118,6 +119,20 @@
   "transport": "http",
   "endpoint": "${ISSUE_TRACKER_URL}"
 }</code></pre>
+      <p>В реальном project-scope файле Claude Code это выглядит как карта <code>mcpServers</code>:</p>
+      <pre><code>{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    }
+  }
+}</code></pre>
+      <p><code>stdio</code> описывается через <code>command</code> и <code>args</code>, <code>http</code> — через <code>type</code> и <code>url</code>. Команды <code>claude mcp add --transport stdio ...</code> и <code>claude mcp add --transport http ...</code> добавляют ту же запись; с <code>--scope project</code> она попадёт в <code>.mcp.json</code>.</p>
       <p>Важен не сам ключ <code>http</code>, а идея: сервер уже существует отдельно, а Claude лишь подключается к нему по адресу. Если возможность нужна только вам и живёт в локальном скрипте — берите локальный процесс; если система общая и должна работать одинаково у всей команды — чаще выигрывает удалённый endpoint.</p>
     </section>
 
@@ -134,7 +149,7 @@
           <tr><td>plugin</td><td>приезжает вместе с плагином</td><td>всем, кто поставил plugin</td><td>capability распространяется на несколько репозиториев</td></tr>
         </tbody>
       </table>
-      <p>Самый важный для нас случай — <strong>project</strong>. <code>mcp/issue-tracker.json</code> в Workflow Kit — не личная заметка на холодильнике, а командный артефакт: раз <code>issue-analysis</code> рассчитывает на read-only доступ к issue tracker, подключение должно быть видно команде, лежать в Git и проходить review как код.</p>
+      <p>Самый важный для нас случай — <strong>project</strong>. <code>mcp/issue-tracker.json</code> в Workflow Kit — не личная заметка на холодильнике, а командный артефакт: раз <code>issue-analysis</code> рассчитывает на read-only доступ к issue tracker, подключение должно быть видно команде, лежать в Git и проходить review как код. В актуальном Claude Code project-scope запись живёт в <code>.mcp.json</code>; при первом запуске проекта с чужим <code>.mcp.json</code> Claude Code спросит подтверждение — серверы из репозитория не включаются молча.</p>
       <p>Local scope отлично подходит для проб и ошибок: проверяете новый docs lookup сервер, не уверены в формате, не хотите засорять репозиторий — делаете локально, а как только capability реально помогает, повышаете до project. С plugin scope логика похожая, только масштаб больше: подключение приезжает частью plugin-пакета — и ревьюить его нужно так же внимательно.</p>
     </section>
 
@@ -158,6 +173,7 @@ mcp/*.local.json</code></pre>
   "auth": "oauth"
 }</code></pre>
       <p>Синтаксис подстановки переменных может отличаться от версии и инструмента. Где-то это <code>${VAR}</code>, где-то другой формат. Важен принцип: <strong>секреты живут вне репозитория, а конфиг только знает, что они существуют</strong>.</p>
+      <p>Второй путь — OAuth: сервер вроде Sentry сам просит авторизацию. Откройте <code>/mcp</code>, выберите сервер и войдите в браузере; из терминала то же самое делает <code>claude mcp login sentry</code>. Токены хранятся у Claude Code и обновляются автоматически, в конфиге их нет.</p>
       <p>Auth-scope — не scope конфига, а права самой авторизации. Issue tracker может разрешать токену только <code>read:issues</code>. Именно это нужно для учебного Workflow Kit. Не <code>admin:*</code>, не «полный доступ ко всему», а узкое право на чтение issue. Чем уже auth-scope, тем меньше радиус поражения.</p>
       <div class="callout">Auth отвечает на вопрос «как пройти в здание», а auth-scope — «в какие комнаты вас после этого пустят». Обычно нужен не мастер-ключ директора, а гостевой пропуск.</div>
     </section>
@@ -169,6 +185,11 @@ mcp/*.local.json</code></pre>
 /mcp get issue-tracker  # открыть детали конкретного подключения
 /mcp status          # состояние и последние ошибки
 /mcp debug           # более подробная диагностика</code></pre>
+      <p>Из терминала доступны те же проверки:</p>
+      <pre><code>claude mcp list
+claude mcp get issue-tracker
+claude mcp remove issue-tracker</code></pre>
+      <p>Временно выключить сервер в сессии можно через <code>/mcp disable issue-tracker</code>: конфиг останется, подключение перестанет мешать.</p>
       <p>Не держитесь за эти названия как за заповеди в камне — в вашей версии формулировки могут отличаться. Логика полезна в любой версии.</p>
       <ul>
         <li><code>list</code> — видит ли система ваш MCP-сервер вообще;</li>

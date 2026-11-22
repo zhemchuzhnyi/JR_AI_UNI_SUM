@@ -24,7 +24,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
     <h1>Уровень 13 — контрольные вопросы</h1>
 <p>Контрольный блок по 5 лекциям уровня 13: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы покрывают MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска.</p>
 <h2>Лекция 1 — MCP как внешний слой</h2>
@@ -38,7 +38,7 @@
     → <a href="lecture1/index.html">Лекция 1</a>
   </li>
   <li><strong>Какие три класса возможностей даёт MCP?</strong><br>
-    Доступ к внешним данным («что происходит снаружи?»), внешние действия («что можно изменить снаружи?») и узкоспециализированный контекст («что нужно знать снаружи, чтобы понять задачу?»). На старте обычно нужнее данные, а не write-действия.<br>
+    Доступ к внешним данным («что происходит снаружи?»), внешние действия («что можно изменить снаружи?») и узкоспециализированный контекст («что нужно знать снаружи, чтобы понять задачу?»). На старте обычно нужнее данные, а не write-действия. Кроме tools сервер может отдавать resources (через <code>@</code>-упоминание) и prompts (через slash-команду).<br>
     → <a href="lecture1/index.html">Лекция 1</a>
   </li>
   <li><strong>Что MCP не заменяет и чем issue отличается от task spec?</strong><br>
@@ -103,19 +103,19 @@
     → <a href="lecture4/index.html">Лекция 4</a>
   </li>
   <li><strong>На какой вопрос отвечает <code>transport</code> и какие варианты рассматриваются?</strong><br>
-    Transport отвечает, как Claude добирается до MCP-сервера. Локальный <code>stdio</code> — процесс рядом с Claude; удалённый HTTP-подобный — подключение к уже работающему серверу по сети. Для командной системы чаще нужен удалённый endpoint.<br>
+    Transport отвечает, как Claude добирается до MCP-сервера. Локальный <code>stdio</code> — процесс рядом с Claude (<code>command</code>/<code>args</code>); удалённый HTTP-подобный — подключение к уже работающему серверу по сети (<code>type: http</code>/<code>url</code>). В project-scope это обычно карта <code>mcpServers</code> в <code>.mcp.json</code>.<br>
     → <a href="lecture4/index.html">Лекция 4</a>
   </li>
   <li><strong>Чем scope конфига отличается от auth-scope и какой scope нужен Workflow Kit?</strong><br>
-    Scope конфига — где живёт файл и кому доступен: <code>user</code>, <code>local</code>, <code>project</code>, <code>plugin</code>. Auth-scope — права токена/OAuth, например <code>read:issues</code>. Для командного <code>mcp/issue-tracker.json</code> нужен <code>project</code> scope: файл лежит в репозитории, виден команде и проходит review.<br>
+    Scope конфига — где живёт файл и кому доступен: <code>user</code>, <code>local</code>, <code>project</code>, <code>plugin</code>. Auth-scope — права токена/OAuth, например <code>read:issues</code>. Для командного MCP нужен <code>project</code> scope: запись живёт в <code>.mcp.json</code>, видна команде и проходит review; при первом запуске чужого <code>.mcp.json</code> Claude Code спрашивает подтверждение.<br>
     → <a href="lecture4/index.html">Лекция 4</a>
   </li>
   <li><strong>Как правильно обращаться с токеном MCP?</strong><br>
-    Не хранить токен в конфиге или репозитории. Секреты — в переменных окружения/<code>.env</code>, реальные файлы в <code>.gitignore</code>, в Git только <code>.env.example</code>. В конфиге ссылка <code>${ISSUE_TRACKER_URL}</code>, auth-scope <code>read:issues</code>, плюс ротация и отзыв токена.<br>
+    Не хранить токен в конфиге или репозитории. Секреты — в переменных окружения/<code>.env</code>, реальные файлы в <code>.gitignore</code>, в Git только <code>.env.example</code>. В конфиге ссылка <code>${ISSUE_TRACKER_URL}</code>, auth-scope <code>read:issues</code>, плюс ротация и отзыв токена. Второй путь — OAuth через <code>/mcp</code> или <code>claude mcp login</code>: токены хранит Claude Code, в конфиге их нет.<br>
     → <a href="lecture4/index.html">Лекция 4</a>
   </li>
   <li><strong>Зачем нужна <code>/mcp</code> и какие действия она обычно поддерживает?</strong><br>
-    Чтобы проверить подключение, а не верить на слово. <code>list</code> показывает серверы, <code>get</code> — детали конкретного подключения, <code>status</code> — состояние и ошибки, <code>debug</code> — подробную диагностику. Если инструмент не работает, сначала проверяют <code>/mcp</code>, а не переписывают workflow.<br>
+    Чтобы проверить подключение, а не верить на слово. <code>list</code> показывает серверы, <code>get</code> — детали конкретного подключения, <code>status</code> — состояние и ошибки, <code>debug</code> — подробную диагностику. Из терминала доступны <code>claude mcp list/get/remove</code>, а временно выключить сервер можно через <code>/mcp disable</code>. Если инструмент не работает, сначала проверяют <code>/mcp</code>, а не переписывают workflow.<br>
     → <a href="lecture4/index.html">Лекция 4</a>
   </li>
 </ol>
@@ -130,11 +130,11 @@
     → <a href="lecture5/index.html">Лекция 5</a>
   </li>
   <li><strong>Как ограничивать объём данных, который MCP возвращает в контекст?</strong><br>
-    Использовать <code>filter</code>, <code>limit</code>, <code>fields</code> и <code>summarize</code>: выбирать только нужные объекты и поля, сначала делать обзорную выборку, потом точечно читать полный issue. Не просить «дай всё» без конкретной задачи.<br>
+    Использовать <code>filter</code>, <code>limit</code>, <code>fields</code> и <code>summarize</code>: выбирать только нужные объекты и поля, сначала делать обзорную выборку, потом точечно читать полный issue. Не просить «дай всё» без конкретной задачи. Claude Code предупреждает при выводе больше ~10 тысяч токенов, стандартный потолок — около 25 тысяч; <code>MAX_MCP_OUTPUT_TOKENS</code> меняет лимит, но узкий запрос всё равно лучше.<br>
     → <a href="lecture5/index.html">Лекция 5</a>
   </li>
   <li><strong>Какая политика предлагается для side effects и MCP из плагина?</strong><br>
-    Read-only по умолчанию; write-actions только по явному сценарию, с подтверждением на каждый вызов. <code>close_issue</code> выключен, <code>deploy_release</code> вне учебного baseline. MCP из плагина проверяется дважды: сначала плагин, затем сам сервер, его tools, scopes и credentials.<br>
+    Read-only по умолчанию; write-actions только по явному сценарию, с подтверждением на каждый вызов. Правила задаются как <code>mcp__server__tool</code>: например, <code>mcp__github__get_diff</code> — allow, <code>mcp__github__comment_on_pr</code> — ask. <code>close_issue</code> выключен, <code>deploy_release</code> вне учебного baseline. MCP из плагина проверяется дважды: сначала плагин, затем сам сервер, его tools, scopes и credentials. Долгий вызов уходит в <code>/tasks</code>.<br>
     → <a href="lecture5/index.html">Лекция 5</a>
   </li>
   <li><strong>Как выглядит риск-модель issue-tracker для Workflow Kit?</strong><br>
@@ -145,8 +145,9 @@
 <h2>Статус</h2>
 <ul>
   <li>25 вопросов покрывают все 5 лекций уровня 13.</li>
-  <li>Вопросы основаны на конспектах уровня; сверка с презентацией вебинара 9 будет добавлена после получения ссылки.</li>
-  <li>Практика вебинара и аудит покрытия пока не добавлены.</li>
+  <li>Вопросы синхронизированы с презентацией вебинара 9.</li>
+  <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">MCP-витрина</a>.</li>
+  <li>Аудит покрытия: <a href="../COVERAGE.md">COVERAGE.md</a>.</li>
   <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
 </ul>
     <footer>Уровень 13 · Claude Code · контрольные вопросы</footer>

@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">MCP как внешний слой</div>
       <h1>Claude Code</h1>
@@ -136,6 +136,17 @@
         <li>контекст — «что мне нужно знать снаружи, чтобы понять задачу?».</li>
       </ul>
       <div class="callout">Так MCP перестаёт быть абстрактной платформенной магией: это данные, действия и контекст с внешней стороны.</div>
+      <h3>MCP — это не только tools</h3>
+      <p>Сервер может отдавать три типа возможностей, и различаются они тем, кто решает их использовать.</p>
+      <table>
+        <thead><tr><th>Примитив</th><th>Кто выбирает</th><th>Как выглядит в Claude Code</th></tr></thead>
+        <tbody>
+          <tr><td>tools</td><td>Claude, по смыслу задачи</td><td>обычные вызовы инструментов</td></tr>
+          <tr><td>resources</td><td>вы, когда нужны данные в контексте</td><td><code>@</code>-упоминание вроде <code>@github:issue://123</code></td></tr>
+          <tr><td>prompts</td><td>вы, когда запускаете готовый workflow</td><td>slash-команда вроде <code>/github:pr_review</code></td></tr>
+        </tbody>
+      </table>
+      <p>Resources и prompts встречаются реже tools, но когда сервер их даёт — это готовые точки входа: не надо изобретать формулировку, автор сервера уже оформил её. Посмотреть, что отдают ваши серверы, проще живьём: наберите <code>@</code> — появятся ресурсы, наберите <code>/</code> — команды с пометкой MCP.</p>
     </section>
 
     <section>

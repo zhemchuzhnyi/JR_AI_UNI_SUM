@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture1/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../lecture1/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a></nav>
     <header>
       <div class="eyebrow">MCP: сначала вручную</div>
       <h1>Claude Code</h1>
@@ -71,6 +71,7 @@
       <p>Проблема не в самом MCP, а в ложном ощущении зрелости процесса: будто сам факт подключения внешнего сервера делает workflow «профессиональным». Наоборот. Профессиональный workflow начинается с вопроса: какую конкретную боль я убираю?</p>
       <p>Сквозной контекст: команда работает над Commerce OS, в Workflow Kit есть skill <code>issue-analysis</code> — он превращает входящую задачу в task spec. Пока разработчик руками открывает issue в трекере, копирует заголовок, описание, иногда комментарии, вставляет в Claude и просит собрать черновик <code>TASK_SPEC.md</code>. Раз в месяц — не проблема. Десять раз в день — повторяющаяся точка трения.</p>
       <p>Именно в таких местах стоит думать про MCP. Не «куда бы ещё прикрутить технологию», а «где повторяется ручной шаг, что съедает время и плодит ошибки».</p>
+      <p>Важно: MCP не даёт суперсил, недоступных через прямой запрос к API сервиса или через CLI. Он даёт стандартное подключение, контроль прав и понятную схему инструментов. Для одноразовой задачи прямой вызов или skill проще — и это нормальный выбор.</p>
     </section>
 
     <section>
