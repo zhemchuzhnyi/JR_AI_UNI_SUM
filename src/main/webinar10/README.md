@@ -9,6 +9,7 @@
 - [Лекция 1 — Tool capability preflight для MCP](level14/lecture1/index.html)
 - [Лекция 2 — Tool integration: шесть сценариев](level14/lecture2/index.html)
 - [Лекция 3 — Hooks: event, matcher и handler](level14/lecture3/index.html)
+- [Лекция 4 — Automation hooks: лестница раскатки](level14/lecture4/index.html)
 
 Материалы уровня будут добавляться по мере разбора следующих лекций вебинара 10.
 
@@ -18,4 +19,5 @@
 - Добавлена лекция 1 уровня 14: tool capability preflight, десять вопросов, границы, verification, конфликт источников и kill switch.
 - Добавлена лекция 2 уровня 14: шесть сценариев tool integration, единый каркас сигнал → гипотеза → план → проверка → артефакт.
 - Добавлена лекция 3 уровня 14: hooks, event/matcher/handler, три группы событий и первые hook-артефакты Workflow Kit.
+- Добавлена лекция 4 уровня 14: лестница раскатки hooks от log-only до policy-managed, non-blocking/blocking и format-on-edit.
 - Ссылка на презентацию вебинара будет добавлена после получения.
