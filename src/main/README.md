@@ -282,6 +282,9 @@ src/main/
       lecture2/
         summary.txt
         index.html
+      lecture3/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -344,7 +347,7 @@ HTML-аналог:
 - **Вебинар 7:** уровень 11 — лекции 1–5 (терминология агентов; built-in delegation; custom subagent; engineering contract; роли агентов и 3-слойная модель review), 25 контрольных вопросов; практика — md2html. Аудит покрытия: [вебинар 7](webinar7/COVERAGE.md).
 - **Вебинар 8:** уровень 12 — лекции 1–5 (tools и permissions; scoped skills/MCP/memory; context и worktree isolation; output contract; lifecycle и evaluation), 25 контрольных вопросов; практика — file2md. Аудит покрытия: [вебинар 8](webinar8/COVERAGE.md).
 - **Вебинар 9:** уровень 13 — лекции 1–5 (MCP как внешний слой; правило «сначала вручную»; категории возможностей; конфиг MCP; четыре зоны риска), 25 контрольных вопросов; практика — MCP-витрина. Аудит покрытия: [вебинар 9](webinar9/COVERAGE.md).
-- **Вебинар 10:** уровень 14 — лекции 1–2 (tool capability preflight; шесть сценариев tool integration и единый workflow-каркас); материалы и презентация будут добавляться.
+- **Вебинар 10:** уровень 14 — лекции 1–3 (tool capability preflight; шесть сценариев tool integration; hooks event/matcher/handler); материалы и презентация будут добавляться.
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

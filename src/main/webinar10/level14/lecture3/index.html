@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hooks в Claude Code: event, matcher и handler, три группы событий, узкие фильтры, предсказуемые handlers и первые hook-артефакты Workflow Kit.">
+  <title>Claude Code — 14 уровень, лекция 3</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture2/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <header>
+      <div class="eyebrow">Hooks</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">14 уровень · лекция 3</div>
+    </header>
+
+    <div class="lead">
+      Hook — не ещё один tool, а автоматика внутри Claude Code: когда произошло событие и совпало условие, выполнить одно понятное действие. Формула: event + matcher + handler.
+    </div>
+
+    <section>
+      <h2>1. Hooks — отдельный слой, а не «ещё один tool»</h2>
+      <p>Когда внешний tool уже прошёл preflight, а его claims всё равно замыкаются на код, tests и review, появляется следующий вопрос: что внутри самого Claude Code повторяется так часто, что пора автоматизировать? Отсюда и растут hooks.</p>
+      <p>Когда вы впервые слышите про hooks, легко принять их за ещё одну интеграцию. Но hook отвечает на другой вопрос. Tool, MCP или plugin capability — это про «откуда взять данные или куда сходить». Hook — про «что автоматически сделать, когда внутри Claude Code произошло определённое событие».</p>
+      <ul>
+        <li><strong>MCP</strong> — дверь наружу: issue tracker, мониторинг, документация, база, браузер.</li>
+        <li><strong>Hook</strong> — датчик и автоматика внутри дома.</li>
+      </ul>
+      <p>Дверь не решает, когда включить свет в коридоре, — решает датчик движения. Hook не нужен, чтобы «получить данные из Jira». Он нужен, чтобы после редактирования файла прогнать форматтер, перед записью в защищённый путь остановить действие или в начале сессии напомнить правила проекта.</p>
+      <p>Hooks почти никогда не стоят в центре архитектуры. Они не заменяют task spec, human review и tests — убирают рутинные микро-действия, которые вы и так делаете снова и снова. Пытается «думать вместо вас» — тревожный сигнал. Помогает не забыть простое, повторяемое, проверяемое действие — его территория.</p>
+      <p>В Workflow Kit это хорошо видно. Файл вроде <code>.claude/hooks/format-on-edit.json</code> не знает бизнес-логики Commerce OS — что такое заказ, возврат или MRR. Он автоматизирует одну привычку: изменил Claude код в нужной зоне — сразу прогони formatter. Скромно, полезно, без драматургии.</p>
+    </section>
+
+    <section>
+      <h2>2. Событие → условие → действие</h2>
+      <p>Термин event-driven automation звучит строго, а суть простая: вы не запускаете команду вручную каждый раз, а система сама реагирует на событие. Не «я вспомнил и запустил formatter», а «произошло событие — formatter вызвался сам». Не «шаг 1, потом шаг 2», а «случилось X — проверь Y и выполни Z».</p>
+      <p>Бытовая аналогия — датчик движения в коридоре. Движение — event. Условие «только ночью» — matcher. Включить лампу — handler. Движения нет — лампа молчит. Движение днём — фильтр не пропустил, лампа молчит. Движение ночью — фильтр подошёл, лампа зажглась. Hook устроен так же, только вместо коридора — lifecycle инструментов, файлов и сессий.</p>
+      <pre><code>Внутри Claude Code произошло событие
+  → matcher подходит?
+      → нет: hook молчит
+      → да: запускается handler
+          → полезное действие: форматирование, блокировка, напоминание</code></pre>
+      <p>Hook не существует сам по себе. Пока событие не случилось, он спит — не «периодически умничает», а ждёт момента. Поэтому hooks хороши для событийной механики вокруг workflow: перед инструментом, после редактирования, в начале или конце сессии. Для длинных рассуждений, анализа кодовой базы и сложных решений нужны другие механизмы.</p>
+      <div class="callout">Hook = событие + условие + действие.</div>
+    </section>
+
+    <section>
+      <h2>3. Состав hook: event, matcher, handler</h2>
+      <p>Важно научиться читать hook как маленький контракт из трёх частей, а не «JSON, который иногда запускается».</p>
+      <table>
+        <thead><tr><th>Часть</th><th>Главный вопрос</th><th>Что означает</th></tr></thead>
+        <tbody>
+          <tr><td>event</td><td>Когда?</td><td>в какой момент lifecycle Claude Code стоит реагировать</td></tr>
+          <tr><td>matcher</td><td>При каком условии?</td><td>как сузить срабатывание до нужных путей, инструментов или ситуаций</td></tr>
+          <tr><td>handler</td><td>Что сделать?</td><td>какую команду или скрипт реально выполнить</td></tr>
+        </tbody>
+      </table>
+      <p>Не путайте hook с уже знакомыми сущностями. Skill вы вызываете как повторяемую процедуру — вручную или по trigger. Agent получает роль и отдельный контекст. Hook ничего не исследует и не планирует — срабатывает, когда совпал шаблон. Это его сила и его предел. Тянет засунуть в hook пол-оркестра сложных шагов — инструмент выбран не тот.</p>
+      <p>Точные имена событий, синтаксис matcher и структура конфига могут немного меняться между версиями Claude Code. Держимся модели из трёх частей, а не «этот ключ называется только так». Актуальный синтаксис сверяете через <code>/hooks</code> и текущую справку.</p>
+    </section>
+
+    <section>
+      <h2>4. Три группы event</h2>
+      <p>Полный список событий конкретной версии смотрится в инструменте, а заучивать его наизусть — романтика уровня ручной правки XML в пятницу вечером. Но карту в голове держать стоит: почти все полезные hooks укладываются в три группы.</p>
+      <table>
+        <thead><tr><th>Группа событий</th><th>Что означает по-человечески</th><th>Типичные сценарии</th></tr></thead>
+        <tbody>
+          <tr><td>Before tool use</td><td>сработать до опасного или важного действия</td><td>заблокировать запись в защищённый путь, попросить подтверждение, не дать выполнить рискованную команду</td></tr>
+          <tr><td>After tool use / file changes</td><td>сработать после действия или изменения файла</td><td>форматирование, короткий отчёт, запуск локальной проверки, напоминание</td></tr>
+          <tr><td>Session lifecycle</td><td>сработать на этапах жизни сессии</td><td>показать баннер в начале, сохранить состояние, отправить уведомление, загрузить полезный контекст</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Before tool use</strong> — «вахтёр на входе». Полезен там, где важно не забыть про границы. Например, вы не хотите, чтобы Claude автоматически редактировал <code>.env</code> или что-то под <code>payments/</code>. Тогда before-hook может увидеть попытку записи и вовремя остановить. Это не про удобство, а про защитный контур.</p>
+      <p><strong>After tool use</strong> — реакция после действия. Если Claude уже изменил файл, здесь уместны форматирование, запуск лёгкой проверки или короткое сообщение в лог. Сюда обычно попадает базовый format-on-edit hook. Он никого не останавливает и не спорит о смысле жизни — просто делает маленькую рутинную вещь сразу после правки.</p>
+      <p><strong>Session lifecycle</strong> часто недооценивается. Иногда полезнее не блокировать и не форматировать, а в начале сессии напомнить правила проекта: «Проверьте git status», «Не трогайте payments/ без отдельного плана», «Используйте только approved commands». Мелочь, но из таких мелочей складывается командная дисциплина.</p>
+      <p>Все эти группы описывают внутреннюю жизнь Claude Code, а не внешний мир. Hook не про «в Jira появился новый тикет». Hook про «внутри текущей работы наступил момент, на который стоит автоматически отреагировать».</p>
+    </section>
+
+    <section>
+      <h2>5. matcher: точность вместо навязчивости</h2>
+      <p>Event отвечает за момент, matcher — за точность. Именно здесь чаще всего начинаются педагогические приключения. Новички любят написать «на все файлы» или «на все команды», а потом удивляться, что автоматизация срабатывает чаще, чем уведомления от банковского приложения. Проблема не в hook, а в слишком широком matcher.</p>
+      <p>Matcher — фильтр. Он отвечает: в каких именно обстоятельствах после события нужно запускать обработчик. Фильтр может смотреть на путь к файлу, тип инструмента, шаблон команды, иногда — на дополнительные признаки контекста. Важнее не список возможностей, а принцип: <strong>matcher должен быть узким настолько, насколько разумно</strong>.</p>
+      <p>Сравните:</p>
+      <ul>
+        <li>«После любого изменения любого файла запускай formatter».</li>
+        <li>«После изменения файлов в <code>src/</code>, если это <code>ts</code> или <code>tsx</code>, запускай formatter».</li>
+      </ul>
+      <p>Вторая мысль скучнее. Скучные мысли в автоматизации, как правило, безопаснее.</p>
+      <p>Схематический пример matcher для форматирования:</p>
+      <pre><code>{
+  "event": "afterFileEdit",
+  "matcher": { "paths": ["src/**/*.ts", "src/**/*.tsx"] },
+  "handler": { "command": "prettier --write {{file}}" }
+}</code></pre>
+      <p>Hook не трогает конфиги, markdown, shell-скрипты и чужие директории. Он реагирует только на зону, ради которой был задуман.</p>
+      <p>Защита чувствительных путей:</p>
+      <pre><code>{
+  "event": "beforeToolUse",
+  "matcher": { "tool": "Write", "paths": ["**/payments/**", "**/.env*"] },
+  "handler": { "command": "scripts/block-protected-write.sh" }
+}</code></pre>
+      <p>Такой фильтр работает как охранник на нужной двери. Не мешает редактировать обычный код, но не даёт бездумно лезть в опасные зоны. Хорошая привычка для Workflow Kit: не ставить одну гигантскую ловушку на всё подряд, а делать точечные рамки там, где blast radius действительно велик.</p>
+      <div class="callout">Если сомневаетесь, делайте matcher уже, а не шире. Шумный hook быстро приучает команду его игнорировать.</div>
+      <p>Hook, которому перестали доверять, фактически уже мёртв — просто ещё лежит в репозитории.</p>
+    </section>
+
+    <section>
+      <h2>6. handler: граница между конфигом и действием</h2>
+      <p>После event и matcher остаётся самая земная часть — handler. Он отвечает: что конкретно выполнить, когда всё совпало. Handler — не тайный интеллект, не скрытый subagent и не маленький оркестр. Чаще всего это просто команда или скрипт.</p>
+      <p>Иногда handler совсем небольшой: вызвать formatter на файле. Иногда — shell-скрипт, который печатает напоминание. Иногда — guard-скрипт, который проверяет путь и завершает выполнение с нужным статусом. Смысл один: hook нашёл ситуацию, handler сделал одну понятную вещь.</p>
+      <p>Например, handler на уровне сессии:</p>
+      <pre><code>#!/usr/bin/env bash
+echo "Проверьте git status и scope задачи"
+echo "Не трогайте payments/ без отдельного плана"</code></pre>
+      <p>Да, это полноценный handler. Никакого волшебства. Просто маленький скрипт, который помогает не забыть контекст в начале работы.</p>
+      <p>Две практические границы:</p>
+      <ul>
+        <li>handler должен быть предсказуемым; гигантская цепочка команд на двадцать секунд после каждого edit быстро надоест;</li>
+        <li>handler должен быть узко полезным; если он похож на мини-платформу с пятью ветками поведения, логами и эвристиками, это уже не hook-задача, а отдельный script/tool/skill.</li>
+      </ul>
+      <p>Handler обычно получает часть контекста события: путь к файлу, имя инструмента или другой payload. Глубоко в технические детали передачи значений не уходим; на уровне модели достаточно понимать: hook знает, что произошло, и может передать обработчику данные, чтобы тот сработал на конкретном файле или действии.</p>
+    </section>
+
+    <section>
+      <h2>7. Первый hook в Workflow Kit</h2>
+      <p>В Claude Workflow Kit for Team hooks — обычные файлы репозитория внутри <code>.claude/hooks/</code>. Команда поддерживает их так же, как <code>CLAUDE.md</code>, skills и agents. Hook — процессный артефакт, а не «магия внутри Commerce OS».</p>
+      <p>Первый пример — format-on-edit:</p>
+      <pre><code>// .claude/hooks/format-on-edit.json
+{
+  "event": "afterFileEdit",
+  "matcher": { "paths": ["src/**/*.ts", "src/**/*.tsx"] },
+  "handler": { "command": "prettier --write {{file}}" }
+}</code></pre>
+      <p>Читается как предложение: после редактирования файла, если путь попадает в <code>src/**/*.ts(x)</code>, запусти formatter.</p>
+      <p>Второй — защита чувствительных зон:</p>
+      <pre><code>// .claude/hooks/block-protected-paths.json
+{
+  "event": "beforeToolUse",
+  "matcher": { "tool": "Write", "paths": ["**/payments/**", "**/.env*"] },
+  "handler": { "command": "scripts/block-protected-write.sh" }
+}</code></pre>
+      <p>Event — «перед использованием инструмента записи». Matcher — «только если запись идёт в <code>payments/</code> или <code>.env*</code>». Handler — «вызови защитный скрипт». Hook не делает проект умнее, он делает проект спокойнее.</p>
+      <p>Третий — баннер в начале сессии:</p>
+      <pre><code>// .claude/hooks/session-banner.json
+{
+  "event": "sessionStart",
+  "handler": { "command": "scripts/session-banner.sh" }
+}</code></pre>
+      <pre><code>#!/usr/bin/env bash
+echo "Проверьте git status и scope задачи"
+echo "Если задача нетривиальная — начните с плана"</code></pre>
+      <p>Один hook помогает с чистотой кода. Второй — с безопасностью. Третий — с дисциплиной начала работы. Все три устроены одинаково. Если научились читать один, умеете читать остальные.</p>
+      <p>Самый полезный навык: когда открываете hook-конфиг, не смотрите на него как на «ещё один JSON». Читайте как договорённость команды:</p>
+      <div class="callout">Когда произошло это, и только если совпало вот это условие, нужно автоматически сделать вот это действие.</div>
+      <p>Event отвечает «когда», matcher — «при каком условии», handler — «что сделать». Собранные вместе, они дают первый осмысленный hook в Workflow Kit. А какие задачи доверять hook, а какие он только испортит, и как раскатывать его по шагам — тема следующей лекции.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Hook — отдельный слой автоматики внутри Claude Code, а не ещё один tool/MCP.</li>
+        <li>MCP — дверь наружу, hook — датчик и автоматика внутри дома.</li>
+        <li>Формула: hook = событие + условие + действие.</li>
+        <li>Три части контракта: event — когда, matcher — при каком условии, handler — что сделать.</li>
+        <li>Три группы событий: before tool use, after tool use/file changes, session lifecycle.</li>
+        <li>Before-hook — защитный контур; after-hook — реакция после действия; session hook — дисциплина и напоминания.</li>
+        <li>Matcher должен быть узким; широкий фильтр превращает hook в шум.</li>
+        <li>Handler — команда или скрипт, а не скрытый интеллект и не мини-платформа.</li>
+        <li>Hook не заменяет task spec, human review и tests.</li>
+        <li>В Workflow Kit hooks живут в <code>.claude/hooks/</code> и читаются как процессные артефакты.</li>
+        <li>Если hook стал сложным оркестром или ему перестали доверять — инструмент выбран не тот.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> спроектировать два hook-контракта для Workflow Kit, проверить узость matcher, предсказуемость handler и безопасный путь отключения.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>HOOK_CONTRACTS.md</code>. Опишите два hook: format-on-edit для <code>src/**/*.ts(x)</code> и before-write guard для <code>payments/</code> и <code>.env*</code>.</li>
+        <li>Для каждого заполните три части: event, matcher, handler. Сформулируйте контракт одной фразой: «когда…, если…, сделать…».</li>
+        <li>Для format-on-edit придумайте matcher уже, чем «все файлы»: укажите пути и типы, которые hook не трогает. Для guard опишите, что handler делает при попытке записи и как сообщает причину.</li>
+        <li>Проверьте handler на предсказуемость и узкую пользу: нет ли цепочки на двадцать секунд, нет ли пяти ветвей и «мини-платформы». Запишите, когда hook лучше заменить отдельным script/tool/skill.</li>
+        <li>Добавьте в <code>HOOK_CONTRACTS.md</code> путь отключения: как быстро выключить hook, если он шумит или блокирует лишнее. Проверьте, что нет реальных опасных команд и секретов.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните контракты и проверку вручную в редакторе; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>HOOK_CONTRACTS.md</code> есть два hook-контракта.</li>
+        <li>У каждого явно указаны event, matcher, handler.</li>
+        <li>Format-on-edit ограничен <code>src/</code> и нужными расширениями, а не всеми файлами.</li>
+        <li>Before-write guard ограничен чувствительными путями.</li>
+        <li>Handler описан как команда/скрипт с понятным результатом.</li>
+        <li>Указано, почему hook не должен становиться мини-платформой.</li>
+        <li>Есть путь быстрого отключения.</li>
+        <li>Нет реальных опасных команд и секретов.</li>
+        <li>Если Claude Code недоступен, контракты и проверка выполнены вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>14 уровень · лекция 3. Hook = event + matcher + handler: когда произошло, если совпало, сделать одно понятное действие. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level14.lecture03" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
