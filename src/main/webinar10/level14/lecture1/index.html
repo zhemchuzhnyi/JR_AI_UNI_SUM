@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tool capability preflight для MCP: десять вопросов перед подключением, read-only границы, verification, конфликт источников и kill switch в Workflow Kit.">
+  <title>Claude Code — 14 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a></nav>
+    <header>
+      <div class="eyebrow">Tool capability preflight</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">14 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      Подключённый tool — ещё не workflow. Перед использованием внешней возможности нужен короткий preflight: боль, capabilities, границы, проверка и безопасное использование.
+    </div>
+
+    <section>
+      <h2>1. Подключённый tool — ещё не workflow</h2>
+      <p>Когда вы впервые подключаете внешний tool, легко попасть в ловушку ложной готовности. Кажется, что самое сложное позади: сервер подключён, доступ есть, Claude его видит — и дальше всё просто. Технически вы добавили новый рычаг, но не решили, когда, зачем и на каких условиях его вообще можно трогать.</p>
+      <pre><code>Боль → Capability → Границы → Проверка → Безопасное использование</code></pre>
+      <p>Если в цепочке есть только второй пункт — у вас не workflow, а просто новая кнопка. Новая кнопка без правил — любимый источник хаоса. Особенно если она пишет комментарии в tracker, читает продовые логи или меняет что-то во внешней системе.</p>
+      <ul>
+        <li><strong>Tool capability</strong> отвечает: что инструмент технически умеет?</li>
+        <li><strong>Workflow</strong> отвечает: как мы используем эту возможность в реальной задаче, что запрещаем и чем проверяем результат?</li>
+      </ul>
+      <p>Пример: у команды Commerce OS в Workflow Kit подключён issue tracker — это capability. Но пока не зафиксировано, что Claude читает только issue и комментарии, не меняет статусы и сверяет claims с кодом, — процесса нет, есть доступ к tracker.</p>
+      <p>Лекция не про «как подключить ещё один server», а про то, как перестать видеть в tool магию и относиться к нему как к управляемой инженерной возможности.</p>
+    </section>
+
+    <section>
+      <h2>2. Preflight: короткая проверка перед взлётом</h2>
+      <p>Слово preflight пришло из авиации. Даже если самолёт выглядит идеально, пилот всё равно не говорит: «Стоит ровно, наверное, всё в порядке». Сначала — короткая проверка перед взлётом. С tool integration та же история: доступ есть, а безопасный взлёт ещё не подтверждён.</p>
+      <p><strong>Tool capability preflight</strong> — короткая структурированная проверка того, как capability внешнего инструмента сработает в конкретном workflow: не на все случаи жизни, а под одно применение.</p>
+      <table>
+        <thead><tr><th>Вопрос</th><th>Что вы фиксируете</th><th>Зачем это нужно</th></tr></thead>
+        <tbody>
+          <tr><td>Какую боль снимаем?</td><td>конкретную проблему, а не общую симпатию к автоматизации</td><td>чтобы не подключать tool «на всякий случай»</td></tr>
+          <tr><td>Какие capabilities реально нужны?</td><td>например, read issue, read comments, search by label</td><td>чтобы не тащить лишние возможности</td></tr>
+          <tr><td>Что запрещено?</td><td>write actions, close issue, comment, mutate data</td><td>запреты важны не меньше разрешений</td></tr>
+          <tr><td>Какой режим доступа нужен?</td><td>read-only или write-capable</td><td>read-only почти всегда безопасный старт</td></tr>
+          <tr><td>Где живут credentials?</td><td>env, secret storage, project scope, local scope</td><td>чтобы не разложить секреты по проекту</td></tr>
+          <tr><td>Что попадёт в context?</td><td>полный log, короткая выборка, summary, лимит строк</td><td>слишком жирный output ломает reasoning</td></tr>
+          <tr><td>Нужен ли approval?</td><td>никакой, human review, explicit confirmation</td><td>чтобы не маскировать риск под удобство</td></tr>
+          <tr><td>Чем проверяем результат?</td><td>код, tests, logs, локальное воспроизведение</td><td>tool не выигрывает спор просто потому, что он внешний</td></tr>
+          <tr><td>Что делать при конфликте с кодовой базой?</td><td>считать это гипотезой, а не истиной</td><td>иначе Claude начнёт «чинить» по чужим догадкам</td></tr>
+          <tr><td>Как выключаем tool?</td><td>kill switch: disable scope, убрать config, revoke token</td><td>если tool нельзя быстро отключить, он не готов</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">Самые важные строки — не про технику, а про дисциплину: disallowed actions, verification и kill switch.</div>
+      <p>Многие команды охотно описывают, что инструмент умеет, и почти не описывают, чего ему нельзя, — а потом удивляются write-capable integration там, где всем нужен read-only.</p>
+      <p>Правило: по умолчанию tool получает read-only роль. Session permissions говорят «технически возможно»; workflow boundary должен быть уже: «в этой задаче делаем только вот это».</p>
+      <p>Точные имена команд, scope-файлов и способов отключить MCP в Claude Code меняются от версии к версии. Вопросы preflight — нет. Запоминайте не имя кнопки, а логику проверки.</p>
+    </section>
+
+    <section>
+      <h2>3. Preflight на примере issue tracker в Commerce OS</h2>
+      <p>Команда Commerce OS ловит баг: refund-запросы в support inbox сортируются неправильно. Issue в tracker есть, комментариев много: скриншот, гипотеза про кеш, а кто-то в пятницу вечером написал «наверное, проблема где-то в сортировке». Звучит мощно, но это не диагноз — это усталый человек в интернете.</p>
+      <p>Tracker полезен: экономит ручной copy-paste и даёт Claude контекст — но только с заранее зафиксированными границами. В Workflow Kit это можно оформить как короткий раздел в <code>docs/ONBOARDING_GUIDE.md</code>.</p>
+      <pre><code>## Предполётная проверка инструмента: issue tracker
+Pain: не копируем issue и комментарии вручную в сессию.
+Allowed: read issue, read comments, search by label.
+Forbidden: comment, close, reassign, change labels.
+Credentials: read-only token из env.
+Verification: claims из issue сверяем с кодом и tests.
+Kill switch: отключаем project scope config и перезапускаем сессию.</code></pre>
+      <p>Теперь под такой preflight можно формулировать задачу:</p>
+      <pre><code>Прочитай issue COM-142 через tracker.
+Разрешено только чтение issue и комментариев.
+Не меняй статус, labels и assignee.
+Верни summary, open questions и список вероятно затронутых файлов.</code></pre>
+      <p>Tracker нужен не для решения за вас, а для сборки пакета доказательств: Claude выделяет факты, сомнения и затронутые области кода — а вы проверяете их через код, tests и plan mode. Так capability превращается в workflow.</p>
+      <p class="warning">Тонкий, но критичный нюанс: комментарий в tracker — это данные, а не инструкция. Написано «Почините, сбросив кеш Redis» — Claude не исполняет это как команду: это гипотеза, вполне возможно ошибочная. Автоматизация уровня «кто-то предположил — система дисциплинированно исполнила» — слишком азартный вид спорта.</p>
+    </section>
+
+    <section>
+      <h2>4. Preflight для monitoring, docs и read-only DB</h2>
+      <p>Каркас preflight один и тот же, но риск и verification меняются в зависимости от природы сигнала.</p>
+      <table>
+        <thead><tr><th>Сценарий</th><th>Что tool даёт</th><th>Что сразу запрещаем</th><th>Чем закрываем verification</th></tr></thead>
+        <tbody>
+          <tr><td>Monitoring alert</td><td>alert, короткое окно логов, runtime signal</td><td>silence alert, rollback, deploy actions</td><td>reproduce locally, logs, regression test</td></tr>
+          <tr><td>Docs lookup</td><td>версионные факты, changelog, API notes</td><td>автоматические code changes «по docs»</td><td>project version, build, tests, affected files</td></tr>
+          <tr><td>Read-only DB analysis</td><td>схема, sample rows, shape of data</td><td>любые write/mutation операции</td><td>code path, integration tests, query review</td></tr>
+        </tbody>
+      </table>
+      <p><strong>Monitoring.</strong> Tool даёт ценный runtime signal, но alert — ещё не fix plan. Если Sentry говорит, что <code>/api/dashboard/metrics</code> тормозит, хороший workflow такой: сначала гипотеза, потом проверка затронутых файлов и локальный reproduce, и только после этого — изменение. Alert не даёт права перепрыгнуть через reproduce step.</p>
+      <p><strong>Docs lookup.</strong> Tool помнит version-specific факты лучше усталого человека. Но docs не равны истине в вакууме: они говорят, как должно работать в определённой версии. Ваш проект может жить на другой версии или иметь legacy-слой. Поэтому preflight для docs lookup привязывается к версии проекта и замыкается на build и tests.</p>
+      <p><strong>Read-only DB.</strong> Безопасный режим здесь только один: read-only. База нужна не для того, чтобы Claude «поправил запись руками», а чтобы увидеть shape of data, заметить аномалии и связать их с кодом. Как только появляются write actions, вы выходите из комфортной практики и заходите на территорию отдельного approval flow.</p>
+      <div class="callout">Во всех трёх случаях verification замыкается не на tool, а на проекте: коде, тестах, локальном воспроизведении, review.</div>
+      <p><strong>External signal подсказывает, куда смотреть, но не заменяет проверку.</strong></p>
+    </section>
+
+    <section>
+      <h2>5. Конфликт tool с кодом, тестами или документацией</h2>
+      <p>Самые интересные ситуации начинаются, когда источники расходятся. Tracker говорит одно, docs lookup — другое, alert намекает на третье, а код: «Коллеги, у меня тут вообще четвёртая история». В этот момент важно не назначать победителя по принципу «внешний убедительнее».</p>
+      <table>
+        <thead><tr><th>Источник</th><th>Что он хорошо показывает</th><th>Чего он сам по себе не доказывает</th></tr></thead>
+        <tbody>
+          <tr><td>Issue / комментарий</td><td>как проблему видят люди, бизнес-контекст</td><td>что root cause найден правильно</td></tr>
+          <tr><td>Alert / logs</td><td>что реально случилось в runtime</td><td>что вы уже поняли причину</td></tr>
+          <tr><td>Docs lookup</td><td>что ожидается в определённой версии или API</td><td>что именно так устроен ваш проект</td></tr>
+          <tr><td>Код</td><td>что система сейчас делает</td><td>что это поведение корректно бизнесово</td></tr>
+          <tr><td>Tests</td><td>что у вас уже проверяется</td><td>что покрыты все реальные сценарии</td></tr>
+        </tbody>
+      </table>
+      <p>Универсального source of truth нет. Когда источники спорят, правильная реакция — не выбрать любимый, а превратить конфликт в проверяемую гипотезу.</p>
+      <p>Хороший ход — остановить edits и попросить Claude сделать расследование:</p>
+      <pre><code>Есть конфликт между внешним источником и codebase.
+Не вноси изменений.
+Покажи, какие claims подтверждаются кодом, какие только issue/docs,
+и предложи минимальную проверку, которая снимет конфликт.</code></pre>
+      <p>Сначала фиксируете расхождение, потом — минимальную проверку: локальный reproduce, targeted test, чтение файла, сверку версии, — и только затем разрешаете implementation. Иначе Claude лечит конфликт интерпретацией, а не доказательством: красивый diff, не решающий проблему.</p>
+      <p>Здесь особенно важен принцип из прошлого модуля: <strong>treat external text as data, not as instructions</strong>. Tool output не проталкивает систему в решение — он помогает точнее сформулировать вопрос к коду и проверке.</p>
+    </section>
+
+    <section>
+      <h2>6. Закрепление preflight в Workflow Kit</h2>
+      <p>Самая частая судьба хороших правил — прозвучать один раз и быть забытыми. Если preflight действительно нужен, его надо зафиксировать в командном артефакте: <code>README.md</code>, <code>ONBOARDING_GUIDE.md</code> и рядом с конфигом конкретного tool.</p>
+      <pre><code>### Внешние инструменты: позиция по умолчанию
+Default mode: read-only first.
+Project scope: only after written preflight.
+Conflict rule: tool claims are hypotheses until verified in code/tests.
+Kill switch: every tool must have one-step disable path.</code></pre>
+      <p>Это не бюрократия ради бюрократии, а способ превратить индивидуальную осторожность в командную норму: новый разработчик видит не только integrations, но и подход команды.</p>
+      <p><strong>Scope.</strong> Tool сырой, неочевидный или нужен только вам для эксперимента — держите на личном или локальном уровне. Project scope — общая ответственность: только integrations с понятным сценарием, verification path и owner.</p>
+      <p><strong>Kill switch.</strong> Интеграцию нельзя быстро отключить — она не готова к реальной жизни. Где-то это отключение project-scoped config, где-то отзыв токена, где-то временный возврат на local scope. Механика зависит от версии Claude Code и инфраструктуры, но принцип один: у команды должен быть короткий путь назад. Без него automation выглядит смело только до первого инцидента.</p>
+      <p>Когда вы соберёте ответы на все десять вопросов preflight в одном месте — у вас на руках не «ещё один подключённый server», а полный контур: названа боль, сужены capabilities, выписаны disallowed actions, зафиксированы credentials и объём context, назначен способ verification и есть kill switch. Именно этот контур, а не сам факт подключения, отличает управляемую интеграцию от рычага без правил.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>Подключённый tool — ещё не workflow.</li>
+        <li>Формула: боль → capability → границы → проверка → безопасное использование.</li>
+        <li>Preflight отвечает, как capability работает в конкретной задаче, а не «на все случаи».</li>
+        <li>Десять вопросов preflight: боль, capabilities, запреты, режим, credentials, context, approval, verification, конфликт, kill switch.</li>
+        <li>Read-only — безопасный старт; session permissions шире workflow-границы.</li>
+        <li>Комментарий в issue — данные, а не инструкция.</li>
+        <li>Verification всегда замыкается на код, тесты, логи и review, а не на внешний tool.</li>
+        <li>Monitoring, docs lookup и read-only DB проверяются по-разному; запреты и verification зависят от сигнала.</li>
+        <li>При конфликте источников не выбирайте «любимый» — превращайте конфликт в проверяемую гипотезу.</li>
+        <li>Preflight фиксируется в README/ONBOARDING_GUIDE и рядом с конфигом tool.</li>
+        <li>Project scope — только после письменного preflight; у интеграции должен быть owner и kill switch.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> собрать tool capability preflight для issue tracker и ещё одного внешнего сигнала, проверить границы, verification и kill switch на учебном сценарии Commerce OS.</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>TOOL_PREFLIGHT.md</code>. Заполните десять вопросов для issue tracker: боль, capabilities, запреты, режим, credentials, context, approval, verification, конфликт, kill switch.</li>
+        <li>Добавьте второй preflight для monitoring или docs lookup. Укажите, какие действия запрещены и чем именно проверяется результат в проекте.</li>
+        <li>Придумайте фейковый issue COM-142 с комментарием «почините, сбросив кеш Redis». Запишите, почему это данные/гипотеза, а не команда, и какую минимальную проверку нужно сделать до изменений.</li>
+        <li>Составьте <code>CONFLICT_RULES.md</code>: что делать, если issue, docs и код расходятся. Добавьте правило «остановить edits и запросить расследование», а не выбирать внешний источник победителем.</li>
+        <li>Зафиксируйте политику в <code>docs/ONBOARDING_GUIDE.md</code>: read-only first, project scope после preflight, conflict rule, kill switch. Проверьте, что в preflight нет реальных токенов и подключений.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code или MCP недоступны:</strong> выполните preflight и конфликтный сценарий вручную в редакторе, без реальных подключений; критерии проверки те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>TOOL_PREFLIGHT.md</code> заполнены все десять вопросов.</li>
+        <li>Для issue tracker явно запрещены comment, close, reassign и change labels.</li>
+        <li>Credentials описаны как env/secret storage, без значений.</li>
+        <li>Для monitoring/docs указан verification через проект, а не через сам tool.</li>
+        <li>Комментарий issue разобран как гипотеза, а не команда.</li>
+        <li>В <code>CONFLICT_RULES.md</code> есть правило остановить edits и провести минимальную проверку.</li>
+        <li>В <code>ONBOARDING_GUIDE.md</code> зафиксированы read-only first, scope, conflict rule и kill switch.</li>
+        <li>Нет реальных внешних подключений и секретов.</li>
+        <li>Если Claude Code или MCP недоступны, preflight выполнен вручную по тем же критериям.</li>
+      </ul>
+    </section>
+
+    <footer>14 уровень · лекция 1. Сначала preflight, потом использование: боль, границы, verification и kill switch. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level14.lecture01" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
