@@ -26,7 +26,7 @@
   <main>
     <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
     <h1>Уровень 14 — контрольные вопросы</h1>
-<p>Контрольный блок по 5 лекциям уровня 14: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы покрывают tool capability preflight, маршрут внешнего сигнала, hooks в settings.json, event/matcher/handler, exit-коды, лестницу раскатки, session hooks, дебаг и recovery.</p>
+<p>Контрольный блок по 5 лекциям уровня 14: 30 открытых вопросов с короткими ответами и ссылками на конспекты. 25 базовых вопросов проверяют понятийный каркас, 5 прикладных — применение в рабочих сценариях. Вопросы покрывают tool capability preflight, маршрут внешнего сигнала, hooks в settings.json, event/matcher/handler, exit-коды, лестницу раскатки, session hooks, дебаг и recovery.</p>
 <h2>Лекция 1 — Tool capability preflight</h2>
 <ol start="1">
   <li><strong>Чем подключённый tool отличается от workflow?</strong><br>
@@ -142,9 +142,32 @@
     → <a href="lecture5/index.html">Лекция 5</a>
   </li>
 </ol>
+<h2>Прикладные сценарии</h2>
+<ol start="26">
+  <li><strong>Какой артефакт фиксирует инженерную постановку задачи в issue-to-PR workflow и что в нём?</strong><br>
+    <code>TASK_SPEC.md</code>: цель и ожидаемое поведение, scope и non-goals, ограничения, затронутые области, план проверки (tests, ручные сценарии, критерии готовности), правило при конфликте и fallback. Issue остаётся сырым внешним сигналом, а <code>TASK_SPEC.md</code> превращает его в проверяемую задачу в контексте проекта.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Опишите корректный workflow monitoring triage.</strong><br>
+    Alert — сигнал, а не диагноз. Зафиксировать факты в <code>EVIDENCE_LOG.md</code>, сформулировать гипотезу, проверить её по коду и логам, воспроизвести локально, сделать минимальное изменение, прогнать regression test и повторно проверить. Начинать с silence, rollback или deploy нельзя; чинить по тексту alert — тоже.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему read-only DB analysis замыкается на код и tests, а не на ручные правки данных?</strong><br>
+    База показывает состояние, но не причину. Ручные правки уничтожают улики, обходят код, миграции и review и не воспроизводятся на других средах. Нужно найти кодовый путь через <code>API_MAP.md</code> и inventory, исправить код или миграцию, покрыть tests и проверить данные снова. Read-only остаётся источником фактов, а изменение проходит через код.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Как правильно использовать дизайн-макет в design-to-code workflow?</strong><br>
+    Макет — контекст и целевое поведение, а не приказ генерировать всё заново. Сопоставить его с существующими компонентами, токенами и design system, зафиксировать разрыв, уточнить конфликты, внести минимальные изменения и проверить в браузере: responsive-состояния, клавиатурная доступность, консоль. Результат — UI-задача и скриншоты «до/после».<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Как browser check дополняет docs lookup?</strong><br>
+    Docs lookup даёт version-specific ожидание, browser check — фактическое поведение. Workflow: docs сужает вопрос → гипотеза → минимальное изменение → browser check сценария, консоли, network и скриншота → вывод замыкается на код и tests. Docs без браузера остаются теорией, browser без docs — случайными кликами.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
 <h2>Статус</h2>
 <ul>
-  <li>25 вопросов покрывают все 5 лекций уровня 14.</li>
+  <li>30 вопросов покрывают все 5 лекций уровня 14: 25 базовых и 5 прикладных.</li>
   <li>Вопросы синхронизированы с презентацией вебинара 10.</li>
   <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">Три хука на три группы</a>.</li>
   <li>Аудит покрытия: <a href="../COVERAGE.md">COVERAGE.md</a>.</li>

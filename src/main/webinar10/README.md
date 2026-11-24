@@ -14,7 +14,7 @@
 
 Дополнительно:
 
-- [Уровень 14 — 25 контрольных вопросов](level14/CONTROL_QUESTIONS.html)
+- [Уровень 14 — 30 контрольных вопросов](level14/CONTROL_QUESTIONS.html)
 - [Практика вебинара 10 — три хука на три группы](practice/index.html)
 - [Аудит покрытия презентации](COVERAGE.md)
 
@@ -29,5 +29,5 @@
 - Добавлена лекция 4 уровня 14: лестница раскатки hooks, exit-коды, session hooks и format-on-edit.
 - Добавлена лекция 5 уровня 14: debugging по пяти вопросам, side effects, recovery и разбор format-on-edit в Workflow Kit.
 - Лекции 3–5 синхронизированы с презентацией: реальные события `PreToolUse`, `PostToolUse`, `SessionStart`, `UserPromptSubmit`, `Stop`, `Notification`, формат `settings.json`, exit-коды и recovery.
-- Добавлены 25 контрольных вопросов уровня 14 и capstone-практика «Три хука на три группы».
+- Добавлены 30 контрольных вопросов уровня 14 (25 базовых и 5 прикладных) и capstone-практика «Три хука на три группы».
 - Добавлен `COVERAGE.md`; презентация вебинара 10 подключена.

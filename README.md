@@ -17,7 +17,7 @@
 - **Вебинар 7** — уровень 11, лекции 1–5: терминология агентов, built-in delegation, кастомный subagent, engineering contract, роли агентов и 3-слойная модель review; практика md2html и 25 контрольных вопросов.
 - **Вебинар 8** — уровень 12, лекции 1–5: tools и permissions, scoped skills/MCP/memory, context и worktree isolation, output contract, lifecycle и evaluation; практика file2md и 25 контрольных вопросов.
 - **Вебинар 9** — уровень 13, лекции 1–5: MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска; практика MCP-витрины и 25 контрольных вопросов.
-- **Вебинар 10** — уровень 14, лекции 1–5: tool capability preflight, шесть сценариев tool integration, hooks event/matcher/handler, лестница раскатки и debugging/recovery; практика «Три хука на три группы», 25 контрольных вопросов, презентация синхронизирована.
+- **Вебинар 10** — уровень 14, лекции 1–5: tool capability preflight, шесть сценариев tool integration, hooks event/matcher/handler, лестница раскатки и debugging/recovery; практика «Три хука на три группы», 30 контрольных вопросов, презентация синхронизирована.
 
 ## Навигация
 
@@ -52,3 +52,4 @@
 - [Вебинар 7, уровень 11 — 25 вопросов](src/main/webinar7/level11/CONTROL_QUESTIONS.md)
 - [Вебинар 8, уровень 12 — 25 вопросов](src/main/webinar8/level12/CONTROL_QUESTIONS.md)
 - [Вебинар 9, уровень 13 — 25 вопросов](src/main/webinar9/level13/CONTROL_QUESTIONS.md)
+- [Вебинар 10, уровень 14 — 30 вопросов](src/main/webinar10/level14/CONTROL_QUESTIONS.md)
