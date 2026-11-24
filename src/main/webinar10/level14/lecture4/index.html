@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Automation hooks: лестница раскатки от log-only до policy-managed, non-blocking и blocking, format-on-edit, validation hooks и признаки полезной автоматизации.">
+  <meta name="description" content="Automation hooks: лестница раскатки от log-only до narrow blocking, exit-коды, format-on-edit, session hooks, дебаг молчащего хука и recovery.">
   <title>Claude Code — 14 уровень, лекция 4</title>
   <style>
     :root {
@@ -54,7 +54,7 @@
 </head>
 <body>
   <main>
-    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a></nav>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../lecture3/index.html" style="color:#f5a66b;text-decoration:none;">← Предыдущая</a> <a href="../lecture5/index.html" style="color:#f5a66b;text-decoration:none;">Следующая →</a> <a href="../../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="../CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a></nav>
     <header>
       <div class="eyebrow">Automation hooks</div>
       <h1>Claude Code</h1>
@@ -62,7 +62,7 @@
     </header>
 
     <div class="lead">
-      Хороший hook редко рождается боевым. Он взрослеет по лестнице: log-only → non-blocking → formatting → test/report → narrow blocking → policy-managed. Ступени нельзя перепрыгивать.
+      Хороший hook редко рождается боевым. Он взрослеет по лестнице: log-only → non-blocking → narrow blocking. А зрелость автоматизации проверяется не тем, как она работает, а тем, как быстро вы можете её остановить.
     </div>
 
     <section>
@@ -115,81 +115,119 @@
           <tr><td>Blocking</td><td>hook может запретить действие или потребовать дополнительного шага</td><td>только в очень узких и проверенных сценариях</td></tr>
         </tbody>
       </table>
+      <p>Технически блокировка выражается exit-кодом. Hook получает JSON события через stdin и завершается:</p>
+      <ul>
+        <li><code>exit 0</code> — не возражает, действие идёт дальше;</li>
+        <li><code>exit 2</code> — блокирующий ответ: <code>PreToolUse</code> отменяет действие, а текст в stderr уходит Claude как объяснение;</li>
+        <li>любой другой код — ошибка самого хука, но не блокировка.</li>
+      </ul>
       <p>Минимальный non-blocking hook для стадии наблюдения:</p>
       <pre><code>{
-  "event": "afterFileEdit",
-  "matcher": { "paths": ["frontend/src/**/*.{ts,tsx}"] },
-  "handler": {
-    "command": "scripts/log-format-candidate.sh {{file}}",
-    "blocking": false
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/log-format-candidate.sh"
+          }
+        ]
+      }
+    ]
   }
 }</code></pre>
-      <p>Узкий blocking-пример для чувствительного пути:</p>
+      <p>Узкий blocking-пример для <code>rm</code>:</p>
       <pre><code>{
-  "event": "beforeToolUse",
-  "matcher": { "tool": "Write", "paths": ["**/payments/**"] },
-  "handler": {
-    "command": "scripts/block-payment-write.sh {{file}}"
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(rm *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/block-rm.sh"
+          }
+        ]
+      }
+    ]
   }
 }</code></pre>
-      <p>Смысл не в синтаксисе, а в характере вмешательства. Ошибся non-blocking — лишний шум в логах, переживаемо. Ошибся blocking — начнёте спорить со своим же automation-слоем, как с упрямым шлагбаумом на парковке: и машина ваша, и двор ваш, а шлагбаум всё равно уверен, что вы здесь посторонний.</p>
+      <p>Скрипт читает JSON, достаёт команду, проверяет наличие <code>rm</code>, пишет причину в stderr и возвращает <code>exit 2</code>. Смысл не в синтаксисе, а в характере вмешательства. Ошибся non-blocking — лишний шум в логах, переживаемо. Ошибся blocking — начнёте спорить со своим же automation-слоем, как с упрямым шлагбаумом на парковке: и машина ваша, и двор ваш, а шлагбаум всё равно уверен, что вы здесь посторонний.</p>
+      <p>Важная граница: учебный guard на <code>rm</code> — это страховка от самого частого случая, а не гарантия. Он ловит буквальное <code>rm</code> в команде, но удалить файл можно и другими способами. Жёсткий запрет — это deny-правило в permissions; hook остаётся дополнительным контуром.</p>
+      <p>При этом блокировка хуком работает даже в <code>bypassPermissions</code>: это политика проекта, которую не обойти сменой режима. Именно поэтому before-hook — не просто подсказка, а реальный предохранитель.</p>
       <div class="callout">На раннем этапе почти всё должно быть non-blocking. Blocking — только там, где matcher очень узкий, сценарий стабилен, а цена ложного срабатывания понятна заранее.</div>
     </section>
 
     <section>
       <h2>4. Лестница раскатки: hook по шагам</h2>
-      <p>Хороший hook редко рождается сразу «боевым». Он взрослеет по стадиям: сначала вы смотрите, срабатывает ли он правильно, потом — не шумит ли часто, потом даёте право на безопасное действие, и только затем думаете о жёстком вмешательстве.</p>
+      <p>Хороший hook редко рождается сразу «боевым». Он взрослеет по стадиям: сначала вы смотрите, срабатывает ли он правильно, потом — не шумит ли часто, и только затем даёте право на жёсткое вмешательство.</p>
+      <p>Базовая лестница:</p>
       <pre><code>Log-only
   → Non-blocking
-  → Formatting
-  → Test / report
-  → Narrow blocking
-  → Policy-managed</code></pre>
+  → Narrow blocking</code></pre>
       <ol>
         <li><strong>Log-only.</strong> Hook ничего не меняет, только пишет: «Я сработал на таком-то файле». Скучно, но бесценно: сразу видно, не слишком ли широк matcher.</li>
-        <li><strong>Non-blocking.</strong> Hook делает мягкое действие: подсказка, небольшой report, дешёвая проверка. Всё ещё наблюдение, но прикладное: видно, помогает automation или просто украшает терминал новыми строками.</li>
-        <li><strong>Formatting.</strong> Hook впервые начинает менять файлы. Форматирование должно быть детерминированным и узким: только там, где команда согласовала инструмент и стиль. Никакой «творческой интерпретации прекрасного».</li>
-        <li><strong>Test / report.</strong> Подключение к ранним проверкам. Важно не перепутать полезную валидацию с персональным CI, который запускается на каждый чих и съедает темп. Хороший test/report-hook либо гоняет короткую локальную проверку, либо напоминает, какую не забыть.</li>
+        <li><strong>Non-blocking.</strong> Hook делает мягкое действие: подсказка, небольшой report, дешёвая проверка, форматирование. Всё ещё наблюдение, но прикладное: видно, помогает automation или просто украшает терминал новыми строками.</li>
         <li><strong>Narrow blocking.</strong> Automation может сказать «стоп», но очень локально: запись в чувствительный путь без подтверждения, опасная команда в защищённой зоне. Расползётся широко — команда начнёт ненавидеть не риск, а сам инструмент.</li>
-        <li><strong>Policy-managed.</strong> Зрелый артефакт Workflow Kit: понятен, обкатан, документирован, легко отключается, не пугает команду. До этой ступени дорастают, а не перепрыгивают через три пролёта сразу.</li>
       </ol>
+      <p>Дальше — командная зрелость. Хук, обкатанный лично и описанный в README, можно поднять в project settings. Это отдельная верхняя ступень: туда попадают не эксперименты, а артефакты с понятным сценарием, owner и путём отключения.</p>
+      <p>Две оговорки к лестнице:</p>
+      <ul>
+        <li>каждая ступень живёт хотя бы пару рабочих сессий; хук ловит лишнее на log-only, и это идеальный момент чинить matcher, пока он никому не мешает;</li>
+        <li>строгая лестница обязательна там, где хук умеет мешать, — blocking и всё, что уходит команде. Личный баннер на старте сессии можно включить сразу: цена ошибки — лишняя строка в терминале.</li>
+      </ul>
+      <p>Форматирование и validation-report — это варианты non-blocking ступени, а не отдельные «разрешения» на blocking. Не надо превращать лестницу в шесть обязательных бюрократических пролётов; важно не перепрыгивать с log-only сразу в blocking.</p>
     </section>
 
     <section>
       <h2>5. format-on-edit для Workflow Kit на практике</h2>
-      <p>Соберём сквозной пример и зафиксируем рабочий baseline для format-on-edit: узкий matcher, non-blocking handler и guard для крайних случаев. Цель — вырастить живучий артефакт <code>.claude/hooks/format-on-edit.json</code>, который команда Commerce OS раскатит без ежедневных молитв о стабильности.</p>
-      <p>Сначала мы вообще не форматируем код — проверяем только, что matcher ловит нужные файлы фронтенда и не лезет в бэкенд, generated-файлы и случайные артефакты. Hook идёт в log-only:</p>
+      <p>Соберём сквозной пример и зафиксируем рабочий baseline для format-on-edit: узкий matcher, non-blocking handler и guard для крайних случаев. Цель — вырастить живучий артефакт в <code>.claude/settings.json</code>, который команда Commerce OS раскатит без ежедневных молитв о стабильности.</p>
+      <p>Сначала мы вообще не форматируем код — проверяем только, что hook ловит нужные файлы фронтенда и не лезет в бэкенд, generated-файлы и случайные артефакты. Hook идёт в log-only:</p>
       <pre><code>{
-  "event": "afterFileEdit",
-  "matcher": { "paths": ["frontend/src/**/*.{ts,tsx}"] },
-  "handler": {
-    "command": "scripts/log-format-candidate.sh {{file}}",
-    "blocking": false
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/log-format-candidate.sh"
+          }
+        ]
+      }
+    ]
   }
 }</code></pre>
-      <p>Сам скрипт может быть совсем маленьким:</p>
-      <pre><code>#!/usr/bin/env bash
-FILE="$1"
-echo "[hook] кандидат на форматирование: $FILE" >&2
-# [hook] кандидат на форматирование: frontend/src/app/page.tsx
-exit 0</code></pre>
-      <p>Никакой магии. Несколько рабочих сессий я просто наблюдаю, действительно ли hook срабатывает там, где нужно. Поймал лишние файлы — идеальный момент поправить matcher, пока он никому ничего не ломает.</p>
+      <p>Сам скрипт может быть совсем маленьким: прочитать JSON из stdin, достать <code>tool_input.file_path</code> через <code>jq</code> и напечатать путь в stderr. Никакой магии. Несколько рабочих сессий я просто наблюдаю, действительно ли hook срабатывает там, где нужно. Поймал лишние файлы — идеальный момент поправить matcher или добавить проверку пути в скрипте, пока он никому ничего не ломает.</p>
       <p>Когда стало ясно, что matcher ведёт себя прилично, можно дать hook право на реальное форматирование:</p>
       <pre><code>{
-  "event": "afterFileEdit",
-  "matcher": { "paths": ["frontend/src/**/*.{ts,tsx}"] },
-  "handler": {
-    "command": "pnpm prettier --write {{file}}",
-    "blocking": false
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write"
+          }
+        ]
+      }
+    ]
   }
 }</code></pre>
       <p>Если проекту нужна дополнительная защита от лишних файлов, лучше завернуть команду в свой скрипт и сделать ранний выход для исключений:</p>
       <pre><code>#!/usr/bin/env bash
-FILE="$1"
+FILE=$(jq -r '.tool_input.file_path')
+case "$FILE" in
+  src/*.ts|src/*.tsx) ;;
+  *) exit 0 ;;
+esac
 case "$FILE" in
   *.generated.ts|*.snap) exit 0 ;;
 esac
-pnpm prettier --write "$FILE"</code></pre>
+npx prettier --write "$FILE"</code></pre>
       <p>Именно такая связка — узкий matcher плюс guard в handler — обычно и становится живучим baseline для проекта.</p>
       <p>На этом месте многие воодушевляются и хотят сразу добавить ещё ESLint, тесты, проверку импортов и напоминание пить воду. Лучше остановиться. Один hook на пять дел превращается в комбайн, который сложнее понять, чем отключить. Хороший Workflow Kit живёт наоборот: один артефакт — одна внятная ответственность. Зрелый format-on-edit выглядит скучно — и это комплимент.</p>
     </section>
@@ -200,33 +238,60 @@ pnpm prettier --write "$FILE"</code></pre>
       <p>Для validation и testing hooks действует правило: <strong>ранний сигнал должен быть дешевле, чем ошибка, которую он помогает заметить</strong>. Проверка тяжёлая, редкая или шумная — ей не место в hook первого уровня, выносите на поздний этап workflow. Hook здесь — быстрый сенсор, а не переносной дата-центр.</p>
       <p>Для фронтенд-файлов можно начать с мягкого lint на изменённый файл:</p>
       <pre><code>{
-  "event": "afterFileEdit",
-  "matcher": { "paths": ["frontend/src/**/*.{ts,tsx}"] },
-  "handler": {
-    "command": "pnpm eslint {{file}}",
-    "blocking": false
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "scripts/lint-changed-file.sh"
+          }
+        ]
+      }
+    ]
   }
 }</code></pre>
-      <p>Для чувствительных зон бэкенда чаще полезнее не запускать дорогие тесты автоматически, а выдать точную подсказку:</p>
-      <pre><code>{
-  "event": "afterFileEdit",
-  "matcher": { "paths": ["backend/src/main/java/**/refund/**"] },
-  "handler": {
-    "command": "scripts/report-refund-checks.sh {{file}}",
-    "blocking": false
-  }
-}</code></pre>
-      <p>Скрипт-подсказка может быть очень простым:</p>
-      <pre><code>#!/usr/bin/env bash
-FILE="$1"
-echo "Изменён чувствительный файл: $FILE" >&2
-echo "Проверьте targeted tests для refund-сценариев" >&2</code></pre>
-      <p>Hook не притворяется умнее разработчика. Он просто вовремя напоминает: «Вы задели модуль, где цена забывчивости выше обычной». Новичку мягкий сигнал часто полезнее автоматического запуска тяжёлой suite — он приучает думать о риске изменения.</p>
+      <p>Для чувствительных зон бэкенда чаще полезнее не запускать дорогие тесты автоматически, а выдать точную подсказку: «Изменён файл в refund-модуле, проверьте targeted tests». Hook не притворяется умнее разработчика. Он просто вовремя напоминает: «Вы задели модуль, где цена забывчивости выше обычной». Новичку мягкий сигнал часто полезнее автоматического запуска тяжёлой suite — он приучает думать о риске изменения.</p>
       <p>Хороший testing hook — не тот, что запускает всё. Это hook, который приносит нужный сигнал в нужный момент и не съедает темп. Боретесь после его включения не с багами, а со временем ожидания — значит, автоматизация ушла дальше своей реальной ценности.</p>
     </section>
 
     <section>
-      <h2>7. Признаки того, что hook помогает, а не мешает</h2>
+      <h2>7. Хуки жизни сессии</h2>
+      <p>Третью группу событий обычно недооценивают: она ничего не блокирует и не форматирует. Зато делает сессии дисциплинированными — и оставляет память о работе.</p>
+      <p><strong>SessionStart</strong> — особое событие: всё, что скрипт напечатает в stdout при <code>exit 0</code>, попадает прямо в контекст сессии. Так умеют всего несколько событий — из тех, что мы разбираем, ещё <code>UserPromptSubmit</code>. Баннер «на чём остановились»:</p>
+      <pre><code>{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "git log --oneline -5" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      <p>Claude начинает сессию, уже видя последние пять коммитов — не надо пересказывать, где вы остановились.</p>
+      <p>Дальше журнал и сигнал:</p>
+      <ul>
+        <li><strong>UserPromptSubmit</strong> — журнал сессии: каждый ваш промпт дописывается в файл в репозитории. Через неделю видно, что и почему вы делали;</li>
+        <li><strong>Stop</strong> — Claude закончил отвечать: длинная задача работает, вы занимаетесь своими делами, а сигнал или звук возвращает вас к терминалу;</li>
+        <li><strong>Notification</strong> — отдельное событие «Claude ждёт вас»: подтверждение прав или простой. Разница со Stop — «закончил» против «ждёт вашего решения».</li>
+      </ul>
+      <p>Эти три сценария — баннер, журнал, сигнал — ровно то, что вы соберёте в практике вебинара. Важно помнить про безопасность: журнальный hook не должен писать env-переменные, токены и куски <code>.env</code>. Журнал — самодостаточный артефакт проекта, а не свалка секретов.</p>
+      <p>У Stop-хука есть защита от зацикливания: если он каждый раз отвечает «продолжай работать», после 8 блокировок подряд Claude Code перекрывает его. Остальные побочные эффекты автоматизации выключать придётся вам.</p>
+    </section>
+
+    <section>
+      <h2>8. Если hook молчит или мешает</h2>
+      <p>Hook с опечаткой в matcher или событии ломается молча: нет красного баннера «hook failed, изучите проблему». Просто перестал форматироваться код — и всё. Поэтому диагностика — не интуиция, а путь по шагам: загружен ли hook, то ли событие, совпал ли matcher, отработал ли handler, нет ли side effects.</p>
+      <p>Если hook уже мешает работать, сначала быстро верните себе управляемость: уберите блок из settings, включите <code>"disableAllHooks": true</code> или запустите <code>claude --settings '{"disableAllHooks": true}'</code>. После этого — спокойный откат на ступень ниже, сужение matcher и короткая запись о причине.</p>
+      <p>Подробный разбор пяти вопросов, типичных поломок, побочных эффектов и recovery — тема следующей лекции.</p>
+    </section>
+
+    <section>
+      <h2>9. Признаки того, что hook помогает, а не мешает</h2>
+
       <p>У автоматизации простой экзамен: после недели использования команда должна работать спокойнее, а не напряжённее. Если hook срабатывает не там, пишет слишком много, неожиданно меняет файлы, маскирует исходную ошибку своей собственной или требует отдельного ритуала отключения — он не созрел. Не трагедия — сигнал откатиться на предыдущую ступень лестницы.</p>
       <p>Полезно задавать hook три вопроса:</p>
       <ol>
@@ -245,12 +310,16 @@ echo "Проверьте targeted tests для refund-сценариев" >&2</c
         <li>Хороший hook: повторяемая ситуация, предсказуемый результат, отсутствие тонкого вкуса, лёгкий откат.</li>
         <li>Первые hooks — узкие и безопасные: форматирование, мягкий lint/report, напоминание, узкая защита пути, баннер сессии.</li>
         <li>Non-blocking — лучший старт; blocking — только в узких проверенных сценариях.</li>
-        <li>Лестница раскатки: log-only → non-blocking → formatting → test/report → narrow blocking → policy-managed.</li>
+        <li>Блокирует <code>exit 2</code>; <code>exit 0</code> пропускает; другие коды — ошибка хука, а не блокировка.</li>
+        <li>Базовая лестница: log-only → non-blocking → narrow blocking; project settings — отдельная ступень зрелости.</li>
         <li>Ступени нельзя перепрыгивать: сначала наблюдаем, потом даём действие.</li>
         <li>format-on-edit начинается с log-only и узкого matcher, затем получает право на форматирование.</li>
         <li>Узкий matcher + guard в handler — живучий baseline.</li>
         <li>Один hook — одна внятная ответственность; не превращайте его в комбайн.</li>
         <li>Validation/testing hook — быстрый сигнал, а не CI на каждый edit.</li>
+        <li>Session hooks: <code>SessionStart</code> даёт контекст, <code>UserPromptSubmit</code> ведёт журнал, <code>Stop</code> сигналит о завершении, <code>Notification</code> — об ожидании.</li>
+        <li>Диагностика молчащего хука идёт по шагам: загрузка, событие, matcher, handler, side effects.</li>
+        <li>Recovery: quick disable, откат на ступень ниже, сузить matcher, записать причину; подробно — в лекции 5.</li>
         <li>Hook должен быть понятен, легко отключаться и уменьшать проблему больше, чем добавлять шума.</li>
         <li>Зрелая automation выглядит скучно и не требует ежедневных молитв.</li>
       </ul>
@@ -261,21 +330,22 @@ echo "Проверьте targeted tests для refund-сценариев" >&2</c
       <p><strong>Цель:</strong> спроектировать лестницу раскатки для automation hook и проверить, что он остаётся узким, non-blocking и легко откатывается.</p>
       <h3>Что сделать</h3>
       <ol>
-        <li>В вымышленном Workflow Kit создайте <code>HOOK_ROLLOUT.md</code>. Выберите один сценарий: format-on-edit для <code>frontend/src/**/*.ts(x)</code> или report-hook для <code>backend/**/refund/**</code>.</li>
-        <li>Распишите лестницу: log-only → non-blocking → formatting/test → narrow blocking → policy-managed. Для каждой ступени укажите matcher, handler, ожидаемый эффект и условие перехода дальше.</li>
-        <li>Для первой ступени напишите log-only hook и короткий скрипт, который печатает файл-кандидат. Для следующей — non-blocking handler, который не меняет код.</li>
-        <li>Добавьте guard: какие файлы hook не трогает (<code>*.generated.ts</code>, <code>*.snap</code>, бэкенд), и что делает handler при исключении.</li>
-        <li>Заполните <code>HOOK_HEALTH.md</code>: три вопроса о понятности, отключении и соотношении пользы/шума. Опишите, какие проблемы заставят откатиться на предыдущую ступень. Не используйте реальные опасные команды.</li>
+        <li>В вымышленном Workflow Kit создайте <code>HOOK_ROLLOUT.md</code>. Выберите один сценарий: format-on-edit для <code>frontend/src/**/*.ts(x)</code> или guard на <code>rm</code> для PreToolUse. Для format-on-edit blocking не нужен; для guard лестница идёт до narrow blocking.</li>
+        <li>Распишите базовую лестницу: log-only → non-blocking → narrow blocking (если применимо). Для каждой ступени укажите event, matcher, command, ожидаемый эффект и условие перехода дальше. Отдельно отметьте, когда hook готов к project settings.</li>
+        <li>Для первой ступени напишите log-only фрагмент settings и короткий скрипт, который печатает путь или команду-кандидат. Для следующей — non-blocking handler, который не меняет код.</li>
+        <li>Для guard опишите exit-контракт и проверьте скрипт на фейковом JSON: <code>echo '{"tool_name":"Bash","tool_input":{"command":"rm notes-old.md"}}' | ./block-rm.sh</code>. Ожидайте <code>exit 2</code>; команда внутри JSON не должна выполняться. Добавьте guard: какие пути или команды hook не трогает.</li>
+        <li>Заполните <code>HOOK_HEALTH.md</code>: три вопроса о понятности, отключении и соотношении пользы/шума, плюс quick disable и откат на ступень ниже. Полный дебаг по пяти вопросам — в следующей лекции. Не используйте реальные опасные команды и секреты.</li>
       </ol>
       <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните лестницу и проверку вручную в редакторе; критерии проверки те же.</p>
       <h3>Проверка</h3>
       <ul>
-        <li>В <code>HOOK_ROLLOUT.md</code> есть все ступени лестницы.</li>
+        <li>В <code>HOOK_ROLLOUT.md</code> есть ступени log-only → non-blocking → narrow blocking или обоснование, почему blocking не нужен.</li>
         <li>Первая ступень не меняет файлы, только логирует.</li>
-        <li>Matcher узкий, guard исключает generated/snap/лишние зоны.</li>
+        <li>Matcher узкий, guard исключает лишние зоны.</li>
         <li>Blocking появляется только на поздней ступени и в узком сценарии.</li>
+        <li>Guard возвращает <code>exit 2</code> на фейковом JSON и объясняет причину в stderr.</li>
         <li>Для hook указан способ быстрого отключения.</li>
-        <li>В <code>HOOK_HEALTH.md</code> есть три вопроса и критерии отката.</li>
+        <li>В <code>HOOK_HEALTH.md</code> есть три вопроса о здоровье hook и критерии отката.</li>
         <li>Нет реальных опасных команд и секретов.</li>
         <li>Если Claude Code недоступен, лестница и проверка выполнены вручную по тем же критериям.</li>
       </ul>

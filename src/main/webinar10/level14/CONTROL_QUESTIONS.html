@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровень 14 — контрольные вопросы по tool preflight, маршруту внешнего сигнала, hooks, event/matcher/handler, лестнице раскатки, дебагу и recovery.">
+  <title>Уровень 14 — контрольные вопросы — Claude Code</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111318; --panel:#1a1e26; --text:#f1f2f4; --muted:#a5adba; --accent:#f5a66b; --line:#303642; --green:#a8d8a0; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 85% 0,#33261f 0,transparent 34rem),var(--bg); color:var(--text); font:16px/1.75 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(920px,calc(100% - 36px)); margin:0 auto; padding:48px 0 80px; }
+    h1 { margin:18px 0 22px; font-size:clamp(2rem,6vw,3.4rem); line-height:1.08; letter-spacing:-.04em; }
+    h2 { margin:38px 0 14px; padding-top:18px; border-top:1px solid var(--line); font-size:1.35rem; }
+    p { margin:12px 0; }
+    ol, ul { margin:10px 0; padding-left:1.5rem; }
+    li { margin:10px 0; }
+    strong { color:#fff; }
+    code { color:var(--green); }
+    a { color:var(--accent); }
+    footer { margin-top:40px; color:var(--muted); font-size:.9rem; }
+    @media (max-width:620px) { main { padding-top:30px; } h1 { font-size:2rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../practice/index.html" style="color:#f5a66b;text-decoration:none;">Практика вебинара</a> <a href="lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a></nav>
+    <h1>Уровень 14 — контрольные вопросы</h1>
+<p>Контрольный блок по 5 лекциям уровня 14: 25 открытых вопросов с короткими ответами и ссылками на конспекты. Вопросы покрывают tool capability preflight, маршрут внешнего сигнала, hooks в settings.json, event/matcher/handler, exit-коды, лестницу раскатки, session hooks, дебаг и recovery.</p>
+<h2>Лекция 1 — Tool capability preflight</h2>
+<ol start="1">
+  <li><strong>Чем подключённый tool отличается от workflow?</strong><br>
+    Tool capability отвечает, что инструмент технически умеет. Workflow отвечает, как мы используем эту возможность в конкретной задаче, что запрещаем и чем проверяем результат. Подключённый сервер без границ, verification и kill switch — это новая кнопка, а не процесс.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Что такое tool capability preflight и какие вопросы он закрывает?</strong><br>
+    Это короткая структурированная проверка применения capability в конкретном workflow. Десять вопросов: боль, нужные capabilities, запреты, режим доступа, credentials, объём контекста, approval, verification, правило при конфликте и kill switch. Самые важные — disallowed actions, verification и kill switch.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Почему read-only — безопасный старт и что должно быть в списке запретов?</strong><br>
+    Read-only даёт внешний контекст при минимальном blast radius и не меняет внешнее состояние. Для issue tracker запрещают comment, close, reassign и change labels; для monitoring — silence, rollback и deploy; для БД — любые write/mutation. Session permissions шире workflow-границы: технически возможно не значит разрешено в задаче.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Что делать, если issue, docs, alert и код противоречат друг другу?</strong><br>
+    Не выбирать «любимый» источник. Остановить edits, зафиксировать расхождение и превратить его в проверяемую гипотезу: какие claims подтверждаются кодом, какие — только внешним текстом, какая минимальная проверка снимет конфликт. Внешний сигнал подсказывает, куда смотреть, но не заменяет проверку.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+  <li><strong>Зачем нужен kill switch и когда tool получает project scope?</strong><br>
+    Если интеграцию нельзя быстро отключить, она не готова к реальной жизни: нужен короткий путь назад — отключить config, убрать подключение, отозвать токен. Project scope — общая ответственность, туда идут только интеграции с понятным сценарием, verification path и owner. Preflight фиксируется в README/ONBOARDING_GUIDE и рядом с конфигом tool.<br>
+    → <a href="lecture1/index.html">Лекция 1</a>
+  </li>
+</ol>
+<h2>Лекция 2 — маршрут внешнего сигнала</h2>
+<ol start="6">
+  <li><strong>Какой маршрут проходит внешний сигнал до результата?</strong><br>
+    Внешний сигнал → гипотеза → маленькое изменение → проверка кодом и tests → артефакт в репозитории. Середина маршрута защищает от соблазна принять гору контекста из сервиса за готовый диагноз. Tool сокращает путь к проверке, но не заменяет её.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Почему комментарий в issue — данные, а не инструкция?</strong><br>
+    Комментарий — чья-то догадка, а не доказанный диагноз. Текст issue может содержать prompt injection или просто ошибочную гипотезу. Claude извлекает симптомы, ограничения и шаги, но не исполняет команды из текста; проверка замыкается на код и tests.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Что общего у шести сценариев tool integration?</strong><br>
+    Один каркас: сигнал → гипотеза → план → небольшое изменение → проверка → артефакт. Меняется источник сигнала и тип проверки: issue, monitoring, read-only DB, design, docs, browser. Ни один сценарий не перепрыгивает понимание кода и verification.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Чем отличается verification для monitoring, docs lookup и read-only DB?</strong><br>
+    Monitoring: воспроизведение, логи, regression test. Docs lookup: сверка версии проекта, build, tests, affected files. Read-only DB: поиск кодового пути, integration tests, query review. Во всех случаях проверка замыкается на проект, а не на сам tool.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+  <li><strong>Какие артефакты остаются после tool-workflow и почему внешний tool не source of truth?</strong><br>
+    <code>TASK_SPEC.md</code> с scope и проверкой, <code>EVIDENCE_LOG.md</code> с фактами и гипотезами, заметки в <code>API_MAP.md</code>, browser-сценарий и скриншот, обновлённые tests. Issue, alert, docs, код и tests показывают разные стороны; ни один не доказывает всё сразу. Source of truth — проверенная комбинация кода, tests и review.<br>
+    → <a href="lecture2/index.html">Лекция 2</a>
+  </li>
+</ol>
+<h2>Лекция 3 — event, matcher и handler</h2>
+<ol start="11">
+  <li><strong>Что такое hook и почему он срабатывает независимо от решения модели?</strong><br>
+    MCP — дверь наружу: откуда взять данные или куда сходить. Hook — автоматика внутри Claude Code: что сделать, когда внутри произошло событие. Он не думает и не планирует: совпало условие — выполнил команду. Инструкцию в <code>CLAUDE.md</code> модель может забыть, hook срабатывает по событию и matcher, поэтому ошибка в нём тоже срабатывает независимо.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Где живут hooks, чем отличаются scope-файлы и как они приезжают из plugin?</strong><br>
+    Hooks регистрируются в settings-файлах, в объекте <code>hooks</code>; скрипты удобно держать в <code>.claude/hooks/</code>. <code>~/.claude/settings.json</code> — личные хуки, <code>.claude/settings.json</code> — проектные, <code>.claude/settings.local.json</code> — личные хуки проекта, не для команды. Проектный hook виден в diff. Hooks также могут приезжать с plugin, skill или agent; <code>once: true</code> снимает хук из skill после первого срабатывания.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Из каких трёх частей состоит контракт hook?</strong><br>
+    Event — когда реагировать; matcher — при каком условии; command/handler — что сделать. В settings.json это <code>hooks → event → matcher → hooks → type/command</code>. Читается как фраза: когда произошло это, и только если совпало условие, выполни это действие.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Какие три группы событий и какие типы хуков нужно держать в голове?</strong><br>
+    До действия — <code>PreToolUse</code>, единственная точка, где действие можно остановить до выполнения. После действия — <code>PostToolUse</code>: формат, проверка, лог. Жизнь сессии — <code>SessionStart</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, <code>Notification</code>. Типы: <code>command</code>, <code>http</code>, <code>mcp_tool</code>, <code>prompt</code>, экспериментальный <code>agent</code>; начинать стоит с командных.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+  <li><strong>Как matcher и exit-код определяют поведение hook?</strong><br>
+    Matcher — фильтр по инструменту или ситуации: <code>Edit|Write</code>, <code>Bash</code>, <code>mcp__github__.*</code>; он чувствителен к регистру. Можно сузить через <code>if</code>, например <code>Bash(rm *)</code>. На вход handler получает JSON через stdin. <code>exit 0</code> пропускает, <code>exit 2</code> блокирует <code>PreToolUse</code> и передаёт stderr Claude, другой код — ошибка хука. У <code>SessionStart</code> и <code>UserPromptSubmit</code> stdout при <code>exit 0</code> попадает в контекст сессии.<br>
+    → <a href="lecture3/index.html">Лекция 3</a>
+  </li>
+</ol>
+<h2>Лекция 4 — лестница раскатки</h2>
+<ol start="16">
+  <li><strong>Какие признаки делают задачу хорошим кандидатом для hook и с чего начинать?</strong><br>
+    Повторяемая ситуация, предсказуемый результат, отсутствие тонкого вкуса и лёгкий откат. Начинать стоит с узких безопасных сценариев: форматирование, мягкий lint/report, напоминание про чувствительный модуль, узкая защита пути, контекст на старте сессии.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Чем non-blocking отличается от blocking и как заблокировать <code>rm</code>?</strong><br>
+    Non-blocking пишет лог, форматирует или подсказывает, но не отменяет действие. Blocking запрещает действие; технически это <code>exit 2</code>. Для <code>rm</code> ставят <code>PreToolUse</code> с matcher <code>Bash</code> и <code>if: "Bash(rm *)"</code>, скрипт печатает причину в stderr и возвращает 2. Это guardrail от частого случая, а не гарантия: жёсткий запрет — deny-правило в permissions.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Как выглядит базовая лестница раскатки и где место format-on-edit?</strong><br>
+    Log-only → non-blocking → narrow blocking. На log-only видно, не слишком ли широк matcher; на non-blocking проверяется польза; только затем появляется право сказать «стоп» в узком случае. Project settings — отдельная верхняя ступень. format-on-edit обычно остаётся на non-blocking: он не должен блокировать действие.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Почему validation и testing hooks — быстрый сигнал, а не CI?</strong><br>
+    Ранний сигнал должен быть дешевле ошибки, которую он помогает заметить. Тяжёлая, редкая или шумная проверка на каждом edit съедает темп. Hook первого уровня либо гоняет короткую локальную проверку, либо напоминает, какие targeted checks не забыть; полный CI остаётся в pipeline.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+  <li><strong>Что делают session hooks?</strong><br>
+    <code>SessionStart</code> может вывести последние коммиты или памятку в контекст. <code>UserPromptSubmit</code> ведёт журнал промптов в репозитории. <code>Stop</code> сигналит, что Claude закончил отвечать. <code>Notification</code> сообщает, что Claude ждёт решения. Журнал не должен содержать env-переменные, токены и куски <code>.env</code>.<br>
+    → <a href="lecture4/index.html">Лекция 4</a>
+  </li>
+</ol>
+<h2>Лекция 5 — debugging, side effects и recovery</h2>
+<ol start="21">
+  <li><strong>Какие пять вопросов задавать hook, который ведёт себя странно?</strong><br>
+    Загружен ли hook (<code>/hooks</code>, scope, битый JSON, <code>claude doctor</code>)? То ли событие (<code>PreToolUse</code> против <code>PostToolUse</code>)? Совпал ли matcher (регистр, инструмент)? Отработал ли handler (exit code, stderr, ручной запуск)? Нет ли side effects (шум, loops, лишний diff, секреты в логе)? Идти по порядку, а не править скрипт наугад.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Почему первая проверка — регистрация, а не handler?</strong><br>
+    Иначе можно полчаса чинить команду, которой в сессии нет. <code>/hooks</code> показывает активные хуки и источник; битый JSON, неверный scope и неперечитанный конфиг — частые причины «тишины». Claude Code может показать Settings Error, а <code>claude doctor</code> показывает, что отброшено.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как читать handler как обычную команду?</strong><br>
+    <code>exit 0</code> — успех, <code>exit 2</code> — блокирующий ответ для <code>PreToolUse</code>, другой код — ошибка handler. stdout/stderr должны быть аккуратными: шум загрязняет лог и контекст. Частые механические причины: quoting, неисполняемый файл, timeout, отсутствующий <code>jq</code>, неверный путь. Ручной запуск с тестовым JSON быстро снимает мистику.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Какие side effects делают формально работающий hook вредным?</strong><br>
+    Шум, который перестают замечать; лишние изменения файлов и огромный diff; loops, когда after-edit снова вызывает edit; скрытие исходной ошибки; утечка env-переменных, токенов или кусков файлов в лог. От loops спасают узкий matcher и ранний guard в handler.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+  <li><strong>Как устроен recovery path и что показал разбор format-on-edit?</strong><br>
+    Сначала quick disable: убрать блок из settings, <code>"disableAllHooks": true</code> или <code>claude --settings '{"disableAllHooks": true}'</code>. Затем staged rollback: откат на ступень ниже, сужение matcher, guard, запись в CHANGELOG. В разборе format-on-edit matcher расползся до <code>frontend/src/**/*</code>, hook трогал generated-файлы; фикс — вернуть <code>ts/tsx</code>, добавить ранний выход для <code>*.generated.*</code> и проверить оба случая.<br>
+    → <a href="lecture5/index.html">Лекция 5</a>
+  </li>
+</ol>
+<h2>Статус</h2>
+<ul>
+  <li>25 вопросов покрывают все 5 лекций уровня 14.</li>
+  <li>Вопросы синхронизированы с презентацией вебинара 10.</li>
+  <li>Практика вебинара вынесена отдельно: <a href="../practice/index.html">Три хука на три группы</a>.</li>
+  <li>Аудит покрытия: <a href="../COVERAGE.md">COVERAGE.md</a>.</li>
+  <li>При изменении лекций этот файл нужно обновлять вместе с ними.</li>
+</ul>
+    <footer>Уровень 14 · Claude Code · контрольные вопросы</footer>
+  </main>
+</body>
+</html>

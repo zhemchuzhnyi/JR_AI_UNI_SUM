@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Практика вебинара 10: три хука на три группы событий — Stop-сигнал, PreToolUse guard на rm и UserPromptSubmit журнал, лестница раскатки и дебаг.">
+  <title>Claude Code — вебинар 10, практика «Три хука»</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a> <a href="../level14/lecture1/index.html" style="color:#f5a66b;text-decoration:none;">Лекция 1</a> <a href="../level14/CONTROL_QUESTIONS.html" style="color:#f5a66b;text-decoration:none;">Контрольные вопросы</a> <a href="../COVERAGE.md" style="color:#f5a66b;text-decoration:none;">COVERAGE</a></nav>
+    <header>
+      <div class="eyebrow">Практика вебинара 10</div>
+      <h1>Три хука на три группы</h1>
+      <div class="subtitle">Stop · PreToolUse · UserPromptSubmit · log-only → non-blocking → narrow blocking</div>
+    </header>
+
+    <div class="lead">
+      Соберите обвязку игрушечного репозитория: три хука — по одному на каждую группу событий — и покажите, что автоматика живёт, приносит пользу и умеет выключаться.
+    </div>
+
+    <section>
+      <h2>Что получится</h2>
+      <ul>
+        <li><code>.claude/settings.json</code> с тремя хуками — в git;</li>
+        <li>скрипты-обработчики в <code>.claude/hooks/</code>;</li>
+        <li>журнал сессии <code>.claude/session-log.md</code> — в репозитории;</li>
+        <li><code>log/</code> с четырьмя демо-прогонами;</li>
+        <li>README: какой хук на какое событие, что делает и зачем, почему журнал в репо, как раскатывали, как чинили;</li>
+        <li>блок «как выключить»: убрать блок, <code>disableAllHooks</code>, откат на ступень ниже.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Безопасность и рамки</h2>
+      <p>Работайте только в игрушечном репозитории с фейковыми файлами:</p>
+      <ul>
+        <li><code>notes-old.md</code>, <code>draft.md</code>, <code>src/report.ts</code> — учебные файлы, которые не жалко;</li>
+        <li><code>rm</code> не выполняется: guard только читает JSON и проверяет строку команды;</li>
+        <li>журнал не пишет env-переменные, токены, куски <code>.env</code> и реальные персональные данные;</li>
+        <li>звуковой сигнал на macOS — <code>say</code>; на Windows/Linux честный fallback — запись в лог;</li>
+        <li>не подключайте production-репозиторий, реальные базы и чужие сервисы.</li>
+      </ul>
+      <p>Если Claude Code недоступен, все проверки можно выполнить вручную: подать скриптам тестовый JSON и записать результаты. Важно не имитировать успех молча — в <code>log/</code> явно пометьте, что прогон симулирован.</p>
+    </section>
+
+    <section>
+      <h2>Шаг 1. Игрушечный репозиторий</h2>
+      <p>Создайте отдельную папку и минимальный проект:</p>
+      <pre><code>mkdir -p hook-lab/.claude/hooks hook-lab/log hook-lab/src
+cd hook-lab
+git init
+printf '# Hook lab\n' &gt; README.md
+printf 'draft\n' &gt; notes-old.md
+printf 'export const report = true;\n' &gt; src/report.ts
+git add . &amp;&amp; git commit -m "baseline"</code></pre>
+      <p>Зафиксируйте baseline, чтобы потом было видно, какие изменения внесла автоматика. Никаких секретов и реальных данных.</p>
+    </section>
+
+    <section>
+      <h2>Шаг 2. Три хука</h2>
+
+      <h3>2.1. Stop — сигнал завершения</h3>
+      <p>Событие <code>Stop</code> срабатывает, когда Claude закончил отвечать. На macOS можно сказать вслух, на другой системе — дописать строку в лог.</p>
+      <pre><code>#!/usr/bin/env bash
+# .claude/hooks/stop-signal.sh
+if command -v say &gt;/dev/null 2&gt;&amp;1; then
+  say "Claude finished" &gt;/dev/null 2&gt;&amp;1 || true
+else
+  echo "$(date -u +%FT%TZ) Claude finished" &gt;&gt; log/stop.log
+fi
+exit 0</code></pre>
+      <p>Регистрация в <code>.claude/settings.json</code>:</p>
+      <pre><code>{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/stop-signal.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      <p>Зачем это в жизни: длинная задача работает, вы занимаетесь своими делами и возвращаетесь к терминалу по сигналу, а не по интуиции.</p>
+
+      <h3>2.2. PreToolUse — предохранитель на rm</h3>
+      <p>Отдельного инструмента «удалить файл» нет: удаление — это Bash-команда <code>rm</code>. Поэтому before-hook ловит <code>Bash</code> и проверяет строку команды.</p>
+      <pre><code>#!/usr/bin/env bash
+# .claude/hooks/block-rm.sh
+INPUT=$(cat)
+COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty')
+
+if printf '%s' "$COMMAND" | grep -qw "rm"; then
+  echo "Blocked: удаление файлов — только руками" &gt;&amp;2
+  exit 2
+fi
+
+exit 0</code></pre>
+      <p>Регистрация:</p>
+      <pre><code>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(rm *)",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/block-rm.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      <p>Проверка без выполнения <code>rm</code>:</p>
+      <pre><code>chmod +x .claude/hooks/block-rm.sh
+echo '{"tool_name":"Bash","tool_input":{"command":"rm notes-old.md"}}' | .claude/hooks/block-rm.sh
+echo $?   # ожидаем 2</code></pre>
+      <p>Скрипт только читает JSON и проверяет строку. Он не должен запускать <code>eval</code>, <code>bash -c</code> или саму команду из поля <code>command</code>.</p>
+      <div class="callout">Честная рамка: это guardrail от буквального rm, а не гарантия. Удалить файл можно и другими способами, а жёсткий запрет — это deny-правило в permissions.</div>
+
+      <h3>2.3. UserPromptSubmit — журнал в репозитории</h3>
+      <p>Событие <code>UserPromptSubmit</code> срабатывает на каждый ваш промпт. Журнал живёт в репозитории, потому что transcript в <code>~/.claude</code> не коммитится и остаётся только на вашей машине.</p>
+      <pre><code>#!/usr/bin/env bash
+# .claude/hooks/session-log.sh
+INPUT=$(cat)
+PROMPT=$(printf '%s' "$INPUT" | jq -r '.prompt // empty')
+[ -z "$PROMPT" ] &amp;&amp; exit 0
+
+{
+  printf '\n## %s\n' "$(date -u +%FT%TZ)"
+  printf '%s\n' "$PROMPT"
+} &gt;&gt; "${CLAUDE_PROJECT_DIR}/.claude/session-log.md"
+
+exit 0</code></pre>
+      <p>Регистрация:</p>
+      <pre><code>{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/session-log.sh" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+      <p>Правила журнала:</p>
+      <ul>
+        <li>не писать env-переменные, токены и содержимое <code>.env</code>;</li>
+        <li>не писать реальные персональные данные;</li>
+        <li>не превращать журнал в свалку: промпт и дата — достаточно;</li>
+        <li>если нужен ответ Claude, его можно взять из <code>Stop</code> (<code>last_assistant_message</code>), но в журнал кладите короткий фрагмент.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Шаг 3. Лестница раскатки для rm-guard</h2>
+      <p>Не включайте blocking сразу. Проживите три ступени и зафиксируйте их в <code>log/rollout.md</code>:</p>
+      <ol>
+        <li><strong>Log-only.</strong> Скрипт печатает команду-кандидат в stderr и возвращает <code>exit 0</code>. Проверьте, что matcher не ловит лишние Bash-команды.</li>
+        <li><strong>Non-blocking.</strong> Скрипт печатает предупреждение, но всё ещё возвращает <code>exit 0</code>. Убедитесь, что сигнал полезен и не шумит.</li>
+        <li><strong>Narrow blocking.</strong> Скрипт возвращает <code>exit 2</code> только для <code>rm</code>. Проверьте на фейковом JSON.</li>
+      </ol>
+      <p>Для format-on-edit или журнала blocking вообще не нужен: они остаются на non-blocking ступени. Не превращайте лестницу в обязательный ритуал там, где хук не умеет мешать.</p>
+    </section>
+
+    <section>
+      <h2>Шаг 4. Четыре демо-прогона</h2>
+      <p>Соберите доказательства, что автоматика жила. Не «настройки выглядят правильно», а логи:</p>
+      <ol>
+        <li><strong>after:</strong> Claude закончил задачу — сработал <code>Stop</code>-сигнал, в <code>log/stop.log</code> или в выводе есть отметка.</li>
+        <li><strong>before:</strong> попытка <code>rm</code> — хук заблокировал, в логе есть причина блока и <code>exit 2</code>.</li>
+        <li><strong>session:</strong> журнал наполнился за рабочую сессию — промпты и даты на месте.</li>
+        <li><strong>debugging:</strong> один хук молчал — в README разбор по пяти вопросам: загружен, событие, matcher, скрипт, side effects.</li>
+      </ol>
+      <p>Для четвёртого прогона можно специально сломать matcher (<code>edit</code> вместо <code>Edit</code>) или JSON, затем найти причину через <code>/hooks</code>, <code>Ctrl+O</code>, <code>/debug</code> или ручной запуск. После фикса — снова демо.</p>
+    </section>
+
+    <section>
+      <h2>Шаг 5. README и путь назад</h2>
+      <p>В README проекта должны быть:</p>
+      <h3>Карта хуков</h3>
+      <table>
+        <thead><tr><th>Группа</th><th>Событие</th><th>Скрипт</th><th>Что делает</th><th>Зачем</th></tr></thead>
+        <tbody>
+          <tr><td>после</td><td><code>Stop</code></td><td><code>stop-signal.sh</code></td><td>звук или запись в лог</td><td>вернуться к терминалу</td></tr>
+          <tr><td>до</td><td><code>PreToolUse</code> + <code>Bash</code></td><td><code>block-rm.sh</code></td><td><code>exit 2</code> на <code>rm</code></td><td>защита от необратимого</td></tr>
+          <tr><td>сессия</td><td><code>UserPromptSubmit</code></td><td><code>session-log.sh</code></td><td>журнал промптов</td><td>память и отчётность</td></tr>
+        </tbody>
+      </table>
+      <h3>Лестница и дебаг</h3>
+      <ul>
+        <li>как <code>block-rm.sh</code> прошёл log-only → non-blocking → narrow blocking;</li>
+        <li>какие лишние срабатывания поймали и как сузили matcher;</li>
+        <li>пять вопросов, по которым нашли молчащий хук;</li>
+        <li>что изменили после фикса.</li>
+      </ul>
+      <h3>Как выключить</h3>
+      <ul>
+        <li>убрать блок из <code>.claude/settings.json</code> — настройки перечитываются на лету;</li>
+        <li><code>"disableAllHooks": true</code>;</li>
+        <li><code>claude --settings '{"disableAllHooks": true}'</code>;</li>
+        <li>откатить хук на ступень ниже и записать причину рядом с ним.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Проверка</h2>
+      <ul>
+        <li><code>.claude/settings.json</code> с тремя хуками лежит в git.</li>
+        <li>Три хука соответствуют трём группам событий: <code>Stop</code>, <code>PreToolUse</code>, <code>UserPromptSubmit</code>.</li>
+        <li><code>block-rm.sh</code> возвращает <code>2</code> на фейковом JSON и объясняет причину в stderr.</li>
+        <li>Скрипт не выполняет команду из JSON и не содержит реальных опасных действий.</li>
+        <li><code>rm</code>-guard раскатан по лестнице, а не включён сразу blocking.</li>
+        <li>Журнал <code>.claude/session-log.md</code> лежит в репозитории и не содержит секретов.</li>
+        <li>В <code>log/</code> есть четыре демо-прогона, включая разбор молчащего хука.</li>
+        <li>README объясняет, какие события покрыты, что автоматика делает, почему ей можно доверять и как её выключить.</li>
+        <li>Нет реальных секретов, production-данных и опасных команд.</li>
+        <li>Если Claude Code недоступен, прогоны выполнены вручную и честно помечены как симуляция.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Если Claude Code недоступен</h2>
+      <p>Можно проверить скрипты без запуска Claude Code:</p>
+      <pre><code>printf '%s' '{"prompt":"проверь сортировку"}' | .claude/hooks/session-log.sh
+printf '%s' '{"tool_name":"Bash","tool_input":{"command":"rm notes-old.md"}}' | .claude/hooks/block-rm.sh
+echo $?</code></pre>
+      <p>Запишите в <code>log/</code> команды, JSON и коды возврата. В README укажите, что реальная сессия Claude Code не запускалась, а hook-контракты проверены вручную. Конфиг, журнал, лестница и разбор дебага всё равно обязательны.</p>
+    </section>
+
+    <footer>Вебинар 10 · практика «Три хука на три группы». Автоматика, которую можно объяснить, проверить и выключить. <a href="https://ru-claude-code-10-23ba.javarush-university.workers.dev/#slide-1" style="color:#f5a66b;">Презентация</a></footer>
+  </main>
+</body>
+</html>
