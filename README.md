@@ -18,6 +18,7 @@
 - **Вебинар 8** — уровень 12, лекции 1–5: tools и permissions, scoped skills/MCP/memory, context и worktree isolation, output contract, lifecycle и evaluation; практика file2md и 25 контрольных вопросов.
 - **Вебинар 9** — уровень 13, лекции 1–5: MCP как внешний слой, правило «сначала вручную», категории возможностей, конфиг MCP и четыре зоны риска; практика MCP-витрины и 25 контрольных вопросов.
 - **Вебинар 10** — уровень 14, лекции 1–5: tool capability preflight, шесть сценариев tool integration, hooks event/matcher/handler, лестница раскатки и debugging/recovery; практика «Три хука на три группы», 30 контрольных вопросов, презентация синхронизирована.
+- **Вебинар 11** — уровень 15, лекция 1: уровни параллельности от одной сессии до agent team, plan mode, subagent, worktree, coordination cost и parallelism decision record; презентация будет добавлена позже.
 
 ## Навигация
 
@@ -31,6 +32,7 @@
 - [Вебинар 8](src/main/webinar8/README.md)
 - [Вебинар 9](src/main/webinar9/README.md)
 - [Вебинар 10](src/main/webinar10/README.md)
+- [Вебинар 11](src/main/webinar11/README.md)
 
 ## Практики
 

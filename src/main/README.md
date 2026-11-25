@@ -297,6 +297,13 @@ src/main/
     practice/
       summary.txt
       index.html
+  webinar11/
+    README.md
+    level15/
+      README.md
+      lecture1/
+        summary.txt
+        index.html
 ```
 
 ## Правила
@@ -360,6 +367,7 @@ HTML-аналог:
 - **Вебинар 8:** уровень 12 — лекции 1–5 (tools и permissions; scoped skills/MCP/memory; context и worktree isolation; output contract; lifecycle и evaluation), 25 контрольных вопросов; практика — file2md. Аудит покрытия: [вебинар 8](webinar8/COVERAGE.md).
 - **Вебинар 9:** уровень 13 — лекции 1–5 (MCP как внешний слой; правило «сначала вручную»; категории возможностей; конфиг MCP; четыре зоны риска), 25 контрольных вопросов; практика — MCP-витрина. Аудит покрытия: [вебинар 9](webinar9/COVERAGE.md).
 - **Вебинар 10:** уровень 14 — лекции 1–5 (tool capability preflight; шесть сценариев tool integration; hooks event/matcher/handler; лестница раскатки и session hooks; debugging, side effects и recovery), 30 контрольных вопросов; практика — три хука на три группы; презентация синхронизирована. Аудит покрытия: [вебинар 10](webinar10/COVERAGE.md).
+- **Вебинар 11:** уровень 15 — лекция 1 (уровни параллельности от одной сессии до agent team; coordination cost; decision tree; parallelism decision record); материалы и презентация будут добавляться.
 - **Публикация:** главная страница сайта — `src/main/index.html`; сайт публикуется через GitHub Pages (`.github/workflows/pages.yml`).
 
 ## Добавление новой лекции

@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Уровни параллельности в Claude Code: одна сессия, plan mode, subagent, fresh session, worktree, background и agent team; coordination cost, decision tree и parallelism decision record.">
+  <title>Claude Code — 15 уровень, лекция 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1a1e26;
+      --text: #f1f2f4;
+      --muted: #a5adba;
+      --accent: #f5a66b;
+      --line: #303642;
+      --green: #a8d8a0;
+      --warn: #ffd08b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 85% 0, #33261f 0, transparent 34rem), var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(940px, calc(100% - 36px)); margin: 0 auto; padding: 56px 0 80px; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2.2rem, 7vw, 4.4rem); line-height: 1.05; letter-spacing: -.055em; }
+    .subtitle, .muted { color: var(--muted); }
+    .lead, section, .callout { margin-top: 28px; padding: 25px 28px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 92%, transparent); }
+    .lead { border-color: #70503c; font-size: 1.12rem; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 0; padding-left: 1.3rem; }
+    li { margin: 7px 0; }
+    strong { color: #fff; }
+    .callout { border-left: 4px solid var(--accent); font-size: 1.1rem; font-weight: 650; }
+    pre { overflow-x: auto; margin: 14px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #101218; color: #d8e0ec; font: .88rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: var(--green); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: .95rem; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--accent); font-weight: 650; }
+    tr:last-child td { border-bottom: 0; }
+    .warning { color: var(--warn); }
+    footer { margin-top: 32px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 700px) {
+      main { padding-top: 36px; }
+      .lead, section, .callout { padding: 20px; }
+      table { font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="Навигация по конспекту" style="display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:0 0 22px;font-size:.9rem;"><a href="../../../index.html" style="color:#f5a66b;text-decoration:none;">← Все конспекты</a></nav>
+    <header>
+      <div class="eyebrow">Parallelism levels</div>
+      <h1>Claude Code</h1>
+      <div class="subtitle">15 уровень · лекция 1</div>
+    </header>
+
+    <div class="lead">
+      По умолчанию достаточно одной сессии Claude. Subagent, worktree, background и agent team — не фичи «на всякий случай», а design decision, который оправдывается структурой задачи и ценой координации.
+    </div>
+
+    <section>
+      <h2>1. Один Claude часто лучше маленькой «AI-команды»</h2>
+      <p>Когда люди впервые доходят до темы multi-agent, их почти всегда тянет переусложнить даже простую задачу. Это нормальная стадия: инструменты уже под рукой, и рука сама тянется собрать AI-оркестр там, где хватило бы одного исполнителя. Поэтому вопрос стоит сместить: не «что включить», а «когда это оправдано».</p>
+      <p><strong>По умолчанию достаточно одной основной сессии Claude.</strong> Всё остальное нужно оправдать задачей.</p>
+      <p>Один Claude уже читает код, работает в plan mode, вносит изменения, запускает проверки и показывает diff. Если задача небольшая, последовательная и находится в одном месте проекта, subagent, отдельная сессия или worktree её не ускорят — они лишь добавят движущихся частей.</p>
+      <p>Полезно прогонять задачу через признаки:</p>
+      <table>
+        <thead><tr><th>Признак задачи</th><th>Что спрашиваем</th></tr></thead>
+        <tbody>
+          <tr><td>Размер</td><td>Это небольшое изменение или длинная многошаговая работа?</td></tr>
+          <tr><td>Независимость частей</td><td>Можно ли и правда разделить работу на куски, которые не мешают друг другу?</td></tr>
+          <tr><td>Ownership</td><td>Можно ли честно сказать, кто отвечает за какие файлы, модули или слои?</td></tr>
+          <tr><td>Риск</td><td>Это простой UI-текст или sensitive area вроде payments, auth, migrations?</td></tr>
+          <tr><td>Verification</td><td>Есть ли tests, checks и понятный способ доказать, что всё работает?</td></tr>
+          <tr><td>Merge-conflict risk</td><td>Не полезут ли разные роли в один и тот же файл?</td></tr>
+          <tr><td>Human attention</td><td>Есть ли у вас ресурс проверять промежуточные результаты?</td></tr>
+        </tbody>
+      </table>
+      <p>Parallelism — это не «фича», а <strong>design decision</strong>. Его принимают до старта работы, а не «по ходу, потому что стало интересно».</p>
+      <p>Пример из Commerce OS: issue «исправить подпись в сообщении об ошибке в корзине» — а вы запускаете planner, reviewer и background agent. Всё равно что вызвать строительную бригаду поправить криво висящую картину.</p>
+    </section>
+
+    <section>
+      <h2>2. Меню уровней: от сессии до agent team</h2>
+      <p>Варианты параллельности — не хаос возможностей, а ограниченное меню: выбираете не «что моднее», а «что дешевле по координации и достаточно для задачи». Есть два измерения: уровень координации и режимы, которые меняют способ исследования, изоляции или исполнения.</p>
+      <table>
+        <thead><tr><th>Уровень / режим</th><th>Когда подходит</th><th>Что даёт</th></tr></thead>
+        <tbody>
+          <tr><td>Одна основная сессия</td><td>Небольшая и понятная задача</td><td>Минимум координации</td></tr>
+          <tr><td>Отдельная роль: subagent или fresh / separate session</td><td>Нужно изолированное investigation или независимый review</td><td>Отдельный context window без full team</td></tr>
+          <tr><td>Agent team</td><td>Есть несколько независимых workstreams и явная точка координации</td><td>Координация нескольких ролей</td></tr>
+          <tr><td>plan mode</td><td>Нужна разведка без edits</td><td>Ограничение текущей сессии, а не новый worker</td></tr>
+          <tr><td>worktree</td><td>Нужны параллельные или рискованные edits</td><td>File/Git isolation; часто идёт вместе с выбранным уровнем</td></tr>
+          <tr><td>Background session</td><td>Работа действительно независима и её можно вести асинхронно</td><td>Advanced operational mode; нужен явный status tracking</td></tr>
+        </tbody>
+      </table>
+      <p>То есть plan mode и worktree — не ещё два «следующих агента в списке», а модификаторы выбранного уровня. Конкретный surface background-сессий и agent team может отличаться по версии Claude Code, но принцип выбора остаётся.</p>
+      <p>Чтобы это почувствовать, полезно вести короткий decision record рядом с <code>AGENT_HANDOFF_CONTRACT.md</code>:</p>
+      <pre><code># Решение по параллелизму — COM-482
+Задача: вынести refund-валидацию из OrderService в отдельный helper.
+Размер: небольшой
+Независимые части: нет
+Риск: средний, payment-adjacent
+Тесты: есть 2 целевых теста
+Выбор: одна сессия + plan mode
+Отвергнуто:
+- subagent: отдельная роль не нужна
+- worktree: параллельных edits нет
+- agent team: независимых workstreams нет</code></pre>
+      <p>Важно не только то, что выбрали, но и то, от чего осознанно отказались. Именно так решение становится проверяемым артефактом, а не «ощущением».</p>
+    </section>
+
+    <section>
+      <h2>3. Coordination cost важнее количества агентов</h2>
+      <p>Когда говорят «давайте распараллелим», обычно думают только о выигрыше по времени. Но у параллельности есть цена, и не только в токенах. Самое дорогое часто человеческое: внимание, контроль, синхронизация промежуточных решений.</p>
+      <table>
+        <thead><tr><th>Компонент стоимости</th><th>Что это значит на практике</th></tr></thead>
+        <tbody>
+          <tr><td>Контекст</td><td>Задачу нужно объяснить нескольким ролям, а не одной</td></tr>
+          <tr><td>Время на handoff</td><td>Каждый результат надо передать дальше и правильно прочитать</td></tr>
+          <tr><td>Git-стоимость</td><td>Появляются merge conflicts, отдельные ветки, worktree</td></tr>
+          <tr><td>Review-нагрузка</td><td>Проверять нужно не один diff, а несколько промежуточных результатов</td></tr>
+          <tr><td>Token-cost</td><td>Больше сессий = больше чтений, сводок и перепроверок</td></tr>
+          <tr><td>Cognitive load</td><td>Нужно помнить, кто что делает и на каком этапе застрял</td></tr>
+        </tbody>
+      </table>
+      <p>Формула курса:</p>
+      <pre><code>More agents create coordination cost;
+use them only when parallelism is real and verification is clear.</code></pre>
+      <p>Если задача не распадается на куски, вы получаете не «команду», а несколько источников бардака. Представьте, что вы чините баг в Commerce OS: дублируется заказ в pagination на <code>/api/orders</code>. Один Claude в plan mode — одна нить рассуждения. А если поднять исследовательскую сессию, отдельного executor и ещё reviewer — вы платите за три контекста, три handoff-а и три точки, где теряется исходная гипотеза. Быстрее баг не чинится. Он просто наблюдает за вашим организационным талантом.</p>
+    </section>
+
+    <section>
+      <h2>4. Decision tree для выбора уровня без гадания</h2>
+      <p>Соберём простую шпаргалку, которую держат в Workflow Kit как внутренний документ.</p>
+      <h3>Шаг 1. Базовый уровень</h3>
+      <pre><code>Есть задача
+  → Маленькая и последовательная?
+      → да: одна сессия
+      → нет: нужна разведка без edits?
+          → да: plan mode
+          → нет: нужна отдельная роль?
+              → да: fresh session или subagent
+              → нет: одна сессия + уточнить task spec</code></pre>
+      <p>«Отдельная роль» — это investigation или review, которые лучше отделить от основной работы.</p>
+      <h3>Шаг 2. Что добавить поверх выбранного уровня</h3>
+      <pre><code>Несколько независимых workstreams?
+  → нет: выбранного уровня достаточно
+  → да:
+      будут параллельные edits?
+        → да: добавить worktree
+        → нет: обойтись без file isolation
+      нужна async execution или team-координация?
+        → да: background execution или agent team
+        → нет: выбранного уровня достаточно</code></pre>
+      <p>Эти схемы учат главному: сначала вопросы о задаче, потом инструмент.</p>
+      <p>Три коротких примера:</p>
+      <table>
+        <thead><tr><th>Задача</th><th>Выбор</th><th>Почему</th></tr></thead>
+        <tbody>
+          <tr><td>Исправить текст кнопки “Refund accpeted” → “Refund accepted”</td><td>Одна сессия</td><td>Один файл, нулевой риск параллельности, verification очевиден</td></tr>
+          <tr><td>Понять, где собирается response для <code>/api/dashboard/metrics</code></td><td>plan mode</td><td>Сначала исследование, edits пока не нужны</td></tr>
+          <tr><td>Получить свежий взгляд на diff по orders API</td><td>Основная сессия + fresh reviewer session</td><td>Нужен новый контекст без writer bias</td></tr>
+        </tbody>
+      </table>
+      <p>Рост сложности начинается не с «добавим ещё агентов», а с вопроса «какая у задачи реальная структура?».</p>
+    </section>
+
+    <section>
+      <h2>5. plan mode против subagent</h2>
+      <p>У многих возникает честный вопрос: если plan mode тоже ничего не редактирует и умеет исследовать проект, зачем тогда subagent? Всё дело в границе между режимом работы и отдельной ролью.</p>
+      <p><strong>plan mode</strong> — это всё ещё ваша основная сессия: одна нить разговора с ограничением «сначала исследуем, без edits». Берите его, когда задача одна и отдельный worker не нужен.</p>
+      <p><strong>Subagent</strong> имеет смысл, когда investigation или review идут в отдельном context window и не засоряют main session: основная держит task spec и implementation context, а subagent собирает evidence по tests или проходит по API map и возвращает сжатый вывод.</p>
+      <table>
+        <thead><tr><th>Вариант</th><th>Что получает main session</th><th>Когда брать</th></tr></thead>
+        <tbody>
+          <tr><td>plan mode</td><td>Полную нить исследования внутри той же сессии</td><td>Одна задача, один поток</td></tr>
+          <tr><td>subagent</td><td>Короткую summary с findings и evidence</td><td>Отдельная investigation/review роль</td></tr>
+          <tr><td>Fresh session</td><td>Полностью новый взгляд</td><td>Нужна независимая интерпретация</td></tr>
+        </tbody>
+      </table>
+      <p>Пример для Commerce OS:</p>
+      <ul>
+        <li>понять, почему metrics endpoint иногда медленный, и код ещё не исследован — достаточно plan mode;</li>
+        <li>основная сессия уже занята implementation другой части, а длинное исследование SQL и logs не хочется тащить внутрь — логичен subagent;</li>
+        <li>implementation уже сделан и нужен независимый reviewer — fresh session.</li>
+      </ul>
+      <p>Без этого различия subagent быстро превращается в «умный синоним любой разведки», а это уже лишняя координация.</p>
+    </section>
+
+    <section>
+      <h2>6. worktree идёт рядом с параллельными edits</h2>
+      <p>Как только речь заходит о параллельных изменениях файлов, разговор упирается в worktree. Не потому, что Git хочет вас воспитывать, а потому что файловая система не любит, когда несколько потоков разом считают себя хозяевами одних файлов.</p>
+      <p>Если у вас одна сессия, один diff, одна ветка — драмы нет. А захотите два изменяющих потока (один правит backend, второй проверяет альтернативную реализацию) — без worktree быстро придёте к «а кто это поменял файл, и почему у меня теперь всё смешалось?».</p>
+      <p>Context isolation и file isolation — не одно и то же:</p>
+      <table>
+        <thead><tr><th>Изоляция</th><th>Что защищает</th></tr></thead>
+        <tbody>
+          <tr><td>Отдельная сессия</td><td>Историю рассуждений и контекст</td></tr>
+          <tr><td>Subagent</td><td>Main session от лишнего investigation</td></tr>
+          <tr><td>worktree</td><td>Файлы, ветку и Git-состояние</td></tr>
+        </tbody>
+      </table>
+      <p>Формула:</p>
+      <pre><code>Если параллельность касается рассуждений — может хватить отдельной сессии.
+Если параллельность касается edits — почти всегда нужен worktree.</code></pre>
+      <p>Пример decision note:</p>
+      <pre><code>Задача: сравнить две реализации фильтрации orders.
+Вариант A: main session + одна ветка
+Проблема: обе реализации будут менять те же файлы
+Решение: завести отдельный worktree для альтернативной реализации
+Почему: нужен безопасный параллельный diff без смешивания изменений</code></pre>
+      <p>Worktree создаёт лишнюю работу, но это честная цена за изоляцию файлов. Куда хуже сэкономить на нём, а потом играть в Git-археолога.</p>
+    </section>
+
+    <section>
+      <h2>7. Agent management surface против «зомби-сессий»</h2>
+      <p>Как только появляется больше одного параллельного workstream, проблема становится операционной: как помнить, кто ещё жив, кто ждёт решения, кто закончил, а кто тихо ушёл в лес и утащил с собой контекст?</p>
+      <p>Для этого в современных версиях Claude Code появляется agent management surface — <code>claude agents</code>, agent view или похожий экран; имя и интерфейс могут меняться. Есть он у вас — используйте его. Нет — тот же эффект даёт короткий status note в Workflow Kit, issue note или task list. Важен принцип: единый экран статусов — какие сессии активны, сколько работают, кто их owner, где нужны human decisions.</p>
+      <div class="callout">С момента второго параллельного workstream нужен не обязательно отдельный экран, но обязательно явный способ видеть status, owner и pending decisions.</div>
+      <p>Без этого появляются классические «зомби-процессы»:</p>
+      <ul>
+        <li>вы забыли, что где-то ещё живёт background session;</li>
+        <li>один subagent завершился, но его findings никто не прочитал;</li>
+        <li>одна из сессий уже двадцать минут ждёт решения, а вы ушли в другой поток;</li>
+        <li>вы больше не помните, кто из параллельных workers работает с какой веткой или каталогом.</li>
+      </ul>
+      <pre><code>2+ параллельных workstreams
+  → нужен единый экран статусов
+      → видно ownership
+      → видно elapsed time
+      → видны pending decisions
+      → меньше зомби-сессий</code></pre>
+      <p>Профессиональная привычка выглядит просто: прежде чем запускать второй параллельный поток, договоритесь, где именно вы будете видеть status, owner и pending decisions.</p>
+    </section>
+
+    <section>
+      <h2>8. Шаблон parallelism decision record</h2>
+      <p>Чтобы всё это не осталось красивой теорией, первый рабочий артефакт — запись о том, нужна ли вообще параллельность. Она лежит в Workflow Kit как <code>parallelism-decision.template.md</code>. Шаблон короткий — и это хорошо: чем меньше церемонии, тем выше шанс, что его будут применять.</p>
+      <pre><code># Решение по параллелизму
+## Задача
+&lt;id / короткое описание&gt;
+## Размер
+&lt;small / medium / large&gt;
+## Независимые рабочие потоки
+&lt;yes / no / partial&gt;
+## Распределение ответственности
+&lt;files / modules / layers / flows / none&gt;
+## Риск
+&lt;low / medium / high&gt;
+## Доступная проверка
+&lt;tests / build / smoke / none&gt;
+## Выбранный уровень
+&lt;one session / plan mode / subagent / fresh session / worktree / background / agent team&gt;
+## Отклонённые варианты
+- ...
+- ...
+## Обоснование
+&lt;2–4 строки&gt;</code></pre>
+      <p>Пример для реального issue:</p>
+      <pre><code># Решение по параллелизму
+## Задача
+COM-538 — исправить сортировку refund inbox
+## Размер
+medium
+## Независимые рабочие потоки
+no
+## Распределение ответственности
+none
+## Риск
+medium
+## Доступная проверка
+unit tests + smoke
+## Выбранный уровень
+one session + plan mode
+## Отклонённые варианты
+- subagent: отдельная роль не нужна
+- worktree: нет параллельных edits
+- agent team: нет независимых workstreams
+## Обоснование
+Нужно сначала локализовать причину бага и сделать маленький diff.
+Параллельность не даст выигрыша, а только увеличит review cost.</code></pre>
+      <p>Если verdict говорит «параллельность не нужна» — вопрос закрыт. Если «нужна», следующий вопрос жёстче: это отдельный reviewer/investigator или уже более тяжёлая координация. Сначала фиксируется verdict, и только потом обсуждаются роли, pipeline и handoff.</p>
+      <p>Один из самых недооценённых навыков в AI-assisted разработке — не запустить пять агентов, а не запустить их, когда очень хочется, и при этом быть правым.</p>
+    </section>
+
+    <section>
+      <h2>Что запомнить</h2>
+      <ul>
+        <li>По умолчанию достаточно одной основной сессии Claude.</li>
+        <li>Parallelism — design decision, а не фича; его принимают до старта.</li>
+        <li>Признаки: размер, независимость частей, ownership, риск, verification, merge-conflict risk, human attention.</li>
+        <li>Уровни: одна сессия → отдельная роль (subagent/fresh session) → agent team.</li>
+        <li>plan mode и worktree — модификаторы уровня, а не «ещё два агента».</li>
+        <li>Coordination cost: контекст, handoff, Git, review, tokens, cognitive load.</li>
+        <li>Если параллельность касается рассуждений, может хватить отдельной сессии; если edits — почти всегда нужен worktree.</li>
+        <li>С двумя и более workstreams нужен явный status: owner, время, pending decisions.</li>
+        <li>Первый артефакт — <code>parallelism-decision.template.md</code>.</li>
+        <li>Важно фиксировать не только выбранный уровень, но и отклонённые варианты с причиной.</li>
+        <li>Не запустить лишних агентов, когда очень хочется, — профессиональный навык.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Практика (15–25 минут)</h2>
+      <p><strong>Цель:</strong> принять и обосновать решение о параллельности для трёх задач, а не выбирать инструмент «по ощущению».</p>
+      <h3>Что сделать</h3>
+      <ol>
+        <li>В вымышленном Workflow Kit создайте <code>PARALLELISM_DECISION.md</code> и скопируйте шаблон из лекции.</li>
+        <li>Заполните запись для трёх задач: исправление опечатки в одном компоненте; исследование медленного <code>/api/dashboard/metrics</code> без edits; две независимые задачи с параллельными правками backend и frontend.</li>
+        <li>Для каждой задачи пройдите decision tree: базовый уровень → нужна ли отдельная роль → нужны ли worktree/background/agent team. Запишите выбранный уровень и отклонённые варианты с причиной.</li>
+        <li>Для задачи с двумя workstreams добавьте status surface: где видны owner, active/pending, elapsed time и решения, которые ждут человека.</li>
+        <li>Проверьте записи: нет ли параллельности там, где не нужна; есть ли verification; не конфликтуют ли edits. Если Claude Code недоступен, выполните решение вручную по тем же критериям.</li>
+      </ol>
+      <p class="muted"><strong>Если Claude Code недоступен:</strong> выполните решения и проверку вручную в редакторе; критерии те же.</p>
+      <h3>Проверка</h3>
+      <ul>
+        <li>В <code>PARALLELISM_DECISION.md</code> есть три заполненные записи.</li>
+        <li>Для простой задачи выбран один session, а не agent team.</li>
+        <li>Для investigation выбран plan mode или subagent с обоснованием.</li>
+        <li>Для двух workstreams указан worktree или другой способ file isolation.</li>
+        <li>У каждой записи есть отклонённые варианты и причина.</li>
+        <li>Для параллельной работы описан status surface.</li>
+        <li>Нет выдуманных гарантий и реальных опасных действий.</li>
+        <li>Если Claude Code недоступен, решения и проверка выполнены вручную.</li>
+      </ul>
+    </section>
+
+    <footer>15 уровень · лекция 1. Сначала структура задачи, потом инструмент: параллельность нужно оправдать, а не включить. <a href="https://javarush.com/quests/lectures/ru.javarush.claude.code.lecture.level15.lecture01" style="color:#f5a66b;">Источник</a></footer>
+  </main>
+</body>
+</html>
